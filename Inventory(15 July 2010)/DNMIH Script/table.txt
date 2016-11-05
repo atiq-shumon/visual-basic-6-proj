@@ -1,0 +1,205 @@
+
+CREATE TABLE UserCategory (
+	UserCategoryID integer NOT NULL ,
+	UserCategoryName varchar2(20) not null,
+ constraint usercategory_pk primary key(usercategoryID));
+
+
+CREATE TABLE UserInfo (
+	UserID  varchar2(5) NOT NULL ,
+	UserName varchar2(25) not NULL ,
+	Address varchar2(50)  NULL ,
+	UserCategory integer not NULL ,
+	Phone varchar2(20) NULL ,
+	Fax varchar2(20)  NULL ,
+	EMail varchar2(20)  NULL ,
+	UserPass varchar2(50) NULL ,
+	UserStatus int NOT NULL ,
+	Remarks varchar2(75)  NULL ,
+	CONSTRAINT UserInfo_PK PRIMARY KEY(userid) );
+
+
+create table item_unit_info( 
+         unit_code varchar2(2) not null,
+         unit_name  varchar2(50) not null,
+         remarks     varchar2(100),
+         create_date  date,
+         create_by   varchar2(10) not null,
+constraint item_unit_info_pk primary key(unit_code) );
+
+
+
+create table item_cate_info( 
+         cate_code varchar2(2) not null,
+         cate_name  varchar2(50) not null,
+         remarks     varchar2(100),
+         create_date  date,
+         create_by   varchar2(10) not null,
+constraint item_cate_info_pk primary key(cate_code));
+
+
+create table item_group_info( 
+         group_code varchar2(3) not null,
+         group_name  varchar2(100) not null,
+         type_code   varchar2(2) not null,
+         remarks     varchar2(100),
+         create_date  date,
+         create_by   varchar2(10),
+constraint item_group_info_pk primary key(group_code,type_code));
+
+create table item_TYPE_info( 
+         TYPE_code varchar2(2) not null,
+         TYPE_name  varchar2(50) not null,
+         cate_CODE VARCHAR2(2) NOT NULL, 
+         remarks     varchar2(100),
+         create_date  date,
+         create_by   varchar2(10) not null,
+constraint item_TYPE_info_pk primary key(cate_CODE,TYPE_code));
+
+create table item_issue_type( 
+         type_code varchar2(2) not null,
+         type_name  varchar2(50) not null,
+         remarks     varchar2(100),
+         create_date  date,
+         create_by   varchar2(10) not null,
+constraint item_issue_type_pk primary key(type_code) );
+
+
+create table item_info( 
+         item_code varchar2(5) not null,
+         item_name  varchar2(150) not null,
+         cate_code   varchar2(2) not null,
+         group_code   varchar2(3) not null,
+         unit_code   varchar2(2) not null, 
+         re_ord_lbl  number(18,3)  default 0 not null,
+         remarks     varchar2(100),
+         create_date  date,
+         create_by   varchar2(10),
+         type_code   varchar2(2),
+constraint item_info_pk primary key(item_code));
+
+create table tmp_item(
+    VAR_ITEM varchar2(10),
+    GroupTitle varchar2(100),
+    UnitTitle  varchar2(100),
+    Item_title varchar2(100),
+    OPN_BALANCE varchar2(10),
+    VAR_PURQTY varchar2(10),
+    VAR_ISSUERETQTY varchar2(10),
+    VAR_PURRETQTY  varchar2(10),
+    VAR_ISSUEQTY  varchar2(10),
+    VAR_ADJUSTQTY varchar2(10),
+    Closing_Balance varchar2(10)
+);
+
+
+CREATE TABLE PurchaseMain (
+	PurId  varchar2(12)  NOT NULL ,
+	PurDate date NOT NULL ,
+	PurType varchar2(1)  NOT NULL ,
+	SupplierId varchar2(10) NOT NULL ,
+	ChallanNo varchar2(20)  NULL ,
+	Remarks varchar2(100)  NULL ,
+        voucher_no varchar2(10) null,
+        create_date  date,
+        create_by   varchar2(10),
+        CHALLAN_DATE  date, 
+	CONSTRAINT purchaseMain_pk PRIMARY KEY(purid) 
+);
+
+
+CREATE TABLE PurchaseSub (
+	PurId varchar2(12)  NOT NULL ,
+	itemId varchar2(4)  NOT NULL ,
+	URate number(18, 3) DEFAULT (0) not null,
+	PurQty number(18, 3) default 0 NOT NULL ,
+	UsedQty number(18, 3)  DEFAULT (0) not null,
+	ReturnQty number(18, 3) DEFAULT 0 not null,
+        exp_date date,
+	TrackId int NOT NULL 
+) ;
+
+
+
+CREATE TABLE IssueMain (
+	IssueId varchar2(12)  NOT NULL ,
+	IssueDate date NOT NULL ,
+	IssueType varchar2(2) NOT NULL ,
+	IssueTo varchar2(10) NOT NULL ,
+	Remarks varchar2(100)  NULL ,
+        create_date  date,
+        create_by   varchar2(10),
+        indent_no  varchar2(30),
+        Reg_no     varchar2(30)  
+CONSTRAINT IssueMain_pk PRIMARY KEY(IssueId));
+
+
+
+
+CREATE TABLE IssueSub (
+	IssueId varchar2(12) NOT NULL ,
+	PurchaseId varchar2(12) NOT NULL ,
+	ItemCode varchar2(5) NOT NULL ,
+	Qty number(18, 3) DEFAULT (0) NOT NULL ,
+	URate number(18, 3) DEFAULT (0) NOT NULL ,
+	TrackId integer NOT NULL ,
+constraint IssueSub_fk foreign key(issueid) references issueMain(issueid)
+) ;
+
+
+CREATE TABLE IssueReturnMain (
+	ReturnId varchar2(12)  NOT NULL ,
+	ReturnDate date NOT NULL ,
+	ReturnType varchar2(2) NOT NULL ,
+	ReturnFrom varchar2(10) NOT NULL ,
+	Remarks varchar2(100)  NULL ,
+        create_date  date,
+        create_by   varchar2(10),
+	CONSTRAINT  IssueReturnMain_pk PRIMARY KEY(ReturnId));
+
+
+
+
+CREATE TABLE IssueReturnSub (
+	ReturnId varchar2(12) NOT NULL ,
+	IssueId varchar2(12) NOT NULL ,
+        PurchaseId varchar2(12) NOT NULL ,
+	ItemCode varchar2(4) NOT NULL ,
+	Qty number(18, 3) DEFAULT (0) NOT NULL ,
+	URate number(18, 3) DEFAULT (0) NOT NULL ,
+	TrackId integer NOT NULL ,
+constraint IssueReturnSub_fk foreign key(ReturnId) references IssueReturnMain(ReturnId)
+) ;
+
+
+
+
+
+
+CREATE TABLE IssueMainSpecial (
+	SpecialId varchar2(12)  NOT NULL ,
+	TransactionDate date NOT NULL ,
+	PurchaseFrom varchar2(200) NOT NULL ,
+	IssueTo varchar2(200) NOT NULL ,
+        indent_no  varchar2(30) ,
+        indent_date date,
+	Remarks varchar2(100)  NULL ,
+        create_date  date,
+        create_by   varchar2(10)
+    ONSTRAINT IssueMain_pk PRIMARY KEY(IssueId));
+
+
+
+
+CREATE TABLE IssueSubSpecial (
+	SpecialId varchar2(12) NOT NULL ,
+	ItemCode varchar2(5) NOT NULL ,
+	Qty number(18, 3) DEFAULT (0) NOT NULL ,
+	URate number(18, 3) DEFAULT (0) NOT NULL ,
+	TrackId integer NOT NULL ,
+constraint IssueSub_fk foreign key(issueid) references issueMain(issueid)
+) ;
+
+
+
+

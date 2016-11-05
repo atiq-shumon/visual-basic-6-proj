@@ -1,0 +1,14 @@
+create or replace procedure Rpt_Opening_Balance(p_test_cursor in out test_package.test_type)
+as
+begin
+open p_test_cursor for
+  select vou_date,(select user_acc from acct where acct.acc_code=ledger.acc_code) as Code,
+(select acc_name from acct where acct.acc_code=(select acc_head from acct where acct.acc_code=ledger.acc_code )) as acc_head,
+(select acc_name from acct where acct.acc_code=ledger.acc_code) as Accounts,
+dr_amt as Debit,cr_amt as Credit from ledger where ledger.vou_type='op' 
+and ledger.acc_code=(select max(l.acc_code) from ledger l where l.vou_no=ledger.vou_no);
+end ;
+
+
+
+

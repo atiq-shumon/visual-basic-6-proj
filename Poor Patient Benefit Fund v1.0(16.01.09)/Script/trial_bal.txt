@@ -1,0 +1,33 @@
+create or replace procedure trial_bal(p_test_cursor in out test_package.test_type,
+p_date1  date,p_date2 date)
+as
+begin
+open p_test_cursor for
+select a.acc_code,(select acc_name from acct where acct.acc_code=a.acc_code) "acc_name" ,
+	nvl(sum(a.dr_amt),0) as tot_dr,
+	nvl(sum(a.cr_amt),0) as tot_cr,
+	(select acc_lBl from acct where acct.acc_code=a.acc_code) as acc_lbl 
+	from ledger a,acct b
+     where a.acc_code=b.acc_code and (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>= 
+           to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy'))
+          and (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=
+          to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+          and b.ACC_Lbl          
+       in(1)  group by  a.acc_code ;
+end ;
+
+-----------current----------------------------------
+create or replace procedure trial_bal(p_test_cursor in out test_package.test_type,p_date1  date,p_date2 date)
+as
+begin
+open p_test_cursor for
+select a.acc_code,(select acc_name from acct where acct.acc_code=a.acc_code) "acc_name" ,
+	OpenBal_tb(1,a.acc_code,p_date1,p_date2)  as opn_dr,
+	OpenBal_tb(2,a.acc_code,p_date1,p_date2)  as opn_cr,
+	OpenBal_tb(3,a.acc_code,p_date1,p_date2)  as tot_dr,
+	OpenBal_tb(4,a.acc_code,p_date1,p_date2)  as tot_cr,
+	(select acc_lBl from acct where acct.acc_code=a.acc_code) as acc_lbl 
+	from ledger a,acct b  where a.acc_code=b.acc_code and b.ACC_Lbl          
+       in(1)  group by  a.acc_code ;
+end ;
+------------------previous=================

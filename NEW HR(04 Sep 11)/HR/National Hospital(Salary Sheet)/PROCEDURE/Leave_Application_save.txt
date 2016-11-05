@@ -1,0 +1,53 @@
+create or replace procedure Leave_Application_save(
+P_EMP_ID varchar2,
+P_LEAVE_CODE varchar2,
+P_NO_OF_DAYS_LEAVE number,
+P_DATE_OF_APPLIED date,
+P_DATE_OF_JOINFROMLF date,
+P_REMAIN_CASUALLEAVE number)
+
+as
+var_temp number;
+Var_Trace_Earn_Leave  number;
+Var_Trave_EXTRA_LEAVE_REMAIN number;
+Var_Dif_bet_Leave_ErnLf number;
+begin
+select count(*) into var_temp
+from Leave_Application
+where EMP_ID=P_EMP_ID and DATE_OF_APPLIED=P_DATE_OF_APPLIED;
+Select TOTAL_EARN_LEAVE Into Var_Trace_Earn_Leave
+from Earn_Leave where TRACK_ID=(Select max(TRACK_ID) from Earn_Leave
+where emp_Id=P_EMP_ID);
+select EXTRA_LEAVE_REMAIN into Var_Trave_EXTRA_LEAVE_REMAIN 
+from Earn_Leave  where  track_id=(select max(track_id) from 
+Earn_Leave where emp_id=P_EMP_ID);
+if P_LEAVE_CODE='002'then
+Insert Into Earn_Leave values(
+	P_EMP_ID,
+	(Var_Trace_Earn_Leave-P_NO_OF_DAYS_LEAVE),
+	Var_Trave_EXTRA_LEAVE_REMAIN, 
+	(select to_char(sysdate,'yyyy') from dual),
+	Sysdate,
+	Track_Id_For_EarnLeave.nextval);
+end if;
+if var_temp>0 then
+update Leave_Application
+set 
+	LEAVE_CODE=P_LEAVE_CODE,
+	NO_OF_DAYS_LEAVE=P_NO_OF_DAYS_LEAVE,
+	DATE_OF_JOINFROMLF=P_DATE_OF_JOINFROMLF,
+	REMAIN_CASUALLEAVE=P_REMAIN_CASUALLEAVE
+	where EMP_ID=P_EMP_ID and DATE_OF_APPLIED=P_DATE_OF_APPLIED;
+else
+insert into Leave_Application values(
+	P_EMP_ID,
+	P_LEAVE_CODE ,
+	P_NO_OF_DAYS_LEAVE,
+	P_DATE_OF_APPLIED,
+	P_DATE_OF_JOINFROMLF,
+	P_REMAIN_CASUALLEAVE,
+	Track_Id_For_LeaveApp.nextval);
+end if;
+commit;
+end  Leave_Application_save;
+/

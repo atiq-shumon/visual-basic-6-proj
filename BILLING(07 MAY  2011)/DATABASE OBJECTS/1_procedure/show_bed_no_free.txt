@@ -1,0 +1,46 @@
+create or replace  procedure show_bed_no_free
+as
+cursor c1 is
+select in_reg_no,YRCODE from bed_info where  OCCUPY_FLAG<>0 and upper(bed_type)=upper('free-bed') ;
+cursor c2 is
+select  nvl(in_reg_no,0),YRCODE, bed_no,bed_ext_col,occupy_flag,doc_department from bed_info where upper(bed_type)=upper('free-bed');
+var_in_reg_no varchar2(10);
+var_bed_no varchar2(10);
+var_bed_ext_col varchar2(10);
+var_pat_name   varchar2(60);
+var_count number(10);
+var_doc_department  varchar2(30);
+VAR_YRCODE VARCHAR2(30);
+var_occupy_flag  integer;
+begin
+open c1;
+open c2;
+delete from show_bed;
+commit;
+loop
+exit when c2%notfound;
+fetch c2 into var_in_reg_no,VAR_YRCODE,var_bed_no,var_bed_ext_col,var_occupy_flag,var_doc_department;
+--fetch c1 into var_in_reg_no;
+exit when c2%notfound;
+select count(pat_name) into var_count
+from in_door_Pat_Info_Main
+where in_reg_no=var_in_reg_no AND YRCODE=VAR_YRCODE;
+if var_count>0 then
+select nvl(pat_name,0) into var_pat_name from in_door_Pat_Info_Main
+where in_reg_no=var_in_reg_no AND YRCODE=VAR_YRCODE;
+end if;
+insert into show_bed(in_reg_no,name,bed_ward,
+bed_no,occupy_flag,doc_department)  values(
+var_in_reg_no,var_pat_name,var_bed_ext_col,var_bed_no,var_occupy_flag,var_doc_department);
+end loop;
+update show_bed 
+set in_reg_no='',
+name=''
+where occupy_flag =0;
+close c1;
+close c2;
+
+commit;
+end ;
+
+

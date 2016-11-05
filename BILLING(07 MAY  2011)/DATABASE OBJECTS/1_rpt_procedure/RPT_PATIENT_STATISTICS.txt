@@ -1,0 +1,222 @@
+create or replace procedure Rpt_patient_STATISTICS(p_test_cursor in out test_package.test_type,p_option number,p_DEPT_name varchar2,p_date1 date,p_date2 date, p_date3 date)
+as
+VAR_DOC_DEPT INTEGER;
+VAR_CABIN  INTEGER;
+VAR_PAYING  INTEGER;
+VAR_FREE  INTEGER;
+VAR_MALE  INTEGER;
+VAR_FEMALE NUMBER(8);
+ VAR_OPERATION NUMBER(14);
+VAR_DELIVERY NUMBER(14);
+CUR_PAT  NUMBER(5);
+CUR_PAT_CAB  NUMBER(5);
+CUR_PAT_PAY  NUMBER(5);
+CUR_PAT_FREE  NUMBER(5);
+CUR_PAT_DEPT NUMBER(5);
+
+
+cursor c1 is 
+  SELECT  DISTINCT(DOC_DEPT)  FROM DOCTOR_INFO WHERE UPPER(DOC_DEPT) NOT IN (UPPER('COMMON'),UPPER('Anaes.logy'),UPPER('Pathology'),UPPER('Radiology'),UPPER('CCU'));
+begin
+/*
+if p_option=1 then   -------DATE AND  ALL  DEPT 
+------     SELECT  COUNT(DISTINCT(DOC_DEPT)) INTO VAR_DOC_DEPT FROM DOCTOR_INFO WHERE UPPER(DOC_DEPT) NOT IN (UPPER('COMMON'),UPPER('Anaes.logy'),UPPER('Pathology'),UPPER('Radiology'),UPPER('CCU'));
+ open p_test_cursor for
+		 SELECT COUNT(IN_REG_NO) FROM  in_door_Pat_Info_Main  WHERE  TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') ) AS TOTAL_PATIENTOF_DAY,
+			(select  COUNT(in_reg_no) from in_door_Pat_Info_Main 
+	
+		where  UPPER(DOC_DEPT)=UPPER('Surgery-1')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')
+
+/*
+,
+ 		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Surgery-2')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Medicine-1')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Medicine-2')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+
+
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Card.')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Ophth.')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('ENT')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Skin VD')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Paediatric')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Gynae-1')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Gynae-2')  AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY'));
+	end if;
+
+
+if p_option=2 then   -------DATE AND  ALL  DEPT 
+    open c1;
+   loop
+      exit when c1%notfound;
+     fetch c1 into VAR_DOC_DEPT;
+      exit when c1%notfound;
+      select count 
+      
+          
+------     SELECT  COUNT(DISTINCT(DOC_DEPT)) INTO VAR_DOC_DEPT FROM DOCTOR_INFO WHERE UPPER(DOC_DEPT) NOT IN (UPPER('COMMON'),UPPER('Anaes.logy'),UPPER('Pathology'),UPPER('Radiology'),UPPER('CCU'));
+ open p_test_cursor for
+		 (SELECT COUNT(IN_REG_NO) FROM  in_door_Pat_Info_Main  WHERE  TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') ) AS TOTAL_PATIENTOF_DAY,
+			(select  COUNT(in_reg_no) from in_door_Pat_Info_Main 
+	
+		where  UPPER(DOC_DEPT)=UPPER('Surgery-1')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+ 		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Surgery-2')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Medicine-1')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Medicine-2')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+
+
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Card.')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Ophth.')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('ENT')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Skin VD')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Paediatric')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Gynae-1')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY')),
+		(select  COUNT(in_reg_no) from in_door_Pat_Info_Main  
+	
+		where  UPPER(DOC_DEPT)=UPPER('Gynae-2')  AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3,'DD-MON-YYYY'));
+
+	end if;
+*/
+
+if p_option=3 then   -------DATE AND DEPT SPECIFIC
+
+select  COUNT(in_reg_no) INTO  VAR_DOC_DEPT from INDOOR_PAT_BED_INFO 
+	   where   TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY'));
+
+select  COUNT(in_reg_no) INTO  VAR_CABIN from INDOOR_PAT_BED_INFO 
+	   where  UPPER(BED_TYPE)=UPPER('CABIN') AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY'));
+select  COUNT(in_reg_no) INTO  VAR_PAYING from INDOOR_PAT_BED_INFO 
+	   where  UPPER(BED_TYPE)=UPPER('PAYING') AND  TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY'));
+select  COUNT(in_reg_no) INTO  VAR_FREE from INDOOR_PAT_BED_INFO 
+	   where  UPPER(BED_TYPE)=UPPER('FREE-BED') AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY'));
+
+
+
+ open p_test_cursor for
+          SELECT COUNT(IN_REG_NO) AS TOTAL_PATIENTOF_DAY,
+		VAR_DOC_DEPT,VAR_CABIN,VAR_PAYING,VAR_FREE
+FROM  in_door_Pat_Info_Main  WHERE  TO_CHAR(DT,'DD-MON-YYYY')=TO_CHAR(P_DATE1,'DD-MON-YYYY') ;
+	 
+	end if;
+
+
+
+
+if p_option=4 then   -------DATE  TO  DATE AND DEPT SPECIFIC
+ select  COUNT(in_reg_no) INTO  VAR_DOC_DEPT from in_door_Pat_Info_Main 
+	   where  in_door_Pat_Info_Main.in_reg_no=(select distinct(in_reg_no) from indoor_pat_bed_info where indoor_pat_bed_info.in_reg_no=in_door_Pat_Info_Main.in_reg_no )  AND  (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ) and    UPPER(DOC_DEPT)=UPPER(p_DEPT_name);
+
+select  COUNT(in_reg_no) INTO  VAR_CABIN from indoor_pat_bed_info
+	   where UPPER(BED_TYPE)=UPPER('CABIN')    
+                   AND SERIAL_NO=1
+                   AND  (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') )
+                   AND IN_REG_NO=(SELECT DISTINCT(IN_REG_NO) FROM in_door_Pat_Info_Main  WHERE uPPER(in_door_Pat_Info_Main.DOC_DEPT)=UPPER(p_DEPT_name)
+                        AND  in_door_Pat_Info_Main.IN_REG_NO=indoor_pat_bed_info.IN_REG_NO);
+
+select  COUNT(in_reg_no) INTO  VAR_pAYING from indoor_pat_bed_info
+	   where UPPER(BED_TYPE)=UPPER('pAYING')    
+                   AND SERIAL_NO=1
+                   AND  (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') )
+                   AND IN_REG_NO=(SELECT DISTINCT(IN_REG_NO) FROM in_door_Pat_Info_Main  WHERE uPPER(in_door_Pat_Info_Main.DOC_DEPT)=UPPER(p_DEPT_name)
+                        AND  in_door_Pat_Info_Main.IN_REG_NO=indoor_pat_bed_info.IN_REG_NO);
+
+select  COUNT(in_reg_no) INTO  VAR_FREE from indoor_pat_bed_info
+	   where UPPER(BED_TYPE)=UPPER('FREE-BED')    
+                   AND SERIAL_NO=1
+                   AND  (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') )
+                   AND IN_REG_NO=(SELECT DISTINCT(IN_REG_NO) FROM in_door_Pat_Info_Main  WHERE uPPER(in_door_Pat_Info_Main.DOC_DEPT)=UPPER(p_DEPT_name)
+                        AND  in_door_Pat_Info_Main.IN_REG_NO=indoor_pat_bed_info.IN_REG_NO);
+
+
+
+
+
+
+select  COUNT(in_reg_no) INTO  VAR_OPERATION from  INDOOR_PAT_MONEY
+	   where  TOTAL_OPERATION_SUM>0 AND (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ) AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ));
+
+select  COUNT(in_reg_no) INTO  VAR_DELIVERY from  INDOOR_PAT_MONEY
+	   where  DELIVERY_CHARGE>0 AND DT  BETWEEN P_DATE2 and P_DATE3+1 AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ));
+
+
+select  COUNT(in_reg_no) INTO  VAR_MALE from  in_door_Pat_Info_Main
+	   where  UPPER(SEX)=UPPER('MALE') AND (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ) AND UPPER(DOC_DEPT)=UPPER(p_DEPT_name) ;
+
+select  COUNT(in_reg_no) INTO  VAR_FEMALE from  in_door_Pat_Info_Main
+	   where  UPPER(SEX)=UPPER('FEMALE') AND (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ) AND UPPER(DOC_DEPT)=UPPER(p_DEPT_name);
+
+
+
+
+SELECT COUNT(IN_REG_NO) INTO CUR_PAT FROM BED_INFO WHERE  OCCUPY_FLAG=1 ;
+
+SELECT COUNT(IN_REG_NO) INTO CUR_PAT_CAB FROM BED_INFO WHERE  OCCUPY_FLAG=1 AND UPPER(BED_TYPE)=UPPER('CABIN') ;
+SELECT COUNT(IN_REG_NO) INTO CUR_PAT_PAY FROM BED_INFO WHERE  OCCUPY_FLAG=1 AND UPPER(BED_TYPE)=UPPER('PAYING') ;
+SELECT COUNT(IN_REG_NO) INTO CUR_PAT_FREE FROM BED_INFO WHERE  OCCUPY_FLAG=1 AND UPPER(BED_TYPE)=UPPER('FREE-BED') ;
+SELECT COUNT(IN_REG_NO) INTO CUR_PAT_DEPT FROM BED_INFO WHERE  OCCUPY_FLAG=1 AND UPPER(BED_TYPE)=UPPER('FREE-BED')  AND  UPPER(DOC_DEPARTMENT)=UPPER(p_DEPT_name);
+
+
+
+
+/*
+select  COUNT(in_reg_no) INTO  VAR_CABIN_CUR from in_door_Pat_Info_Main 
+	   where  UPPER(BED_TYPE)=UPPER('CABIN') AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')) AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')));
+select  COUNT(in_reg_no) INTO  VAR_PAYING_CUR from in_door_Pat_Info_Main 
+	   where  UPPER(BED_TYPE)=UPPER('PAYING') AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')) AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY'))) ;
+select  COUNT(in_reg_no) INTO  VAR_FREE_CUR from in_door_Pat_Info_Main
+	   where  UPPER(BED_TYPE)=UPPER('FREE-BED') AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')) AND IN_REG_NO IN (SELECT
+               IN_REG_NO FROM  in_door_Pat_Info_Main   WHERE UPPER(DOC_DEPT)=UPPER(p_DEPT_name) AND TO_DATE(TO_CHAR(DT,'DD-MON-YYYY')) BETWEEN  TO_DATE(TO_CHAR(P_DATE2,'DD-MON-YYYY')) AND TO_DATE(TO_CHAR(P_DATE3+1,'DD-MON-YYYY')));
+*/
+
+
+ open p_test_cursor for
+   SELECT COUNT(IN_REG_NO) AS TOTAL_PATIENTOF_DAY,VAR_DOC_DEPT AS DEPARTMENT,VAR_CABIN  AS CAB_PAT,VAR_PAYING AS PAY_PAT,VAR_FREE  AS FREE_PAT,VAR_OPERATION  AS  TOT_OPR,VAR_DELIVERY  TOT_DELI, VAR_MALE TOT_MALE ,VAR_FEMALE TOT_FEMALE  ,CUR_PAT as cur_patient, CUR_PAT_CAB as current_cab,CUR_PAT_pay as cur_pat_pay, CUR_PAT_free as CURr_PAT_free ,CUR_PAT_DEPT AS CUR_DEPT_PAT
+FROM  in_door_Pat_Info_Main  WHERE (to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')                                              >=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') 		                               and 			                                            to_date(to_char(DT,'dd-mon-yyyy'),'dd-mon-yyyy')<= 			                          			to_date(to_char(p_date3,'dd-mon-yyyy'),'dd-mon-yyyy') ) ;
+END IF;
+END;
+		

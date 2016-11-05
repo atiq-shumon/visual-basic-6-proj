@@ -1,0 +1,224 @@
+
+create or replace procedure Rptdiscount_receipt_DETAIL
+  	(p_test_cursor in out test_package.test_type,
+        IDENTITY_FLAG  NUMBER,
+	P_ID VARCHAR2,
+        p_date1 date,
+	p_date2 date)
+AS
+BEGIN  
+--------HOSPITAL STAFF     
+IF IDENTITY_FLAG=1 THEN
+OPEN P_TEST_CURSOR FOR 
+SELECT  INDOOR_PAT_MONEY.IN_REG_NO AS REGIS_NO,INDOOR_PAT_MONEY.PAT_ID AS REC_NO, (SELECT DISTINCT(EMP_NM) FROM  PAYROLL.EMP_INFO WHERE PAYROLL.EMP_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) AS EMP_NAME,
+(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE PAYROLL.ST_DESIG.DESIG_CODE=
+(SELECT  DISTINCT(DESIG) FROM  PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) )AS EMP_DESIG ,
+0 AS DIAG_DISCOUNT,INDOOR_PAT_MONEY.DISCOUNT AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=INDOOR_PAT_MONEY.U_ID) AS USER_NAME
+FROM INDOOR_PAT_MONEY WHERE  INDOOR_PAT_MONEY.STAFF_ID<>'0' AND INDOOR_PAT_MONEY.DISCOUNT>0  
+AND  (((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))   between 8 and 23)) 
+or (to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))  between 0 and 7)))
+ AND upper(INDOOR_PAT_MONEY.STAFF_ID) NOT LIKE  UPPER('c%') and upper(INDOOR_PAT_MONEY.STAFF_ID) NOT LIKE upper('m%')
+UNION ALL
+SELECT  0 AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME  
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE  PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO=0 AND  PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' 
+AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23))
+ or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+AND upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID) NOT LIKE  UPPER('c%')
+and upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID) NOT LIKE  UPPER('m%')
+UNION ALL
+SELECT PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE    EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,PAT_INFO_SUB3_OUT_DOOR.DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC, (SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME   
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND   PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO<>0 AND   PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) AND upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID) NOT LIKE  UPPER('c%')
+and upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID) NOT LIKE  UPPER('m%');
+
+-------------COLLEGE STAFF
+ELSIF IDENTITY_FLAG=2 THEN
+OPEN P_TEST_CURSOR FOR 
+SELECT  INDOOR_PAT_MONEY.IN_REG_NO AS REGIS_NO,INDOOR_PAT_MONEY.PAT_ID AS REC_NO, (SELECT DISTINCT(EMP_NM) FROM  PAYROLL.EMP_INFO WHERE PAYROLL.EMP_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) AS EMP_NAME,
+(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE PAYROLL.ST_DESIG.DESIG_CODE=
+(SELECT  DISTINCT(DESIG) FROM  PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) )AS EMP_DESIG ,
+0 AS DIAG_DISCOUNT,INDOOR_PAT_MONEY.DISCOUNT AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=INDOOR_PAT_MONEY.U_ID) AS USER_NAME   
+FROM INDOOR_PAT_MONEY WHERE  INDOOR_PAT_MONEY.STAFF_ID<>'0' AND INDOOR_PAT_MONEY.DISCOUNT>0  
+AND (((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))   between 8 and 23)) 
+or (to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))  between 0 and 7)))
+ AND INDOOR_PAT_MONEY.STAFF_ID  LIKE  UPPER('c%')
+UNION ALL
+SELECT  0 AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC  ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME   
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE  PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO=0 AND  PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) AND upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID) LIKE  UPPER('c%')
+UNION ALL
+SELECT PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE    EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,PAT_INFO_SUB3_OUT_DOOR.DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME    
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND   PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO<>0 AND   PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) AND upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID)  LIKE  UPPER('c%');
+
+
+------------------------------------------POOR PATIENT(FREE-BED ONLY)
+ELSIF IDENTITY_FLAG=3 THEN
+OPEN P_TEST_CURSOR FOR 
+SELECT INDOOR_PAT_MONEY.IN_REG_NO AS REGIS_NO,INDOOR_PAT_MONEY.PAT_ID AS REC_NO, (select DISTINCT(pat_name) from  in_door_Pat_Info_Main  where  in_door_Pat_Info_Main.in_reg_no=INDOOR_PAT_MONEY.IN_REG_NO AND in_door_Pat_Info_Main.YRCODE=INDOOR_PAT_MONEY.YRCODE) AS EMP_NAME,
+ ' ' AS EMP_DESIG ,
+0 AS DIAG_DISCOUNT,INDOOR_PAT_MONEY.DISCOUNT AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=INDOOR_PAT_MONEY.U_ID) AS USER_NAME  
+FROM INDOOR_PAT_MONEY,INDOOR_PAT_BED_INFO B
+
+ WHERE  INDOOR_PAT_MONEY.STAFF_POOR_PATIENT_FLAG=0 AND INDOOR_PAT_MONEY.STAFF_ID='0' AND  (((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))   between 8 and 23)) 
+or (to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))  between 0 and 7))) and INDOOR_PAT_MONEY.DISCOUNT>0
+  AND (INDOOR_PAT_MONEY.IN_REG_NO=B.IN_REG_NO AND INDOOR_PAT_MONEY.YRCODE=B.YRCODE 
+     AND B.SERIAL_NO=(SELECT MAX(I.SERIAL_NO) FROM  INDOOR_PAT_BED_INFO I WHERE I.IN_REG_NO=B.IN_REG_NO AND I.YRCODE=B.YRCODE AND UPPER(B.BED_TYPE)='FREE-BED'))
+
+uNION ALL
+SELECT  IN_REG_NO AS REGIS_NO,REG_NO AS REC_NO,(SELECT DISTINCT(pat_name) FROM Pat_Info_Main_out_door WHERE  Pat_Info_Main_out_door.reg_no=PAT_INFO_SUB3_OUT_DOOR.reg_no ) 
+AS EMP_NAME,
+'' AS EMP_DESIG ,DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME    
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE  STAFF_POOR_PAT_DISC_FLAG=0 AND  EMP_ID='0' and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) and disc>0 AND IN_REG_NO<>0 ;
+
+
+
+
+ELSIF IDENTITY_FLAG=5 THEN  -----OTHER THAN FREE-BED
+OPEN P_TEST_CURSOR FOR 
+SELECT INDOOR_PAT_MONEY.IN_REG_NO AS REGIS_NO,INDOOR_PAT_MONEY.PAT_ID AS REC_NO, (select DISTINCT(pat_name) from  in_door_Pat_Info_Main  where  in_door_Pat_Info_Main.in_reg_no=INDOOR_PAT_MONEY.IN_REG_NO AND in_door_Pat_Info_Main.YRCODE=INDOOR_PAT_MONEY.YRCODE) AS EMP_NAME,
+ ' ' AS EMP_DESIG ,
+0 AS DIAG_DISCOUNT,INDOOR_PAT_MONEY.DISCOUNT AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC  ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=INDOOR_PAT_MONEY.U_ID) AS USER_NAME 
+FROM INDOOR_PAT_MONEY,INDOOR_PAT_BED_INFO B
+
+ WHERE  INDOOR_PAT_MONEY.STAFF_POOR_PATIENT_FLAG=0 AND INDOOR_PAT_MONEY.STAFF_ID='0' AND  (((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))   between 8 and 23)) 
+or (to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))  between 0 and 7))) and INDOOR_PAT_MONEY.DISCOUNT>0
+  AND (INDOOR_PAT_MONEY.IN_REG_NO=B.IN_REG_NO AND INDOOR_PAT_MONEY.YRCODE=B.YRCODE 
+      AND B.SERIAL_NO=(SELECT MAX(SERIAL_NO) FROM  INDOOR_PAT_BED_INFO WHERE IN_REG_NO=B.IN_REG_NO AND YRCODE=B.YRCODE AND UPPER(B.BED_TYPE)<>'FREE-BED') AND UPPER(B.BED_TYPE) IN('CABIN','PAYING'))
+
+UNION ALL
+SELECT  0 AS REGIS_NO,REG_NO AS REC_NO,(SELECT DISTINCT(pat_name) FROM Pat_Info_Main_out_door WHERE  Pat_Info_Main_out_door.reg_no=PAT_INFO_SUB3_OUT_DOOR.reg_no  ) 
+AS EMP_NAME,
+''
+AS EMP_DESIG ,DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME   
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE  STAFF_POOR_PAT_DISC_FLAG=0 AND EMP_ID='0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) and disc>0 AND IN_REG_NO=0 ;
+
+------------------------------------COMMITTEE MEMBER
+
+ELSIF IDENTITY_FLAG=4 THEN
+OPEN P_TEST_CURSOR FOR 
+SELECT  INDOOR_PAT_MONEY.IN_REG_NO AS REGIS_NO,INDOOR_PAT_MONEY.PAT_ID AS REC_NO, (SELECT DISTINCT(EMP_NM) FROM  PAYROLL.EMP_INFO WHERE PAYROLL.EMP_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) AS EMP_NAME,
+(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE PAYROLL.ST_DESIG.DESIG_CODE=
+(SELECT  DISTINCT(DESIG) FROM  PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) )AS EMP_DESIG ,
+0 AS DIAG_DISCOUNT,INDOOR_PAT_MONEY.DISCOUNT AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=INDOOR_PAT_MONEY.U_ID) AS USER_NAME   
+FROM INDOOR_PAT_MONEY WHERE  INDOOR_PAT_MONEY.STAFF_ID<>'0' AND INDOOR_PAT_MONEY.DISCOUNT>0  
+AND  (((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))   between 8 and 23)) 
+or (to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))  between 0 and 7))) AND INDOOR_PAT_MONEY.STAFF_ID  LIKE  UPPER('m%')
+UNION ALL
+SELECT  0 AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME    
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE  PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO=0 AND  PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+ AND upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID) LIKE  UPPER('m%')
+UNION ALL
+SELECT PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE    EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,PAT_INFO_SUB3_OUT_DOOR.DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME    
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND   PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO<>0 AND   PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) AND upper(PAT_INFO_SUB3_OUT_DOOR.EMP_ID)  LIKE  UPPER('m%');
+
+--------------------------------EMPLOYEE SPECIFIC
+ELSIF IDENTITY_FLAG=6 THEN
+OPEN P_TEST_CURSOR FOR 
+SELECT  INDOOR_PAT_MONEY.IN_REG_NO AS REGIS_NO,INDOOR_PAT_MONEY.PAT_ID AS REC_NO, (SELECT DISTINCT(EMP_NM) FROM  PAYROLL.EMP_INFO WHERE PAYROLL.EMP_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) AS EMP_NAME,
+(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE PAYROLL.ST_DESIG.DESIG_CODE=
+(SELECT  DISTINCT(DESIG) FROM  PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=INDOOR_PAT_MONEY.STAFF_ID) )AS EMP_DESIG ,
+0 AS DIAG_DISCOUNT,INDOOR_PAT_MONEY.DISCOUNT AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC  ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=INDOOR_PAT_MONEY.U_ID) AS USER_NAME 
+FROM INDOOR_PAT_MONEY WHERE  INDOOR_PAT_MONEY.STAFF_ID<>'0' AND INDOOR_PAT_MONEY.DISCOUNT>0  
+AND  (((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))   between 8 and 23)) 
+or (to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+and to_date(to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(INDOOR_PAT_MONEY.dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(INDOOR_PAT_MONEY.dt,'hh24'))  between 0 and 7))) AND upper(INDOOR_PAT_MONEY.STAFF_ID)=UPPER(P_ID)
+UNION ALL
+SELECT  0 AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME    
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE  PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO=0 AND  PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) AND upper( PAT_INFO_SUB3_OUT_DOOR.EMP_ID)=UPPER(P_ID)
+UNION ALL
+SELECT PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO AS REGIS_NO,PAT_INFO_SUB3_OUT_DOOR.REG_NO AS REC_NO,(SELECT DISTINCT(EMP_NM) FROM PAYROLL.EMP_INFO WHERE    EMP_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID) 
+AS EMP_NAME,(SELECT DISTINCT(DESIGNATION) FROM PAYROLL.ST_DESIG WHERE ST_DESIG.DESIG_CODE=
+(SELECT DISTINCT(EMP_JOB_INFO.DESIG) FROM PAYROLL.EMP_JOB_INFO WHERE EMP_JOB_INFO.EMP_ID=PAT_INFO_SUB3_OUT_DOOR.EMP_ID))
+AS EMP_DESIG ,PAT_INFO_SUB3_OUT_DOOR.DISC AS DIAG_DISCOUNT, 0 AS INDOOR_DISCOUNT, 0 AS MEDICINE_DISC ,(SELECT USER_NAME  FROM SECURITY WHERE USER_ID=PAT_INFO_SUB3_OUT_DOOR.U_ID) AS USER_NAME    
+FROM PAT_INFO_SUB3_OUT_DOOR WHERE PAT_INFO_SUB3_OUT_DOOR.DISC<>0 AND   PAT_INFO_SUB3_OUT_DOOR.IN_REG_NO<>0 AND   PAT_INFO_SUB3_OUT_DOOR.EMP_ID<>'0' AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) AND upper( PAT_INFO_SUB3_OUT_DOOR.EMP_ID)=UPPER(P_ID);
+END IF;
+END;

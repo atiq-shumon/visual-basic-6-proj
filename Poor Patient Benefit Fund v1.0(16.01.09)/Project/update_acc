@@ -1,0 +1,15 @@
+create or replace procedure update_acct(p_acc_code  varchar2
+,p_acc_name varchar2,
+p_acc_name_beng varchar2,
+	p_budget number)
+as
+begin
+update 
+acct 
+set 
+acc_name=p_acc_name,
+acc_name_beng=p_acc_name_beng,
+acc_budg=p_budget
+where acc_code=p_acc_code;
+commit;
+end;

@@ -1,0 +1,15 @@
+(p_test_cursor in out test_package.test_type,p_vou_type varchar2)
+
+AS
+begin
+open p_test_cursor for
+select vou_no,vou_type,vou_date,(select vou_narr from vou v
+    where v.vou_no=vou_no and dr_amt>cr_amt) as vou_narr ,acc_code,vou_chq,
+ (select acc_name from acct where acct.acc_code=vou.acc_code) as acc_name,
+ (select user_acc from acct where acct.acc_code=vou.acc_code) as user_acc,
+ dr_amt,cr_amt,track_id,(select comp_name from comp_setup) as comp_name,
+   (select comp_addr from comp_setup) as comp_addr
+ from vou  where vou_type=p_vou_type
+        order by vou_no ,track_id;
+
+end RptVou_all;

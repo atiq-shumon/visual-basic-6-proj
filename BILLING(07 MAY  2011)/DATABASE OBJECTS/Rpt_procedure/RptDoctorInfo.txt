@@ -1,0 +1,40 @@
+create or replace procedure Rptdoc_info(p_test_cursor in out test_package.test_type,
+p_index integer,
+p_doc_dept varchar2
+)
+as
+begin
+if p_index=1 then 
+open p_test_cursor for
+select refer_code  "Refer Code" ,
+f_name,m_name,l_name, 
+degree
+as Degree ,
+Doc_dept as Department,
+addr as Address,
+phone as Phone ,
+fax as Fax,
+email as "E-mail",
+birth_date as "Birth Date",
+marriage_status as "Martial Status"
+from doctor_info order by position;
+end if;
+if p_index=2 then
+open p_test_cursor for
+select refer_code  "Refer Code" ,f_name,m_name,l_name as	
+,
+degree
+as Degree ,
+Doc_dept as Department,
+addr as Address,
+phone as Phone ,
+fax as Fax,
+email as "E-mail",
+birth_date as "Birth Date",
+marriage_status as "Martial Status"
+from doctor_info
+where doc_dept=p_doc_dept order by position;
+end if;
+--end p_test_cursor;*/
+end Rptdoc_info;
+

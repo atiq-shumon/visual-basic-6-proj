@@ -1,0 +1,8 @@
+Line 194: Class MSForms.ComboBox of control cboYear was not a loaded control class.
+Line 213: Class MSForms.TextBox of control txtAmount was not a loaded control class.
+Line 229: Class MSForms.Label of control lblDesig was not a loaded control class.
+Line 244: Class MSForms.Label of control lblCost was not a loaded control class.
+Line 259: Class MSForms.Label of control lblUnit was not a loaded control class.
+Line 274: Class MSForms.Label of control lblName was not a loaded control class.
+Line 289: Class MSForms.ComboBox of control cboMonth was not a loaded control class.
+Line 308: Class MSForms.TextBox of control txtEmpID was not a loaded control class.

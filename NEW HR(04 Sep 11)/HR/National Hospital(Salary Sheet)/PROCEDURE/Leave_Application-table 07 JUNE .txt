@@ -1,0 +1,9 @@
+Create table Leave_Application(
+Emp_Id  varchar2(10) ,
+LEAVE_CODE varchar2(10) , 
+No_Of_Days_Leave number,
+Date_Of_Applied Date not null,
+Date_Of_JoinFromLF date not null,
+Remain_CasualLeave number,
+Track_ID number,
+constraint Emp_LA_PF_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));

@@ -1,0 +1,30 @@
+CREATE TABLE SUB1_TEST_TOTAL
+ (REG_NO VARCHAR2(10),TOTAL_AMT NUMBER);
+
+INSERT INTO SUB1_TEST_TOTAL
+ select M.reg_no,SUM(M.TEST_CHARGE)
+       from Pat_Info_Sub1_out_door M
+    where     (((to_char(M.dt,'dd-mon-yyyy') ='18-nov-2007'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	or ((to_char(M.dt,'dd-mon-yyyy') ='19-nov-2007'
+	 and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+       GROUP BY M.REG_NO
+
+-----------CHECK FOR DATA MISMATCHING
+select (M.reg_no) total
+       from Pat_Info_Sub3_out_door m,SUB1_TEST_TOTAL N
+    where     (((to_char(M.dt,'dd-mon-yyyy') ='21-nov-2007'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	or ((to_char(M.dt,'dd-mon-yyyy') ='22-nov-2007'
+	 and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+       and m.reg_no=n.reg_no and m.TOTAL_AMT=N.total_aMT;
+----------------------------------
+DROP TABLE SUB1_TEST_TOTAL;
+---------------------------------
+-----ANOTHER QUERY FOR SUB3 CHECKING
+SELECT nvl(-sum(M.total_amt),0) total,nvl(-sum(M.disc),0) disc,nvl(-sum(M.net_paid),0) as paid
+       from Pat_Info_Sub3_out_door M
+    where    (((to_char(M.dt,'dd-mon-yyyy') ='17-nov-2007'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	or ((to_char(M.dt,'dd-mon-yyyy') ='18-nov-2007'
+	 and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))

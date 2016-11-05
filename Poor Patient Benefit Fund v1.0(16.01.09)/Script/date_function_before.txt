@@ -1,0 +1,41 @@
+cREATE  OR REPLACE FUNCTION  date_comparison(to_cmp_date date,user_date date)
+RETURN integer
+AS
+-----0 means equal
+----  -1 before/small
+----1 means after/greater
+indicator integer;
+var_cmp_year integer;
+var_user_year  integer; 
+var_cmp_mon  integer; 
+var_user_mon  integer;
+var_cmp_day  integer;
+var_user_day  integer;   
+BEGIN
+select to_number(to_char(to_cmp_date,'yyyy')),to_number(to_char(user_date,'yyyy')),
+to_number(to_char(to_cmp_date,'mm')),to_number(to_char(user_date,'mm')),
+to_number(to_char(to_cmp_date,'dd')),to_number(to_char(user_date,'dd'))
+ into
+var_cmp_year,var_user_year,var_cmp_mon,var_user_mon,var_cmp_day,var_user_day   
+from dual;
+if var_cmp_year>var_user_year then
+    indicator:=-1;
+ elsif var_cmp_year<var_user_year then
+    indicator:=1;
+ elsif var_cmp_year=var_user_year and var_cmp_mon>var_user_mon then
+    indicator:=-1;
+ elsif var_cmp_year=var_user_year and var_cmp_mon<var_user_mon then
+    indicator:=1;
+ elsif var_cmp_year=var_user_year and var_cmp_mon=var_user_mon and var_cmp_mon>var_user_mon then
+    indicator:= -1;
+ elsif var_cmp_year=var_user_year and var_cmp_mon=var_user_mon and var_cmp_mon<var_user_mon then
+    indicator:= 1;
+  elsif var_cmp_year=var_user_year and var_cmp_mon=var_user_mon and var_cmp_mon=var_user_mon then
+    indicator:= 0;
+ else
+     null;
+end if;
+  
+ RETURN indicator;
+END;
+

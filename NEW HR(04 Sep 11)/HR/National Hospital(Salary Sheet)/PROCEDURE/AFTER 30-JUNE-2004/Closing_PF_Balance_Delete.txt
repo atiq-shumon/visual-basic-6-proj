@@ -1,0 +1,18 @@
+create or replace procedure Closing_PF_Balance_Delete(
+P_EMP_ID varchar2,
+P_BEGIN_YEAR varchar2,
+P_END_YEAR varchar2
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from CLOSING_PF_BALANCE
+where emp_id=P_EMP_ID and BEGIN_YEAR=P_BEGIN_YEAR and END_YEAR=P_END_YEAR  ;
+if var_temp>0 then
+	Delete from CLOSING_PF_BALANCE where 
+	emp_id=P_EMP_ID and BEGIN_YEAR=P_BEGIN_YEAR and END_YEAR=P_END_YEAR ;
+end if;
+commit;
+end  Closing_PF_Balance_Delete;
+/

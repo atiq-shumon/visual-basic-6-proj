@@ -1,0 +1,59 @@
+CREATe OR REPLACE PROCEDURE SAVEVOU
+(
+	p_mode integer,
+	p_vou_no IN  varchar2 ,
+	p_vou_date  IN   date,
+	p_vou_narr IN   varchar2 ,
+	p_user_acc IN   varchar2 ,
+	p_dr_amt  IN   number,
+	p_cr_amt  IN   number,
+	p_vou_type IN   char ,
+	p_vou_chq  IN   varchar2 ,
+	p_prj_code in varchar2,
+	p_track_id  IN  integer,
+	p_u_id  IN  varchar2,
+	p_particular varchar2,
+	p_check_date date,
+	p_cheque_status integer
+)
+	AS
+		temp number;
+		var_AC_CODE  VARCHAR2(100);
+		var_acc_code varchar2(100);
+		var_acc_head  acct.acc_head%type;
+		tot_dr number;
+		tot_cr  number;
+		tot_diff number;
+	begin
+
+	if p_mode=1 then
+		select acc_code INTO var_acc_code  from acct where 					user_acc=p_user_acc;
+
+	select count(*) into temp  from vou where track_id=p_track_id;
+	if temp>0  then
+		UPDATE vou
+			  SET 			     				vou_no=p_vou_no,vou_date=p_vou_date,vou_narr=p_vou_narr,
+	    acc_code=var_acc_code,dr_amt=p_dr_amt,
+	cr_amt=p_cr_amt,vou_type=p_vou_type,vou_chq=p_vou_chq,check_date=p_check_date,
+  	prj_code=p_prj_code,u_id=p_u_id WHERE track_id=p_track_id;
+  --***************
+	  delete from ledger where vou_no=p_vou_no and vou_type=p_vou_type;
+	  update vou set post_state=p_cheque_status where vou_no=p_vou_no and 				vou_type=p_vou_type;
+  --****************
+	else
+ 		 INSERT INTO vou (vou_no,vou_date,vou_narr,acc_code,						dr_amt,cr_amt,vou_type,vou_chq,prj_code,post_state,u_id,
+		dt,track_id,PARTICULAR_CODE,
+		UNCASH_FLAG,check_date)
+		 VALUES(p_vou_no,p_vou_date,p_vou_narr,var_acc_code,  							p_dr_amt,p_cr_amt,p_vou_type,p_vou_chq,p_prj_code,0,p_u_id,sysdate,
+		vou_seq.nextval,p_particular,p_cheque_status,p_check_date);
+
+	end if;
+
+   elsif p_mode=2 then
+         
+         update vou set post_state=p_cheque_status where vou_no=p_vou_no and vou_type=p_vou_type;
+
+   end if;
+      
+commit;
+end;

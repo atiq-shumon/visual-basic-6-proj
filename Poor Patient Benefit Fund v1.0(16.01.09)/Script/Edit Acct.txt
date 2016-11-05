@@ -1,0 +1,26 @@
+ create or replace procedure editacct(
+p_user_acc IN  varchar2,
+p_acc_name IN   varchar2,
+P_acc_name_beng varchar2,
+p_acc_budg IN  NUMBER,
+p_dep_rate IN  NUMBER ,
+p_s_value in number,
+p_track_id IN   integer,
+p_u_id in  varchar2)
+AS
+TEMP  NUMBER;
+BEGIN
+ select  COUNT(*) INTO TEMP  from acct where track_id=p_Track_id;
+
+if TEMP>0 THEN
+
+                UPDATE  acct
+  SET user_acc=p_user_acc,acc_name=p_acc_name,acc_budg=p_acc_budg,dep_rate=p_dep_rate,
+ACC_NAME_BENG=P_acc_name_beng,
+SALVAGE_VALUE=p_s_value,u_id=p_u_id WHERE   track_id=p_track_id;
+
+  DBMS_OUTPUT.PUT_LINE('Update successfully');
+ END IF;
+
+COMMIT;
+END;

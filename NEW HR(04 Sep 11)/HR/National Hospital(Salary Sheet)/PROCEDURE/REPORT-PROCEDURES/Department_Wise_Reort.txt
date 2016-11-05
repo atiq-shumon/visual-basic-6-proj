@@ -1,0 +1,10 @@
+Create or replace procedure Rpt_EmpInfo_Of_Dept(
+P_Test_Cursor in out test_package.test_type,p_category in varchar2) 
+as
+begin
+open p_test_cursor for
+Select a.EMP_ID,d.EMP_NM,a.DESIG,a.DEPT,a.JTYPE,
+b.DEPT_NM,c.DESIGNATION 
+from EMP_JOB_INFO a, ST_DEPT b,ST_DESIG c ,emp_info d where  
+a.dept=p_category;
+end Rpt_EmpInfo_Of_Dept;

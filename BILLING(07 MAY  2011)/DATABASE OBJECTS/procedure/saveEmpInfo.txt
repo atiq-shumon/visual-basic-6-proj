@@ -1,0 +1,76 @@
+create or replace procedure SaveEmp_info(
+p_Emp_id  varchar2 ,
+p_Emp_name  varchar2,
+p_Join_date  date
+,p_Emp_desig   varchar2 ,
+p_title varchar2
+,p_Salary  number
+,P_sex varchar2,
+p_age varchar2,
+p_emp_pre_add varchar2,
+p_emp_per_add  varchar2,
+p_emp_phone varchar2,
+p_emp_email varchar2,
+p_shift varchar2,
+p_u_id varchar2)
+as
+temp number;
+temp1 number;
+var_m_code varchar2(10);
+var_st_year  date;
+var_ed_year date;
+begin
+ select count(*) into temp
+ from  emp_info
+ where emp_id=p_emp_id ;
+--var_m_code:=p_m_code;
+--select st_dt,ed_dt into var_st_year,var_ed_year from
+--fiscal_year;
+if temp>0 then
+update emp_info
+set
+ emp_name=p_emp_name,
+ join_date=p_join_date,
+ emp_desig=p_emp_desig,
+ title=p_title,
+ salary=p_salary,
+ sex=p_sex,
+ age=p_age,
+ emp_pre_add=p_emp_pre_add,
+ emp_per_add=p_emp_per_add,
+ emp_phone=p_emp_phone,
+ emp_email=p_emp_email,
+ u_id=p_u_id,
+ dt=sysdate,
+ shift=p_shift
+ where emp_id=p_emp_id ;
+else
+insert into emp_info( 
+Emp_id,
+Emp_name,
+Join_date ,
+Emp_desig,
+title
+,Salary ,
+sex,
+age,
+emp_pre_add ,
+emp_per_add ,
+emp_phone,
+emp_email,
+u_id,
+dt,
+shift)
+values(
+p_Emp_id,
+p_Emp_name,
+p_Join_date ,
+p_Emp_desig,p_title
+,p_Salary ,P_sex,
+p_age,
+p_emp_pre_add ,p_emp_per_add ,p_emp_phone,
+p_emp_email,p_u_id,sysdate, p_shift);
+end if;
+commit;
+end SaveEmp_info;
+

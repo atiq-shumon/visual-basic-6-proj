@@ -1,0 +1,90 @@
+PROCEDURE Salary_IU(p_Emp_Id Varchar2,
+  
+  p_Pay_Month  number,
+  p_Pay_Year number,
+  p_Attn     number ,
+  p_Basic number,
+  p_H_Rent number,
+  p_Med     number,
+  p_Conv number,
+  p_Tfn  number,
+  p_Telephone  number,
+  p_DA  number,
+  p_Arrear  number,
+  p_Others_Allowance number,
+  p_Others_Deduction number,
+  p_R_Stamp number,
+  p_Remarks varchar2,
+  p_Pay_Stat number
+ 
+                       )
+                    AS
+    L_Row_Num number:=0;
+   begin
+      select count (p_emp_Id) into L_Row_Num from salary
+                    where emp_Id=p_emp_Id;
+            if L_Row_Num=0 then
+                    Insert into salary 
+                    values    (p_Emp_Id ,p_Pay_Month  ,
+  p_Pay_Year ,
+  p_Attn      ,
+  p_Basic ,
+  p_H_Rent,
+  p_Med    ,
+  p_Conv ,
+  p_Tfn  ,
+  p_Telephone  ,
+  p_DA  ,
+  p_Arrear  ,
+  p_Others_Allowance ,
+  p_Others_Deduction ,
+  p_R_Stamp ,
+  p_Remarks,
+p_Pay_Stat );
+                    			     
+                    			     delete from temp;
+                                insert into temp values('Data inserted successfully');   
+            else
+            
+            Update  set  Emp_Id=p_Emp_Id ,Pay_Month=p_Pay_Month  ,
+  Pay_Year=p_Pay_Year ,
+  Attn =p_Attn      ,
+  Basic=Basic=p_Basic ,
+  H_Rent=p_H_Rent,
+  Med=p_Med    ,
+  Conv=p_Conv ,
+  Tfn=p_Tfn  ,
+  Telephone=p_Telephone  ,
+  DA=p_DA  ,
+  Arrear=p_Arrear  ,
+  Others_Allowance=p_Others_Allowance ,
+  Others_Deduction=p_Others_Deduction ,
+  R_Stamp=p_R_Stamp ,
+  Remarks=p_Remarks ,
+  Pay_Stat=p_Pay_Stat
+
+               delete from temp;
+              insert into temp values('Data updated successfully');
+
+            end if;      
+
+    Commit;
+ END;
+            
+/*----------------------------------------------------------------------------------*/
+    PROCEDURE St_Payscale_GetX(
+                            p_Scale_code IN varchar2,
+                            p_cursor OUT company_cur,
+                            p_errorcode OUT NUMBER)
+
+                 IS
+             BEGIN
+               p_errorcode := 0;
+               OPEN p_cursor FOR
+               SELECT *
+               FROM St_Payscale
+               WHERE  Scale_code=p_Scale_code;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;

@@ -1,0 +1,41 @@
+create or replace procedure advance_reg(p_test_cursor in out test_package.test_type,
+p_option number,p_date1 date, p_date2 date,P_USER  VARCHAR2)
+as
+begin
+if p_option=1 then
+ open p_test_cursor for
+   SELECT a.In_reg_no,a.Receipt_no,
+(select pat_name from in_door_Pat_Info_Main
+where  in_reg_no=a.In_reg_no) as pat_name,
+a.advance,a.department,a.u_id,B.bed_no, B.bed_type,B.bed_type_nO
+FROM  advance a,Indoor_pat_bed_info B  WHERE
+ A.IN_REG_NO=B.IN_REG_NO   AND B.SERIAL_NO=
+ (SELECT MAX(serial_no) FROM Indoor_pat_bed_info WHERE in_reg_no=B.in_reg_no) AND
+ (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or
+ (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and
+to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+                     or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_date2+1
+                   ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+END IF;
+
+if p_option=2 then
+ open p_test_cursor for
+   SELECT a.In_reg_no,a.Receipt_no,
+(select pat_name from in_door_Pat_Info_Main
+where  in_reg_no=a.In_reg_no) as pat_name,
+a.advance,a.department,a.u_id,B.bed_no, B.bed_type,B.bed_type_nO
+FROM  advance a,Indoor_pat_bed_info B  WHERE
+ A.IN_REG_NO=B.IN_REG_NO   AND B.SERIAL_NO=
+ (SELECT MAX(serial_no) FROM Indoor_pat_bed_info WHERE in_reg_no=B.in_reg_no) AND
+ (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or
+ (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and
+to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+                     or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_date2+1
+                   ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+   AND UPPER(A.U_ID)=UPPER(P_USER);
+END IF;
+END;

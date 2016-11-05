@@ -1,0 +1,27 @@
+Create or replace procedure Rpt_Overtime_Preparation(
+p_test_cursor in out Test_package.test_type)
+as 
+begin
+open p_test_cursor for
+SELECT
+overtime_preparation.EMP_ID,
+overtime_preparation.PAYDATE,
+overtime_preparation.YEARFORPAYMENT,
+overtime_preparation.MONTHFORPAYMENT,
+overtime_preparation.OVERTIMEHOURPERDAY,
+overtime_preparation.AMOUNT,
+overtime_preparation.OTHERSAMOUNT,
+overtime_preparation.REVSTAMP,
+overtime_preparation.DEDUCTION,
+overtime_preparation.REMARKS,
+overtime_preparation.NETPAYABLE,
+overtime_preparation.NOOFDAYS,
+emp_info.EMP_NM,
+ST_DESIG.DESIGNATION,
+ST_DEPT.DEPT_NM
+From overtime_preparation, emp_info,ST_DESIG,ST_DEPT,EMP_JOB_INFO
+Where ((overtime_preparation.EMP_ID = emp_info.EMP_ID)
+AND (EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+AND (EMP_JOB_INFO.DEPT=ST_DEPT.DEPT_CODE));
+end Rpt_Overtime_Preparation;

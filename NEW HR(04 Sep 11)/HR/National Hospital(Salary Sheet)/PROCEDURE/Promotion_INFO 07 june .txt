@@ -1,0 +1,10 @@
+Create table Promotion_INFO(
+EMP_ID varchar2(10) ,
+Last_Prom_Date date not null,
+P_Promotion_Eff_Dt date not null,
+Current_Basic number,
+Current_Scale varchar2(10),
+Entry_Date date not null,
+Entry_By varchar2(11) not null,
+Track_Id number,
+constraint Emp_PR_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));

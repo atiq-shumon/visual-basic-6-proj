@@ -1,0 +1,171 @@
+create or replace function date_calculation(start_date  date ,end_date date)
+	return number
+as
+	var_start_date_yy number;
+	var_start_date_mm number;
+	var_start_date_dd number;
+	var_end_date_yy number;
+	var_end_date_mm number;
+	var_last_day  number;
+	month_counter number;
+	var_end_date_dd number;
+    diff_date number:=0;
+	begin
+select to_number(to_char(start_date,'yyyy')) into var_start_date_yy
+       from dual;
+
+select to_number(to_char(end_date,'yyyy')) into var_end_date_yy
+       from dual;
+
+select to_number(to_char(start_date,'mm')) into var_start_date_mm
+       from dual;
+
+select to_number(to_char(end_date,'mm')) into var_end_date_mm
+       from dual;
+
+select to_number(to_char(start_date,'dd')) into var_start_date_dd
+       from dual;
+
+select to_number(to_char(end_date,'dd')) into var_end_date_dd
+       from dual;
+
+   select to_number(to_char(last_day(start_date),'dd')) into var_last_day
+	      			from dual;
+if var_start_date_yy<var_end_date_yy then
+    select to_number(to_char(last_day(start_date),'dd')) into var_last_day ---if month=12
+	      			from dual;
+        diff_date:=var_last_day-var_start_date_dd; -----counting date of the current month
+        if var_start_date_mm<12 then          ------counting date of the rest month 
+             month_counter:=var_start_date_mm;
+	     loop               
+                exit when month_counter>12;
+             	if month_counter=1 then
+                 		diff_date:=diff_date+31;
+                elsif month_counter=2 then
+                 		diff_date:=diff_date+28;   
+                elsif month_counter=3 then
+                		 diff_date:=diff_date+31;
+               elsif month_counter=4 then
+                		 diff_date:=diff_date+30;      
+                elsif month_counter=5 then
+                 		 diff_date:=diff_date+31;   	
+		elsif month_counter=6 then
+                 		 diff_date:=diff_date+30;
+		elsif month_counter=7 then
+                 		 diff_date:=diff_date+31; 
+		elsif month_counter=8 then
+                 		 diff_date:=diff_date+31; 
+		elsif month_counter=9 then
+                                 diff_date:=diff_date+30; 
+		elsif month_counter=10 then
+                                 diff_date:=diff_date+31;   
+		elsif month_counter=11 then
+                                 diff_date:=diff_date+30;  
+                elsif month_counter=12 then
+                                 diff_date:=diff_date+31;
+	     end if;    -----end of month counter                	
+                month_counter:=month_counter+1;  	
+         end loop;
+     end if ;------end of  <12 month
+         if  var_end_date_mm=1 then	---next year
+			        diff_date:=diff_date+var_end_date_dd; -----counting date of the current month of second potion of date
+         elsif  var_end_date_mm>1  then          ------counting date of the rest month 
+             month_counter:=1;
+	     loop               
+                exit when month_counter=var_end_date_mm;
+             	if month_counter=1 then
+                 		diff_date:=diff_date+31;
+                elsif month_counter=2 then
+                 		diff_date:=diff_date+28;   
+                elsif month_counter=3 then
+                		 diff_date:=diff_date+31;
+               elsif month_counter=4 then
+                		 diff_date:=diff_date+30;      
+                elsif month_counter=5 then
+                 		 diff_date:=diff_date+31;   	
+		elsif month_counter=6 then
+                 		 diff_date:=diff_date+30;
+		elsif month_counter=7 then
+                 		 diff_date:=diff_date+31; 
+		elsif month_counter=8 then
+                 		 diff_date:=diff_date+31; 
+		elsif month_counter=9 then
+                                 diff_date:=diff_date+30; 
+		elsif month_counter=10 then
+                                 diff_date:=diff_date+31;   
+		elsif month_counter=11 then
+                                 diff_date:=diff_date+30;  
+                elsif month_counter=12 then
+                                 diff_date:=diff_date+31;
+		end if;                    	
+                month_counter:=month_counter+1;
+		if month_counter=var_end_date_mm then  -----whether current month of second portion of date
+                 		diff_date:=diff_date+var_end_date_dd;
+		  exit;
+		end if;  	
+         end loop;
+      end if;-------end of  next year whether month not =1
+end if;---------- end of  if yyyyy>yyyyyy
+    
+if var_start_date_yy=var_end_date_yy then
+
+    if var_start_date_mm<var_end_date_mm then    -----if month1 < month2
+        select to_number(to_char(last_day(start_date),'dd')) into var_last_day
+	      			from dual; -----last day of current month
+        diff_date:=var_last_day-var_start_date_dd; -----counting date of the current month
+        dbms_output.put_line(diff_date);
+	    if 	var_end_date_mm-var_start_date_mm >=1 then
+           		  month_counter:=var_start_date_mm+1;
+            else
+               month_counter:=var_start_date_mm;
+            end if;
+	     loop  
+		if month_counter=var_end_date_mm  then  -----whether current month of second portion of date
+                 		diff_date:=diff_date+var_end_date_dd;
+		  exit;
+		end if;  	             
+                exit when month_counter=var_end_date_mm;
+             	if month_counter=1 then
+                 		diff_date:=diff_date+31;
+                elsif month_counter=2 then
+                 		diff_date:=diff_date+28;   
+                elsif month_counter=3 then
+                		 diff_date:=diff_date+31;
+               elsif month_counter=4 then
+                		 diff_date:=diff_date+30;      
+                elsif month_counter=5 then
+                 		 diff_date:=diff_date+31;   	
+		elsif month_counter=6 then
+                 		 diff_date:=diff_date+30;
+		elsif month_counter=7 then
+                 		 diff_date:=diff_date+31; 
+		elsif month_counter=8 then
+                 		 diff_date:=diff_date+31; 
+		elsif month_counter=9 then
+                                 diff_date:=diff_date+30; 
+		elsif month_counter=10 then
+                                 diff_date:=diff_date+31;   
+		elsif month_counter=11 then
+                                 diff_date:=diff_date+30;  
+                elsif month_counter=12 then
+                                 diff_date:=diff_date+31;
+		end if;                    	
+                month_counter:=month_counter+1;
+		if month_counter=var_end_date_mm then  -----whether current month of second portion of date
+                 		diff_date:=diff_date+var_end_date_dd;
+		  exit;
+		end if;  	
+         end loop;
+    else  -------yyyyy=yyyyy and month1=month2
+       
+      
+        diff_date:=var_end_date_dd-var_start_date_dd; -----counting date of the current month       
+    end if;
+end if ;--------end of yyyyy=yyyyyyy
+
+  return (diff_date);
+
+end ;
+
+
+  

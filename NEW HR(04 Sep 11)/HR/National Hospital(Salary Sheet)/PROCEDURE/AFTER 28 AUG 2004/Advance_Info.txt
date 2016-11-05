@@ -1,0 +1,12 @@
+drop table Advance_Info cascade constraints;
+Create table Advance_Info(
+Emp_Id  varchar2(10) ,
+ADV_ID varchar2(10),
+ADV_ISSUE_DT date,
+ADV_AMT number,
+NUM_INST number,
+NOTES varchar2(200),
+Paid_Installed number default 0, 
+Balance number default 0,
+Track_Id number, 
+constraint Emp_PF_Advance_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));

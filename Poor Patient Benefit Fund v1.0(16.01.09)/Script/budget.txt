@@ -1,0 +1,11 @@
+create table budget(
+   acc_code varchar2(10) not null ,--pk
+   proposed_amount    number(14,4),
+   dt date,
+   cerate_by varchar2(50),
+   fiscal_yr_code varchar2(10),
+   Income_exp_indicator  integer
+constraint  budget_pk primary key(acc_code,fiscal_yr_code));
+
+
+

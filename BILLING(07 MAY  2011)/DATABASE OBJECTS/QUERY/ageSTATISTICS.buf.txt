@@ -1,0 +1,65 @@
+select  A.IN_REG_NO,B.PAT_NAME,A.BED_NO AS BED_NO,B.ADMISSION_DATE
+  FROM BED_INFO  A ,IN_DOOR_PAT_INFO_MAIN B 
+WHERE A.IN_REG_NO=B.IN_REG_NO 
+  AND A.YRCODE=B.YRCODE AND A.OCCUPY_FLAG=1
+  AND BED_EXT_COL='5'
+  AND A.YRCODE='YR-0708'
+
+
+
+
+830,296
+select count(mage) from
+(SELECT  to_number(age) mage
+from in_door_pat_info_main M
+    where    (((to_char(M.dt,'dd-mon-yyyy') ='02-jan-2010'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+ or ((to_char(M.dt,'dd-mon-yyyy') ='03-jan-2010'
+  and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+and Y_M_D in ('D','M'))
+
+where mage between 18 and 65
+
+
+SELECT  count(in_reg_no),COUNT(decode(sex,'M',in_reg_no)) Male,COUNT(decode(sex,'F',in_reg_no)) female
+from in_door_pat_info_main M
+    where    to_char(M.dt,'mon-yyyy') =('nov-2009') and upper(doc_dept) like 'PAE%'
+
+
+--------------********************----------------------------
+
+select count(CASE  WHEN mage between 1 and 17 then mage end) one_to_sevntn,
+count(CASE  WHEN mage between 18 and 65 then mage end) eithn_to_xtyfive,
+count(CASE  WHEN mage>65 then mage end) xtyfiveTo
+ from
+(SELECT  to_number(age) mage
+from in_door_pat_info_main M
+    where    (((to_char(M.dt,'dd-mon-yyyy') ='01-nov-2009'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+ or ((to_char(M.dt,'dd-mon-yyyy') ='02-nov-2009'
+  and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+and Y_M_D in ('Y')
+)
+
+
+////////////////it works fine//////////////
+
+variable c refcursor
+exec age_wise_patient_statistics(:c,'22-nov-2009','28-nov-2009');
+
+create or replace procedure age_wise_patient_statistics(P_test_cursor IN OUT test_package.test_type,p_date1 in date,p_date2 in date)
+as
+begin 
+open p_test_cursor for 
+select dat,count(CASE  WHEN mage between 1 and 17 then mage end) one_to_sevntn,
+count(CASE  WHEN mage between 18 and 65 then mage end) eithn_to_xtyfive,
+count(CASE  WHEN mage>65 then mage end) xtyfiveTo
+ from
+(SELECT  to_char(dt,'dd-mon-yyyy') dat,to_number(age) mage
+from in_door_pat_info_main P
+    where   p.dt between P_date1 and p_date2+1
+and Y_M_D in ('Y')
+)
+group by dat;
+
+end;

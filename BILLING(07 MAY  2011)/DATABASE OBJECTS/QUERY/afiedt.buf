@@ -1,0 +1,4 @@
+update bed_info set doc_department='Gynae-2' 
+where (bed_no between 11 and 18) and 
+bed_ext_col='9' and doc_department='Gynae-1'
+

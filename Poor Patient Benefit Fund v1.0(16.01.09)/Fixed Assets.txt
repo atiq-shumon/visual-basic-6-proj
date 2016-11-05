@@ -1,0 +1,275 @@
+create table fixed_asset_sch(
+             fiscal_year_code varchar2 not null,
+             acc_code varchar2(30) not null,
+	     opening_balance number(15,2) not null default 0,
+	     cur_balance number(15,2) not null default 0,	
+             user_id varchar2(20) ,
+	     dt date
+	);
+
+
+
+
+
+
+
+
+CREATE TABLE [fixed_asset] (
+	[acc_code] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[opening_bal] [money] NOT NULL ,
+	[addition] [money] NOT NULL ,
+	[adjust] [money] NOT NULL ,
+	[opening_dep] [money] NOT NULL ,
+	[dep_adjust] [money] NOT NULL ,
+	[dep_charge] [money] NOT NULL ,
+	[cur_bal] [money] NOT NULL ,
+	[dep_rate] [money] NOT NULL ,
+	[upto_dt] [datetime] NOT NULL ,
+	[days] [int] NOT NULL ,
+	[prj_code] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[month_number] [int] NOT NULL ,
+	[year_no] [int] NOT NULL 
+) ON [PRIMARY]
+
+
+
+
+
+
+/****** Object:  Stored Procedure dbo.FixedAssets    Script Date: 14/06/2004 6:06:58 PM ******/
+
+
+CREATE    PROC FixedAssets
+set nocount on
+begin tran
+
+	DECLARE @msg varchar(100)	
+	DECLARE @opening_bal money
+	DECLARE @addition money
+	DECLARE @adjust money
+	DECLARE @dep_adjust money
+	DECLARE @opening_dep money
+	DECLARE @dep_charge money
+	DECLARE @trd_val money
+	DECLARE @pl_val money
+	DECLARE @days int
+	DECLARE @min_dt datetime	
+	DECLARE @acc_code varchar(10)
+	DECLARE @dep_acc varchar(10)
+	DECLARE @pl_rate money
+	DECLARE @trd_rate money
+
+	Delete from fixed_assets
+	if @@error <>0
+	begin
+		set @msg='Error in deleting previous data '
+		goto msg
+	end
+
+	DECLARE FixAsset CURSOR FOR
+	select acc_code,dep_acc,pl_rate,trd_rate from acct 
+	where acc_code like '2101%'  order by acc_code
+	       
+	OPEN FixAsset
+	
+	FETCH NEXT FROM FixAsset INTO @acc_code,@dep_acc,@pl_rate,@trd_rate
+	
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		--determine minimum transaction date
+		set @min_dt=isnull((select min(vou_date) from ledgerAcc where acc_code=@acc_code),getdate())
+
+		--opening balance
+		set @opening_bal=isnull((select sum(dr_amt-cr_amt) from ledgerAcc where acc_code=@acc_code and vou_type='OP'),0) 
+		
+		--opening depreciation value
+		set @opening_dep=isnull((select sum(cr_amt-dr_amt) from ledgerAcc where acc_code=@dep_acc and vou_type='OP'),0) 
+
+		--addition during the period
+		set @addition=isnull((select sum(dr_amt) from ledgerAcc where acc_code=@acc_code and vou_type<'OP' and vou_date between @min_dt and @ed_dt),0) 
+	
+		--adjust/sell during the period
+		set @adjust=isnull((select sum(cr_amt) from ledgerAcc where acc_code=@acc_code and vou_type<'OP' and vou_date between @min_dt and @ed_dt),0) 				
+
+		--depreciation adjust for particular head
+		if @adjust<>0
+			begin
+				set @dep_adjust=isnull((select sum(cr_amt-dr_amt) from ledgerAcc where acc_code=@dep_acc  and vou_date between @min_dt and @ed_dt),0)
+			end
+		else
+			begin
+				set @dep_adjust=0
+			end
+
+		--period to calculate depreciation
+		set @days=isnull(datediff(d,@min_dt,@ed_dt),0)+1
+
+		--depreciation during the period		
+		set @dep_charge=isnull(((@opening_bal+@addition-@adjust)-(@opening_dep)),0)
+		set @dep_charge=isnull(((@dep_charge*@pl_rate*0.01*@days)/365),0)
+		set @dep_charge=isnull((@dep_charge-@dep_adjust),0)
+
+		--allocation for profit & loss
+		set @pl_val=isnull((@dep_charge*@trd_rate*0.01),0)			
+
+		--allocation for manufacturing & trading		
+		set @trd_val=isnull((@dep_charge-@pl_val),0)			
+				
+		--insert into fixed assets
+		INSERT INTO fixed_assets([acc_code], [openig_bal], [addition], [adjust], [openig_dep], [pl_val], [trd_val],[dep_adjust], [upto_dt], [days], [uid])
+		VALUES(@acc_code,@opening_bal,@addition,@adjust,@opening_dep,@pl_val,@trd_val,@dep_adjust,@ed_dt,@days,'Monir')	
+
+		if @@error <>0
+		begin
+			set @msg='Error in inserting data into sc '
+			goto msg
+		end
+
+		FETCH NEXT FROM FixAsset INTO @acc_code,@dep_acc,@pl_rate,@trd_rate
+
+	END
+	
+	CLOSE FixAsset
+	DEALLOCATE FixAsset
+
+	--post into ledgerAcc	
+	--debit part
+	delete from ledgerAcc where vou_type='DP'
+
+	insert into ledgerAcc (vou_no,vou_date,vou_narr,acc_code,dr_amt,cr_amt,vou_type,prj_code,uid,track_id)
+	select  'DP-7102',@ed_dt,'Depreciation for trading','7102',sum(trd_val),0,'DP','000','Monir','0' 
+	from fixed_assets 
+
+	insert into ledgerAcc (vou_no,vou_date,vou_narr,acc_code,dr_amt,cr_amt,vou_type,prj_code,uid,track_id)
+	select  'DP-8101',@ed_dt,'Depreciation for pl','8101',sum(pl_val),0,'DP','000','Monir','0' 
+	from fixed_assets 
+	--******************
+	
+	--credit part
+	DECLARE AccumDep CURSOR FOR
+	select a.dep_acc,b.pl_val,b.trd_val from acct a,fixed_assets b where a.acc_code=b.acc_code and a.acc_code like '2101%'  order by a.acc_code
+	       
+	OPEN AccumDep
+	
+	FETCH NEXT FROM AccumDep INTO @dep_acc,@pl_val,@trd_val
+	
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		--***********************
+		declare @temp_acc_code as varchar(10)
+		declare @state as varchar(10)
+		declare @acc_head as varchar(10)
+		
+				insert into ledgerAcc (vou_no,vou_date,vou_narr,acc_code,dr_amt,cr_amt,vou_type,prj_code,uid,track_id)
+		select  @dep_acc,@ed_dt,'Accumulated Depreciation',@dep_acc,0,sum(@pl_val+@trd_val),'DP','000','Monir','0' 		
+		
+		select @acc_head=acc_head,@state=acc_lbl from acct where acc_code=@dep_acc
+		
+		
+		if @state>1
+		begin
+		label1:
+		      insert into ledgerAcc (vou_no,vou_date,vou_narr,acc_code,dr_amt,cr_amt,vou_type,prj_code,uid,track_id)
+	      	      select  @dep_acc,@ed_dt,'Accumulated Depreciation',@acc_head,0,sum(@pl_val+@trd_val),'DP','000','Monir','0' 		
+		
+		      set @temp_acc_code=@acc_head 
+		      
+		      select @acc_head=acc_head,@state=acc_lbl from acct where acc_code=@temp_acc_code
+		      if @state>1 goto label1	
+		
+		end
+		--*********************************
+	
+		FETCH NEXT FROM AccumDep INTO @dep_acc,@pl_val,@trd_val
+	END
+	
+	CLOSE AccumDep
+	DEALLOCATE AccumDep
+	--************************
+		
+select msg='Press preview button to view the report'
+set nocount off
+
+commit tran
+goto stop
+
+msg:
+rollback tran
+RaisError(@msg,10,1)
+return
+
+stop:
+
+
+
+
+/****** Object:  Stored Procedure dbo.ScheduleOfFA    Script Date: 14/06/2004 6:06:58 PM ******/
+
+
+/****** Object:  Stored Procedure dbo.ScheduleOfFA    Script Date: 30/04/2003 11:32:00 AM ******/
+
+
+
+
+
+
+CREATE  PROC ScheduleOfFA
+@mode int,
+@dt datetime,
+@uid varchar(50)
+AS
+
+
+declare @title varchar(200)
+declare @opn_dt datetime
+
+set @opn_dt=isnull((select st_dt from comp_setup),getdate())
+
+/*
+--upto level 1
+if @mode=1
+begin
+	set @title='Schedule of fixed assets as on   '+ convert(varchar(10),@dt,103)
+	select a.acc_code,
+	acc_name=(select acc_name from acct where acc_code=a.acc_code),
+	a.openig_bal,a.addition,a.adjust,tot_cost=(a.openig_bal+a.addition-a.adjust),
+	a.openig_dep,
+	pl_rate=(select pl_rate from acct where acc_code=a.acc_code),
+	trd_rate=(select trd_rate from acct where acc_code=a.acc_code),
+	a.pl_val,a.trd_val,a.days,comp_name=dbo.fn_compInfo(1),comp_addr=dbo.fn_compInfo(2),title=@title,  
+	opn_dt=@opn_dt from fixed_assets a,acct b where a.acc_code=b.acc_code 
+	and b.acc_lbl=1 and a.uid=@uid
+end
+*/
+--upto level 2
+if @mode=1
+begin
+	set @title='Schedule of fixed assets as on   '+ convert(varchar(10),@dt,103)
+	select a.acc_code,
+	acc_name=(select acc_name from acct where acc_code=a.acc_code),
+	a.openig_bal,a.addition,a.adjust,tot_cost=(a.openig_bal+a.addition-a.adjust),
+	a.openig_dep,
+	pl_rate=(select pl_rate from acct where acc_code=a.acc_code),
+	trd_rate=(select trd_rate from acct where acc_code=a.acc_code),
+	a.pl_val,a.trd_val,a.days,comp_name=dbo.fn_compInfo(1),comp_addr=dbo.fn_compInfo(2),title=@title,  
+	opn_dt=@opn_dt from fixed_assets a,acct b where a.acc_code=b.acc_code 
+	and b.acc_lbl=2 and a.uid=@uid
+end
+
+--upto level 3
+if @mode=2
+begin
+	set @title='Schedule of fixed assets as on   '+ convert(varchar(10),@dt,103)
+	select a.acc_code,
+	acc_name=(select acc_name from acct where acc_code=a.acc_code),
+	a.openig_bal,a.addition,a.adjust,tot_cost=(a.openig_bal+a.addition-a.adjust),
+	a.openig_dep,
+	pl_rate=(select pl_rate from acct where acc_code=a.acc_code),
+	trd_rate=(select trd_rate from acct where acc_code=a.acc_code),
+	a.pl_val,a.trd_val,a.days,comp_name=dbo.fn_compInfo(1),comp_addr=dbo.fn_compInfo(2),title=@title,  
+	opn_dt=@opn_dt from fixed_assets a,acct b where a.acc_code=b.acc_code 
+	and b.acc_lbl in(2,3) and a.uid=@uid
+end
+
+
+

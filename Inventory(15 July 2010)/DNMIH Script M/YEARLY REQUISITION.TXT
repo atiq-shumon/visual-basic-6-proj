@@ -1,0 +1,230 @@
+
+CREATE TABLE tmp_YEARLY_REQ (
+ VAR_ITEM    vARCHAR2(10),
+ GROUPTITLE  VARCHAR2(100),
+ UNITTITLE   vARCHAR2(100),
+ ITEM_TITLE  VARCHAR2(200),
+ OPN_BALANCE NUMBER(10,2),
+ PURQTY_IN_QOUT  NUMBER(10,2),
+ PURQTY_IN_TENDER  NUMBER(10,2),
+ PURQTY_IN_DONATION  NUMBER(10,2),
+ TOTAL_PUCHASE  NUMBER(10,2),
+ ISSUERETQTY NUMBER(10,2),
+ PURRETQTY   NUMBER(10,2),
+ ISSUEQTY   NUMBER(10,2),
+ ADJUSTQTY  NUMBER(10,2),
+ CLOSING_BALANCE NUMBER(10,2),
+ FISCAL_YEAR    VARCHAR2(10),
+ REQUISITION    NUMBER(10,2),
+ REMARKS      VARCHAR2(100)
+);
+
+
+
+
+
+
+create or replace procedure Rpt_YEARLY_REQUISITION 
+  (p_test_cursor in out test_package.test_type,
+   p_option number,p_CatCode VARCHAR2,p_type_code varchar2,p_Group_code varchar2,
+   p_s_date date,p_e_date date)
+as
+  cursor mycursor(category  varchar2) is
+    select distinct item_code,group_code,unit_code from item_info
+    where to_number(cate_code)=to_number(category);
+
+cursor mycursor1(category  varchar2,type varchar2) is
+    select distinct item_code,group_code,unit_code from item_info
+    where to_number(cate_code)=to_number(category) 
+    and to_number(type_code)=to_number(type);
+
+cursor mycursor2(category  varchar2,type varchar2,p_group varchar2) is
+    select distinct item_code,group_code,unit_code from item_info
+    where to_number(cate_code)=to_number(category) 
+    and to_number(type_code)=to_number(type)
+    and to_number(group_code)=to_number(p_group);
+
+var_item varchar2(6);
+var_item_title varchar2(100);
+var_item_unit varchar2(10);
+var_Unit_title varchar2(100);
+var_group varchar2(10);
+var_group_title varchar2(100);
+var_purQty_IN_QOUT  number(10,2);
+var_purQty_IN_TENDER  number(10,2);
+var_purQty_IN_DONATION number(10,2);
+
+VAR_TOTAL_PURCHASE NUMBER(10,2);
+jul01_trans_PURCHASE NUMBER(10,2);
+
+
+var_purRetQty  number(10,2);
+var_IssueQty  number(10,2);
+var_issueRetQty number(10,2);
+var_adjustQty  number(10,2);
+opn_Balance   number(10,2);
+clo_Balance   number(10,2);
+
+begin
+delete from tmp_YEARLY_REQ;
+commit;
+if p_option=1 then
+   open mycursor(p_CatCode);
+   fetch mycursor into var_item,var_group,var_item_unit;
+elsif p_option=2 then
+   open mycursor1(p_CatCode,p_type_code);
+   fetch mycursor1 into var_item,var_group,var_item_unit;
+elsif   p_option=3 then
+   open mycursor2(p_CatCode,p_type_code,p_group_code);
+   fetch mycursor2 into var_item,var_group,var_item_unit;
+end if;
+  
+   loop
+     if mycursor%isopen then
+       exit when mycursor%notfound;
+     end if;
+    if mycursor1%isopen then
+       exit when mycursor1%notfound;
+     end if;
+
+   if mycursor2%isopen then
+       exit when mycursor2%notfound;
+     end if;
+     
+      opn_Balance:=GetOpnBalance(var_item,p_s_date) ;
+
+
+      select NVL(ITEM_NAME,' ') into var_item_title
+            from item_info
+      where to_number(ITEM_CODE)=to_number(var_item);
+      select group_name into var_group_title
+            from item_group_info
+      where to_number(group_code)=to_number(var_group);
+      select   unit_name  into var_Unit_title
+            from item_unit_info
+      where to_number(unit_code)=to_number(var_item_unit);
+
+     
+     select nvl(sum(a.purqty),0) into jul01_trans_PURCHASE
+     From purchasesub a,purchasemain b
+       where a.purid=b.purid and to_number(a.Itemid) =to_number(var_item)
+      and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+      AND B.PURTYPE='O';
+      
+     opn_Balance:=opn_Balance+jul01_trans_PURCHASE;
+
+     select nvl(sum(a.purqty),0)
+           into var_purQty_IN_DONATION
+     From purchasesub a,purchasemain b
+       where a.purid=b.purid and to_number(a.Itemid) =to_number(var_item)
+      and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+      AND B.PURTYPE='D';
+
+
+
+    select nvl(sum(a.purqty),0) Into Var_purQty_IN_TENDER
+         from purchasesub a,purchasemain b
+       where a.purid=b.purid and to_number(a.Itemid) =to_number(var_item)
+      and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+      AND B.PURTYPE='T';
+
+    select nvl(sum(a.purqty),0) Into var_purQty_IN_QOUT
+         from purchasesub a,purchasemain b
+       where a.purid=b.purid and to_number(a.Itemid) =to_number(var_item)
+      and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+      AND B.PURTYPE='L';
+
+    VAR_TOTAL_PURCHASE:=opn_Balance+var_purQty_IN_DONATION+Var_purQty_IN_TENDER+var_purQty_IN_QOUT;
+
+
+   select nvl(sum(a.ReturnQty),0) into var_purRetQty
+      from PurchaseReturnSub a,PurchaseReturnmain b
+    where a.PurReturnId =b.PurReturnId and
+    to_number(a.Itemcode) =to_number(var_item) and
+    (to_date(to_char(b.PurReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.PurReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'));
+
+
+
+
+
+   select nvl(sum(a.Qty),0) into var_IssueQty
+      from Issuesub a, IssueMain b
+   where a.IssueId =b.IssueId  and  to_number(a.ItemCode) =to_number(var_item) and 
+    (to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'));
+
+
+   select nvl(sum(a.Qty),0) into var_issueRetQty
+      from IssueReturnSub a, IssueReturnMain b
+   where a.ReturnId =b.ReturnId  and   to_number(a.ItemCode) =to_number(var_item) and 
+    (to_date(to_char(b.ReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.ReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'));
+
+
+    select nvl(sum(a.AdjQty),0) into var_adjustQty
+      from AdjustmentSub a, AdjustmentMain b
+   where a.AdjustmentId =b.AdjustmentId  and   to_number(a.ItemCode) =to_number(var_item) and 
+  (to_date(to_char(b.AdjustmentDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(b.AdjustmentDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'));
+
+
+      clo_Balance:=(VAR_TOTAL_PURCHASE+var_issueRetQty)-(var_IssueQty+var_purRetQty+var_adjustQty);
+     
+
+
+      insert into tmp_YEARLY_REQ values(var_item,var_group_title
+              ,var_Unit_title,var_item_title,opn_Balance,var_purQty_IN_QOUT,
+               var_purQty_IN_TENDER,var_purQty_IN_DONATION,VAR_TOTAL_PURCHASE,
+               var_issueRetQty,var_purRetQty,
+               var_IssueQty,var_adjustQty,clo_Balance,'','','');
+    if mycursor%isopen then
+      fetch mycursor into var_item,var_group,var_item_unit; 
+      exit when mycursor%notfound;
+   end if;
+   if mycursor1%isopen then
+      fetch mycursor1 into var_item,var_group,var_item_unit; 
+      exit when mycursor1%notfound;
+   end if;
+   if mycursor2%isopen then
+      fetch mycursor2 into var_item,var_group,var_item_unit; 
+      exit when mycursor2%notfound;
+   end if;
+     
+   end loop;
+   commit;
+   open p_test_cursor for
+       select * from tmp_YEARLY_REQ;
+ if mycursor%isopen then
+    close mycursor;
+  end if;
+if mycursor1%isopen then
+    close mycursor1;
+  end if;
+if mycursor2%isopen then
+    close mycursor2;
+  end if;
+end;
+
+
+

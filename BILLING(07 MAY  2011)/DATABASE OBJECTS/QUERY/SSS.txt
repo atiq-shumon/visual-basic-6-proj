@@ -1,0 +1,8 @@
+SELECT NVL(SUM(M.BED_SUM),0) 
+    from INDOOR_PAT_MONEY M
+                   WHERE (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('05-NOV-2007','DD-MON-YYYY')
+			,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+			Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('05-NOV-2007','DD-MON-YYYY')+1
+			,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+ 		      and m.RELEASE_FLAG=1
+/

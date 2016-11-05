@@ -1,0 +1,72 @@
+create or replace procedure PF_Bal_EndofYear_Save1
+(
+P_EmpID varchar2
+)
+as
+var_temp number;
+Var_GetNoofMonthforPF number;
+var_GetBasic number;
+var_PFControfEmp number;
+Var_GetPFContrOfEpmoyeer number;
+Var_GetPFContrOfEmpPerYr number;
+Var_YearlyEmpCont number;
+Var_YaerlyEmrCont number;
+V_Total_Contributionof_Emp number;
+V_GetClosingBalance number;
+V_OpeningBlance number;
+V_YearpartGetfromYear varchar2(5);
+V_YearpartGetToYear varchar2(5);
+V_Year_BeginDate Date;
+V_Year_EndDate Date;
+v_EmployeerContribution number;
+V_Interest_amount number;
+begin
+Select BEGIN_DATE into V_Year_BeginDate from fISCAL_Year_SetUp 	where TRACE_ID=(Select max(TRACE_ID) from fISCAL_Year_SetUp);
+Select END_DATE into V_Year_EndDate from fISCAL_Year_SetUp 	where TRACE_ID=(Select max(TRACE_ID) from fISCAL_Year_SetUp);
+--------GET THE MONTH
+Select count(PAY_MONTH) Into Var_GetNoofMonthforPF from salary_preparation where CREATE_DATE 
+	between V_Year_BeginDate and V_Year_EndDate and Emp_ID=P_EmpID;
+-------------------
+SELECT EMP_JOB_INFO.BASIC_SAL into var_GetBasic FROM EMP_JOB_INFO where EMP_JOB_INFO.EMP_ID=P_EmpID;
+----------GET EMPLOYEER CONTRIBUTION RATE FROM PARAMETER
+select EMRCONTRPF into Var_GetPFContrOfEpmoyeer FROM PARAMETER_MAIN where effdate=(select max(EFFDATE)from PARAMETER_MAIN);
+-------------------GET EMPLOYEER CONTRIBUTION RATE FROM PARAMETER
+select 	EMPCONTRPF into var_PFControfEmp FROM PARAMETER_MAIN where effdate=(select max(EFFDATE)from PARAMETER_MAIN);
+----------------GET EMP TOTAL CONTRIBUTION===============
+V_Total_Contributionof_Emp:=var_GetBasic*var_PFControfEmp*Var_GetNoofMonthforPF/100;
+----------------GET EMPLOYEER TOTAL CONTRIBUTION===============
+v_EmployeerContribution :=var_GetBasic*var_PFControfEmp*Var_GetNoofMonthforPF/100;
+select 	OPENING_AMOUNT into V_OpeningBlance FROM Closing_PF_Balance  where Track_Id=(select max(Track_Id) 
+	from Closing_PF_Balance where emp_id=P_EmpID);
+Select Closeing_Amount into V_GetClosingBalance  from Closing_PF_Balance where Track_Id=(Select max(Track_Id) from Closing_PF_Balance where emp_Id=P_EmpID);
+if Var_GetNoofMonthforPF=12 then
+ 	V_Total_Contributionof_Emp:=(var_GetBasic*var_PFControfEmp*12/100)+(var_GetBasic*var_PFControfEmp*12/100*.03);
+ 	v_EmployeerContribution:=(var_GetBasic*Var_GetPFContrOfEpmoyeer*12/100)+(var_GetBasic*Var_GetPFContrOfEpmoyeer*12/100*.03);
+	V_Interest_amount:=V_Total_Contributionof_Emp+v_EmployeerContribution+V_GetClosingBalance+V_GetClosingBalance *10/100;	
+elsif Var_GetNoofMonthforPF < 12 and Var_GetNoofMonthforPF>6  then
+	V_Total_Contributionof_Emp:=(var_GetBasic*var_PFControfEmp*6/100)+(var_GetBasic*var_PFControfEmp*6/100*.03);
+ 	v_EmployeerContribution:=(var_GetBasic*Var_GetPFContrOfEpmoyeer*6/100)+(var_GetBasic*Var_GetPFContrOfEpmoyeer*6/100*.03);
+	V_Interest_amount:=V_Total_Contributionof_Emp+v_EmployeerContribution+V_GetClosingBalance+V_GetClosingBalance *5/100;	
+else
+	V_Total_Contributionof_Emp:=var_GetBasic*var_PFControfEmp*Var_GetNoofMonthforPF/100;
+	v_EmployeerContribution:=var_GetBasic*var_PFControfEmp*Var_GetNoofMonthforPF/100;
+	V_Interest_amount:=V_GetClosingBalance;
+end IF;
+Insert Into Closing_PF_Balance values(
+	P_EmpID,----oK
+	(select to_char(BEGIN_DATE,'yyyy') from fISCAL_Year_SetUp 
+	where TRACE_ID=(Select max(TRACE_ID) from fISCAL_Year_SetUp)),---Ok
+	(select to_char(END_DATE,'yyyy') from 
+	fISCAL_Year_SetUp 
+	where TRACE_ID=(Select max(TRACE_ID) from fISCAL_Year_SetUp)),----OK
+	V_Total_Contributionof_Emp,
+	v_EmployeerContribution,
+	V_Interest_amount,
+	V_OpeningBlance,
+	(V_GetClosingBalance+V_Total_Contributionof_Emp+v_EmployeerContribution+V_Interest_amounT),---OK
+	Track_Id_For_EmpPFRpt.NEXTVAL ----OK
+	);	
+COMMIT;
+end PF_Bal_EndofYear_Save1;
+
+

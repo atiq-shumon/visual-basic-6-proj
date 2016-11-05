@@ -1,0 +1,406 @@
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+/*
+select * from st_desig
+select * from Salary_Monthly
+select * from emp_info 
+select *  from st_param 
+Get_Salary_Prep_Info '0100','July','2003'
+*/
+
+ALTER            Proc Get_Salary_Prep_Info
+@Emp_ID ID
+,@Param1 varchar(50)=null		--@Pay_month
+,@Param2 varchar(50)=null		--@Pay_year
+
+AS
+declare 
+@Basic money	,@Scale_Code codes	,@Subs_Code codes	,@Sal_Adv money	
+,@HR money	,@HR_Rate float		,@MinHR money		,@HR_Ded money		
+,@PF  int	,@PF_Prcnt float	,@PF_Amt money		,@SB_Adv money ---July 17 2003 Sob-e-Barat advance
+
+,@BF  int	,@BF_Amt money
+,@PF_Loan money ,@WF_Loan  money	,@MC_Loan money		,@HS_Loan money
+,@OT money 	,@Hol_OT Money		,@Accom_Type varchar(1)
+,@HR_Maintenance float 			,@Religion varchar(25)	,@Mos money
+,@Coop_Amount money     ,@GC_Amount money
+,@Emp_Category int	----Officer/Staff/Worker
+,@Pay_Commission int	----Pay commission/wage commission
+,@DA  money 		----Dearness Allowance 
+
+,@Monthly_Hr float	----Monthly working hour
+,@OT_Times float	---- % of BASIC pay for General OT
+,@Daily_Hr float	---- Daily working hour	
+,@HOL_OT_Times float	---- % of BASIC pay for Holiday OT
+
+-------------------------------------------------------
+select @Accom_Type=(select Accomodation from emp_info where emp_id=@emp_id)
+,@PF_Prcnt=(select convert(float,value)  from st_param where Policy_No=21)--PF Contribution
+,@Religion=(Select  Religion from emp_info where emp_id=@emp_id)
+,@Emp_Category=(select category  from st_Desig where desig_Code =
+			(select desig_code from emp_info where emp_id=@Emp_Id))
+,@Pay_Commission=(select PW_Commission  from st_Desig where desig_Code =
+			(select desig_code from emp_info where emp_id=@Emp_Id))
+
+,@Monthly_Hr=(select convert(float,value)  from st_param where Policy_No=51)
+,@OT_Times=((select convert(float,value)  from st_param where Policy_No=52)/100)
+,@Daily_Hr=(select convert(float,value)  from st_param where Policy_No=54)
+,@HOL_OT_Times=((select convert(float,value)  from st_param where Policy_No=53)/100)
+
+
+If exists (Select * from salary_monthly where emp_id=@Emp_ID 
+			and Pay_Month=@Param1 and Pay_Year=@Param2)
+
+Begin		--Salary has been prepared
+
+--Salary Advance-----------------------------
+	set @Sal_Adv=(select isnull(sum(Amount),0) from Salary_Adv where emp_id=@emp_id 
+	and Pay_month=@Param1 and Pay_year=@Param2)
+
+select A.Emp_id,EmpName=' '+a.Emp_Nm
+,Unit=' '+(dbo.GetUnit_Name(a.Unit_Code))
+,Cost=' '+(dbo.GetCost_Name(a.Unit_Code,a.Cost_Code)) 
+,Desig=' '+(dbo.GetDesig_Nm(a.Desig_Code)) 
+,b.Pay_Month,b.Pay_Year,b.Attn,OT_Days=b.Hol_Attn,b.OT_Hr,Basic_Sal=b.Basic
+,House_Rent=b.H_Rent,b.Med,b.Conv,b.OT,b.Hol_OT,b.TFN,MCycle=b.Motor_Cycle,b.TA,b.DA
+,b.Wash
+,b.Basic_Arrear,b.H_Rent_Arrear 
+,b.Others_Allow,b.PF_Ded,HR_Ded=b.H_Rent_Ded
+,b.Elec_Ded,b.RS_Ded,b.Others_Ded,Cop=b.Co_Fund,Clb=b.Club_Fund
+,O_Clb=b.Off_Club_Fund,L_Clb=b.L_Club_Fund,Donat=b.Donation,Asso=b.Asso_Fund
+,Uni=b.Union_Fund,WF=b.WF_Fund,BF=b.Bnv_Fund,Mos=b.Msq_Fund
+,Salary_Adv=@Sal_Adv,PF_Cont=c.Won_Cont
+,b.Gen_Exp,b.Transport,b.PF_Loan
+,b.WF_Loan,HS_Loan=b.Hous_Loan,MC_Loan=b.Bike_Loan,b.Audit_Obj,b.Track_id    
+,HR_Maintenance=@HR_Maintenance
+,PF_Prcnt=@PF_Prcnt
+,PW_Commission=@Pay_Commission
+,Accom_Type= @Accom_Type
+,Month_Hr=isnull(@Monthly_Hr,0)
+,OT_Time=isnull(@OT_Times,0)
+,D_Hr=isnull(@Daily_Hr,0)
+,H_OT_Time=isnull(@HOL_OT_Times,0)
+,SB_Adv=isnull(SB_Adv,0)
+,b.Pay_Month,b.Pay_Year
+	from Emp_Info A,salary_monthly b ,PF_Cont C where a.emp_id=b.Emp_ID and 
+	c.emp_id=@Emp_ID and c.Pay_Month=@Param1 and c.Pay_Year=@Param2 and 
+	b.emp_id=@Emp_ID and b.Pay_Month=@Param1 and b.Pay_Year=@Param2
+
+End
+
+Else		--Salary has not yet been prepared
+
+Begin
+
+	-----if (select J_Stat from Emp_Info where Emp_Id=@Emp_Id)= 0
+
+-----	Begin
+	select @Basic=(select basic_sal from emp_info where emp_id=@emp_id)
+	,@HR_Maintenance=(select convert(float,value)  from st_param where Policy_No=11)  
+	,@Scale_Code =(select Scale_Code from emp_info where emp_id=@emp_id)
+	,@Subs_Code =(select Subs_Code from emp_info where emp_id=@emp_id)
+	,@PF=(select PF from emp_info where emp_id=@emp_id)
+	,@BF=(select BF from emp_info where emp_id=@emp_id)
+	
+	--------------------Dearness Allowance---------------------------------------
+	if @Pay_Commission=0 
+		set @DA =(@Basic *((select convert(float,value)  from st_param where Policy_No=33)/100))
+	else
+		set @DA=(@Basic *((select convert(float,value)  from st_param where Policy_No=34)/100))
+	--------------------------------------------------------------------------------
+	
+	-------------------House Rent Allowance % from St_HR_Allow_Slub--------------------
+	--Modification done by Shameem Ferdous on June 09 2003
+	
+	
+	
+	if @Pay_Commission=0	
+	----if the employee is under Pay commission
+	begin
+	----get House Rent Rate & Minimum House Rent from slub
+		select @HR_Rate =(select rate  from St_HR_Allow_Slub where 
+				@Basic between Basic_From and Basic_To)
+		,@MinHR =(select Minimum  from St_HR_Allow_Slub where 
+				@Basic between Basic_From and Basic_To)
+	
+		-----Calculate House Rent Allowance--------------------------
+		/*	if certain % of Basic is <= Minimum House Rent then round it 
+			upto the Minimum House Rent specified in the St_HR_Allow_Slub		*/
+	
+		if (@Basic*(@HR_Rate/100))<= @MinHR 
+			set @HR=@MinHR 
+		else	
+			set @HR=(@Basic*(@HR_Rate/100))
+	end
+	
+	if @Pay_Commission!=0	
+	---If the employee is under wage commission
+	begin
+		select @HR_Rate =(select dbo.GetParamValue(32))	
+		set @HR=(@Basic*(@HR_Rate/100))
+	End
+	
+	
+	-------------------House Rent Deduction-------------------------- 	
+	/*		Based on the accomodation type  		*/
+	
+	
+	------------------None 
+	
+	if @Accom_Type='0' set @HR_Ded=0
+	
+	------------------Proper (100% of HR Allowance + certain % of maintenance charge) 	
+	/*
+	??? what is the rule for HR Deduction 
+	if an employee under wage commission avails proper accommodation?
+	does it include maintenance charge (7.5% of basic)
+	the current version exclude maintenance charge.
+	*/
+	if @Accom_Type='1'
+	Begin
+	
+		if @Pay_Commission=0 	--x	Pay commission
+		begin	--x
+	
+			set @HR_Ded=@HR+(@Basic*(@HR_Maintenance/100))	
+		--	set @HR_Ded=@HR+(@HR*(@HR_Maintenance/100))
+		end	--x
+	
+		else	--x			wage commission
+	
+		begin	--x
+			set @HR_Ded=@HR	--x
+		end	--x
+	End
+	------------------Improvised 
+	
+	if @Accom_Type='2'					
+		set @HR_Ded=(select Ded_Rate from st_HRent1 	---If amount is fixed
+					where @Basic between Basic_From and Basic_To)
+	
+	---set @HR_Ded=(select (@Basic*(Ded_Rate/100)) from st_HRent1 	---If % is fixed
+		---			where @Basic between Basic_From and Basic_To)
+	------------------Single 
+	
+	if @Accom_Type='3'	
+	
+	begin
+	
+		if @Emp_Category!=0 	----staff/worker
+		---if a staff/worker avails single accommodation then 
+		---House Rent duduction conforms St_HRent2 setup
+	
+		begin
+	--		if (select sum(Basic_From) from st_HRent2)!=0 
+		--		or (select sum(Basic_To) from st_HRent2)!=0
+		
+		--		set @HR_Ded=(Select (@Basic* (Ded_Rate/100)) from st_HRent2
+			--		where @Basic between Basic_From and Basic_To)
+			--Else
+				set @HR_Ded=(select Ded_Rate from st_HRent2 where Basic_From=0 and Basic_To=0)
+		end
+		
+	
+		if @Emp_Category=0 	----Officer
+		---if an Officer avails single accommodation then 
+		---House Rent duduction will be same as the maintenance charge
+		begin
+			set @HR_Ded=(@Basic*(@HR_Maintenance/100))
+		end
+	
+	End
+	
+	--	Below Std.	Type A or B or C or D etc.		
+	
+	if @Accom_Type !='0' And @Accom_Type !='1' And @Accom_Type !='2' And @Accom_Type !='3'
+	
+		set @HR_Ded=(select Ded_Rate from st_HRent3
+				where Type_Code=@Accom_Type)
+	
+	----------------------PF contribution-----------------------
+	---if the employee is a member of the PF trust then calculate PF Contribution amount
+	if @PF=1 set @PF_Amt=(@Basic*(@PF_Prcnt/100)) else set @PF_Amt=0
+	
+	----------------------B Fund contribution-----------------------
+	---if the employee is a member of the Benavolent fund then 
+	---calculate BFund Contribution amount
+	
+	if @BF=1 set @BF_Amt=(select BF from St_Subs where subs_Code=
+				(Select Subs_Code from  Emp_Info where Emp_Id=@Emp_Id)) 
+		else set @BF_Amt=0
+	
+	---------------------Cooperative subscription-----------------------------
+	---if an employee is not an officer and if he is not a member then 
+	---subscription amount=0
+	
+	if @Emp_Category =0 --Officer
+		set @Coop_Amount=(select cop from St_Subs where subs_Code=
+				(Select Subs_Code from  Emp_Info where Emp_Id=@Emp_Id)) 
+	else	---Staff/Worker
+	
+	begin	
+		if (select Coop	from emp_info where emp_id=@emp_id)=0	--not a member
+			set @Coop_Amount=0
+		else
+			set @Coop_Amount=(select cop from St_Subs where subs_Code=
+				(Select Subs_Code from  Emp_Info where Emp_Id=@Emp_Id)) 
+	end
+	---------------------General Club subscription----------------------------
+	---if an employee is not an officer and if he is not a member then 
+	---subscription amount=0
+	
+	if @Emp_Category =0 --Officer
+		set @GC_Amount=(select clb from St_Subs where subs_Code=
+				(Select Subs_Code from  Emp_Info where Emp_Id=@Emp_Id)) 
+	else	---Staff/Worker
+	
+	begin	
+	
+		if (select GC from emp_info where emp_id=@emp_id)=0	--not a member
+			set @GC_Amount=0
+		else
+			set @GC_Amount=(select Clb from St_Subs where subs_Code=
+				(Select Subs_Code from  Emp_Info where Emp_Id=@Emp_Id)) 
+	end
+	
+	---------------------Mosque subscription----------------------------------
+	---If employee is not muslim then Mosque susb amount =0
+	
+	if @Religion='Islam' set @Mos=(select Mos from St_Subs where subs_Code=
+				(Select Subs_Code from  Emp_Info where Emp_Id=@Emp_Id)) 
+		else set @Mos=0	
+	--PF Loan-------------------------------
+	---	set @PF_Loan=(select PF_Ln_Inst=isnull(sum(Inst_Amt),0) from  loan_info 
+		---	where substring(ltrim(Ln_Code),1,2)='PF' and Ref_Status=0 and Emp_ID=@Emp_ID) 
+	
+	set @PF_Loan=(select PF_Ln_Inst=isnull(sum(Inst_Amt),0) from  loan_info 
+		where substring(ltrim(Ln_Code),1,2)='PF' 
+			and Ref_Status=0 
+			and Emp_ID=@Emp_Id
+			and datepart(month,Ln_Date)<dbo.Month_No (@Param1)
+			and datepart(year,Ln_Date)<=@Param2)
+	--WF Loan-----------------------------
+		set @WF_Loan=(select isnull(sum(Inst_Amt),0) from  loan_info 
+			where substring(ltrim(Ln_Code),1,2)='WF' 
+			and Ref_Status=0 
+			and Emp_ID=@Emp_Id
+			and datepart(month,Ln_Date)<dbo.Month_No (@Param1)
+			and datepart(year,Ln_Date)<=@Param2)
+	
+	--MCycle Loan-----------------------------
+		set @MC_Loan=(select isnull(sum(Inst_Amt),0) from  loan_info 
+			where substring(ltrim(Ln_Code),1,2)='MC' 
+			and Ref_Status=0 
+			and Emp_ID=@Emp_Id
+			and datepart(month,Ln_Date)<dbo.Month_No (@Param1)
+			and datepart(year,Ln_Date)<=@Param2)
+	--Housing Loan-----------------------------
+		set @HS_Loan=(select isnull(sum(Inst_Amt),0) from  loan_info 
+			where substring(ltrim(Ln_Code),1,2)='HL' 
+			and Ref_Status=0 
+			and Emp_ID=@Emp_Id
+			and datepart(month,Ln_Date)<dbo.Month_No (@Param1)
+			and datepart(year,Ln_Date)<=@Param2)
+	--Salary Advance-----------------------------
+		set @Sal_Adv=(select isnull(sum(Amount),0) from Salary_Adv where emp_id=@emp_id 
+		and Pay_month=@Param1 and Pay_year=@Param2)
+	
+	
+	--Sob-e-Barat Advance-----------------------------
+		set @SB_Adv=0	--(select isnull(sum(Amount),0) from SBarat_Adv where emp_id=@emp_id 
+	---	and Pay_month=@Param1 and Pay_year=@Param2)
+	
+	
+	
+	select A.Emp_id,EmpName=' '+a.Emp_Nm
+	,Unit=' '+(dbo.GetUnit_Name(a.Unit_Code))
+	,Cost=' '+(dbo.GetCost_Name(a.Unit_Code,a.Cost_Code)) 
+	,Desig=' '+(dbo.GetDesig_Nm(a.Desig_Code)) 
+	
+	,A.Basic_Sal,House_Rent=@HR
+	,Basic_Arrear=0,H_Rent_Arrear=0 
+	,S.Med,S.Conv,S.Tfn,S.Wash  
+	,Cop=@Coop_Amount
+	,Clb=@GC_Amount
+	,B.O_Clb,B.L_Clb,B.Uni,B.Asso,B.WF,BF=@BF_Amt,Mos=@Mos,B.Donat
+	
+	,PF_Cont=@PF_Amt,Salary_Adv=@Sal_Adv
+	,PF_Loan=@PF_Loan,WF_Loan=@WF_Loan
+	,MC_Loan=@MC_Loan,HS_Loan=@HS_Loan
+	,HR_Ded=isnull(@HR_Ded,0)
+	,OT=0,Hol_OT=0,TFN=0,TA=0,Others_Allow=0
+	,DA=isnull(@DA,0)
+	,Elec_Ded=0,RS_Ded=4,Others_Ded=0,Gen_Exp=0,Transport=0,MCycle=0
+	,Attn=(dbo.GetMonthDays(@Param1,@Param2)),OT_Hr=0,OT_Days=0
+	,HR_Maintenance=@HR_Maintenance
+	,PF_Prcnt=@PF_Prcnt
+	,PW_Commission=@Pay_Commission
+	,Emp_Category=@Emp_Category
+	,Accom_Type= @Accom_Type
+	,Month_Hr=isnull(@Monthly_Hr,0)
+	,OT_Time=isnull(@OT_Times,0)
+	,D_Hr=isnull(@Daily_Hr,0)
+	,H_OT_Time=isnull(@HOL_OT_Times,0)
+	,SB_Adv=isnull(@SB_Adv,0)
+	,Pay_Month=@Param1,Pay_Year=@Param2
+	from emp_info A,St_PayScale S,St_Subs B 
+		where A.Scale_Code=S.Scale_Code and A.Subs_Code=B.Subs_Code and emp_id=@emp_id
+	
+	---End
+
+End
+
+
+/*
+
+select * from Loan_ref_info
+select * from Loan_info where Ln_Code='PF01'
+select Ln_Code from Loan_Info where 
+
+delete from salary_monthly
+delete from Loan_ref_info
+select * from emp_info
+
+select * from pf_cont
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+

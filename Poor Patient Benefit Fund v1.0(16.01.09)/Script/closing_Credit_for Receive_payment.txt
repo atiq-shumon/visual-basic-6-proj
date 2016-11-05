@@ -1,0 +1,38 @@
+create or replace function clo_credit_rec_payment
+(p_user_acc varchar2,p_st_dt date,p_ed_dt date )
+ return number
+ as 
+   var_dr_amt number:=0;
+   var_cr_amt number:=0;
+   opn_bl number:=0;
+   var_dr_amt_this number:=0;
+   var_cr_amt_this number:=0;
+   opn_bl_this number:=0;
+  closing_this number:=0;
+ begin
+  select nvl(sum(dr_amt),0) into var_dr_amt 
+       from ledger
+   where to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')< to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and acc_code=p_user_acc;
+  select nvl(sum(cr_amt),0) into var_cr_amt 
+       from ledger
+   where to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')< to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and acc_code=p_user_acc;
+  if var_cr_amt>=var_dr_amt then
+     opn_bl:=var_cr_amt -var_dr_amt ;
+  else
+    opn_bl:=0;
+  end if;
+  select nvl(sum(dr_amt),0) into  var_dr_amt_this 
+       from ledger
+   where (to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>= to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<= to_date(to_char(p_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and acc_code=p_user_acc;
+
+  select nvl(sum(cr_amt),0) into var_cr_amt_this
+       from ledger
+    where (to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>= to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<= to_date(to_char(p_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and acc_code=p_user_acc;
+  if var_cr_amt_this>=var_dr_amt_this then
+     opn_bl_this:=var_cr_amt_this -var_dr_amt_this ;
+  else
+    opn_bl_this:=0;
+  end if;
+ closing_this:=opn_bl_this+opn_bl;
+  return( abs(closing_this));
+end;

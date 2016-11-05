@@ -1,0 +1,454 @@
+--working schedule-----
+create table working_schedule(
+user_id varchar2(20),
+shift_name varchar2(40), --unique
+dt date,
+serial_no integer
+);
+----table----
+create table user_validation(
+validation integer);
+------------table-----
+create table temp_security(
+user_id varchar2(20),
+user_name varchar2(50),
+serial_no  number(2)
+);
+
+
+
+create table security(
+user_id varchar2(20),
+user_name varchar2(50),
+user_type varchar2(20),
+user_password varchar2(20),
+user_conf_password varchar2(20),
+dt date ,
+shift_name varchar2(30)k
+constraint security_pk primary key(user_id));
+
+
+
+---------------fiscal_year-------------------------
+create table fiscal_year(
+st_dt date,
+ed_dt date,
+tmp_dt date,
+u_id varchar2(9),
+dt date
+);
+-----------shift setup----------------
+create table Shift_setup(
+shift_name Varchar2(30),
+shift_start_time date ,
+shift_End_time date ,
+effective_date date,
+u_id Varchar2(30),
+sys_date date);
+
+
+
+------------in_door_pat_info_main
+
+
+CREATE TABLE in_door_Pat_Info_Main(---24-02-04
+ in_reg_no number not null,--pat_info_main_seq--pat id  
+  pat_id number  ,             ---receipt no
+ pat_name varchar2(45) NOT NULL,
+ pat_guard_name varchar2(50),
+ sex varchar2(6) NULL ,
+ age varchar2(17) NULL ,
+  Religion varchar2(10) NULL ,
+ addr1 varchar2(200) NULL ,
+ addr2 varchar2(200) NULL ,
+ phone varchar2(25) NULL ,
+ doc_dept varchar2(10)  NULL ,
+ release_flag integer,             ---default 0
+ dt date ,
+ booth varchar2(20) NULL ,
+ admission_date date NULL ,
+ st_dt date,
+ ed_dt date,
+ dt1 date NULL ,
+ u_id varchar2(10) NOT NULL,
+ CONSTRAINT PK_Pat_Info_Main PRIMARY KEY(in_reg_no));
+
+
+
+--------------bed_info-----------------
+ create table bed_info(
+ BED_NO         VARCHAR2(3) not null,
+ BED_TYPE      VARCHAR2(10) NOT NULL,
+ BED_CHARGE     NUMBER(10,3),
+ BED_GROUP      number(10,2),--admission charge
+ OCCUPY_FLAG   VARCHAR2(2),
+ U_ID          VARCHAR2(5),
+ DT           DATE default(sysdate)NOT NULL,
+ TEMP_DATE DATE,
+ in_reg_no       NUMBER(5),
+ st_dt date,
+ ed_dt date,
+ seat_capacity number(4),
+ bed_ext_col varchar2(10),--------------------------type no
+ service_charge number(10,4),
+ doc_department   varchar2(30),
+ serial_no number(10),
+ constraint pk_bed_no_type_bed_ext_col
+ primary key(bed_no,bed_type,bed_ext_col,doc_department),
+constraint fk_bed_info foreign key(in_reg_no) references in_door_Pat_Info_Main(in_reg_no) ON DELETE CASCADE);
+
+
+
+---------------doctor_info----------------------
+CREATE TABLE Doctor_Info(
+ refer_code number(5) primary key not null,
+ addr  varchar2(200) not NULL ,
+ phone varchar2(25)  NULL ,
+ fax varchar2(25) NULL ,
+ email varchar2(25)  NULL ,
+ birth_date date NULL ,
+ marriage_status varchar2(20) NULL,
+ u_id varchar2(10) not  NULL ,
+ dt date default(sysdate) NOT NULL ,
+ Doc_dept  varchar2(30),
+temp_date date,
+degree varchar2(200),
+f_name varchar2(30),
+m_name varchar2(30),
+l_name varchar2(30),
+position integer not null,
+ext_field varchar2(20)
+)
+;
+-----------------empoyee_info------------------
+ CREATE TABLE Emp_Info(
+   Emp_ID varchar2(20) primary key  NOT NULL ,
+  Emp_Name varchar2(45)  NULL ,
+  join_date date not NULL ,
+  Emp_Desig varchar2(25) not NULL ,
+  Title varchar2(25) NULL ,
+  Salary  number(30) NULL ,
+  Sex varchar2(6) not  NULL ,
+  Age varchar2(3) not NULL ,
+  Emp_Pre_Add varchar2(100)  NULL ,
+  Emp_Per_Add varchar2(100)  NULL ,
+  Emp_Phone varchar2(15)  NULL ,
+  Emp_Email varchar2(25) NULL ,
+  u_id varchar2(10) not NULL,
+  dt date default(sysdate),
+  shift varchar2(10),
+   emp_ext_col  varchar2(20));
+
+---------------Test_Info_Main--------------------
+CREATE TABLE Test_Info_Main(
+	m_code  varchar(2)  primary key NOT NULL ,
+	m_name varchar2(40)not NULL ,
+	u_id varchar2(10)  NULL ,
+	dt date default(sysdate) not  NULL ,
+	unique_id number(3) NULL );
+
+-------------Test_Info_Sub----------------------
+CREATE TABLE Test_Info_Sub (
+   s_code varchar2(10)  NOT NULL ,
+   s_name varchar2(60)  NOT NULL ,
+   s_code_sub_code varchar2(3)   NULL ,
+   s_name_sub_name  varchar2(60)  NULL ,
+   m_code  varchar(2)  NOT NULL ,
+   type varchar2(25)  NULL ,
+   u_id varchar2(10)  NULL ,
+   dt date default(sysdate) not NULL ,
+   unique_id number(10),
+   st_year date,
+   ed_year date,
+   charge number(10,3),
+   service_charge number(10,3),
+   tmp_date date, 
+   primary key(s_code,m_code));
+
+-------------------------Operation_info---------------------
+CREATE TABLE Operation_info (
+   opr_code varchar2(10)   NOT NULL ,
+   opr_name varchar2(60)  NOT NULL ,
+   opr_type varchar2(25)  NULL ,
+   opr_department varchar2(30)   NULL ,
+   opr_bed  varchar2(30)  NULL , ---case
+   opr_charge number(10,3),
+   Annay_charge number(10,3), 
+   Service_charge number(10,3),
+   effective_date date, 
+   unique_id number(10),
+   u_id varchar2(10)  NULL ,
+   dt date default(sysdate) not NULL ,
+   st_year date,
+   ed_year date,
+    primary key(opr_code));
+
+
+
+----------------indoor_pat_bed_info---------------
+ create table Indoor_pat_bed_info(
+ in_reg_no number not null,
+ BED_NO         VARCHAR2(3)  not null,
+ BED_TYPE      VARCHAR2(10)  NOT NULL,
+ Bed_type_no varchar2(10),  
+ Admission_charge number(10,2),
+ BED_CHARGE     NUMBER(10,3),
+  OCCUPY_FLAG   VARCHAR2(2),
+ U_ID    VARCHAR2(5),
+ DT  DATE default(sysdate)NOT NULL,
+ TEMP_DATE DATE,
+ Admission_date date,
+ extra_bed_flag integer,
+ migration_flag integer,
+ PAT_ID       NUMBER(5),
+ st_dt date,
+ ed_dt date,
+ constraint fk_in_reg_no
+ foreign key(in_reg_no)
+ references In_door_pat_info_main(in_reg_no) ON DELETE CASCADE );
+
+
+-----------child department---------------
+create table child_dept(
+    code varchar2(15) primary key,  
+   main_charge_name varchar2(40),
+     bed_type varchar2(20),
+    bed_admission_charge number(10,2),
+     incubator_charge number(10,2),
+     baby_care_charge number(10,2),
+     neunetal_bed_charge number(10,2), 
+     Exchange_transfusion_charge number(10,2),
+      photo_therapy_charge  number(10,2),
+      blood_sugar_charge number(10,2),
+       effective_date date);
+
+
+
+-----------------------indoor_pat_extra_bed_info----------------
+ create table Indoor_pat_Extra_bed_info(
+ in_reg_no number ,
+ BED_CHARGE     NUMBER(10,3),
+ U_ID    VARCHAR2(5),
+ DT  DATE default(sysdate)NOT NULL,
+ TEMP_DATE DATE,
+  START_END_FLAG INTEGER  default 0,
+ Start_date date,
+ End_date date,
+  booth varchar2(20),
+ constraint fk_in_reg_no_ext_bed
+ foreign key(in_reg_no)
+ references In_door_pat_info_main(in_reg_no) ON DELETE CASCADE );
+
+----------------------indoor_pat_operation_info-----------------------
+CREATE TABLE indoor_pat_Operation_info (
+   in_reg_no number not null,
+   opr_code varchar2(10)   NOT NULL ,
+   opr_name varchar2(60)  NOT NULL ,
+   opr_type varchar2(25)  NULL ,
+   opr_charge number(10,3),
+   Annay_charge number(10,3),
+   service_charge number(10,3), 
+   opr_date date, 
+   opr_success_flag integer,
+   u_id varchar2(10)  NULL ,
+   booth varchar2(20),
+   dt date default(sysdate) not NULL ,
+   foreign key(in_reg_no) references 
+   in_door_Pat_Info_Main(in_reg_no) on 
+   delete cascade);
+
+
+-----------------------Pat_Info_Main_out_door------------
+CREATE TABLE Pat_Info_Main_out_door(
+ in_reg_no number,
+ reg_no integer,
+ pat_name varchar2(45) NOT NULL ,
+ pat_type varchar2(6),
+ sex varchar2(6) NULL ,
+ age varchar2(17) NULL ,
+ religion varchar2(20),
+ addr1 varchar2(200) NULL ,
+  phone varchar2(25) NULL ,
+ doc_dept varchar2(10)  NULL ,
+ dt date ,
+ booth varchar(2) NULL ,
+ tmp_dt date NULL ,
+ st_dt date,
+ ed_dt date,
+ dt1 date NULL ,
+ u_id varchar2(10) NOT NULL,
+ CONSTRAINT PK_Pat_Info_Main_out_door PRIMARY KEY(reg_no));
+
+----------------Pat_Info_Sub1------------------
+
+CREATE TABLE Pat_Info_Sub1(
+	pat_id number ,
+	m_code  varchar2(5) ,
+	s_code varchar2(10) NULL ,
+        patient_type varchar2(10),
+	test_charge number(10,4) NULL ,
+	test_type varchar2(10) NULL ,
+        indoor_out_door_test_flag  integer,
+	st_dt date,
+	ed_dt date,
+	u_id varchar2(10) NULL ,
+	dt date NULL ,
+	tmp_dt date NULL ,
+	unique_id integer); ----sequence number 
+
+-----------------Pat_Info_Sub1_out_door-------------
+
+CREATE TABLE Pat_Info_Sub1_out_door(
+        in_reg_no number,
+	reg_no integer not null ,---seq
+	m_code  varchar2(5) ,
+        m_name varchar2(20),
+	s_code varchar2(10) NULL ,
+        s_name varchar2(60) ,
+	test_charge number(10,4) NULL ,
+        service_charge number(10,4) null,
+	test_type varchar2(10) NULL ,
+        indoor_out_door_test_flag integer,
+        doc_dept varchar2(20),
+	st_dt date,
+	ed_dt date,
+	u_id varchar2(10) NULL ,
+	dt date NULL ,
+	tmp_dt date NULL ,
+	unique_id integer, ----sequence number 
+CONSTRAINT fk_Pat_Info_Main foreign KEY(reg_no)
+references pat_info_main_out_door(reg_no) on delete cascade);
+
+-------------Pat_Info_Sub2----------------
+CREATE TABLE Pat_Info_Sub2 (
+	pat_id  number ,
+	adv number(10,4) NULL ,
+	u_id varchar2(10)NULL ,
+	dt date NULL ,
+	pat_type varchar(5) NULL ,
+	st_dt date,
+	ed_dt date,
+        dt1 date ,
+	dt2 date,
+	unique_id integer
+);
+
+--------------Pat_Info_Sub3--------------
+
+CREATE TABLE Pat_Info_Sub3(
+	pat_id number(10) ,
+	disc number(10,4)NULL ,
+	paid number(10,4)NULL ,
+	u_id varchar2(10) NOT NULL ,
+	st_dt date,
+	ed_dt date,
+	dt  date NULL ,
+	dt1 date NULL ,
+        dt2 date NULL ,
+	track_id  integer,
+        ext_column1 varchar2(20), 
+        ext_column2 varchar2(20)
+);
+
+-------------Pat_Info_Sub3_out_door-----------
+
+CREATE TABLE Pat_Info_Sub3_out_door(
+        in_reg_no number,
+	reg_no integer ,
+        total_amt number(10,4),
+	disc number(10,4)NULL ,
+	net_paid number(10,4)NULL ,
+	u_id varchar2(10) NOT NULL ,
+	st_dt date,
+	ed_dt date,
+	dt  date NULL ,
+	dt1 date NULL ,
+        dt2 date NULL ,
+	track_id  integer,
+        ext_column1 varchar2(20), 
+        ext_column2 varchar2(20),
+CONSTRAINT fk_Pat_Info_Sub3_out_door foreign KEY(reg_no)
+references pat_info_main_out_door(reg_no) on delete cascade);
+
+
+--------------indoor_pat_money---------------------
+create table indoor_pat_money(
+in_reg_no number not null,
+pat_id number  ,             ---receipt no
+advance number(10,2) default 0,
+test_sum number(10,2) default 0,-----------pathology
+total_operation_sum number(10,2) default 0,
+admission_charge number(10,2) default 0,
+bed_sum number(10,2) default 0,
+discount number(10,2) default 0,
+total number(10,2) default 0,
+miscelleneous_charge number(10,2) default 0,
+total_with_misce number(10,2) default 0,
+extra_bed_charge number(10,2) default 0,
+anesthesia_charge number(10,2) default 0,
+delivery_charge number(10,2) default 0,
+baby_charge     number(10,2) default 0,
+pathology_charge number(10,2) default 0,
+service_charge  number(10,2) default 0,
+baby_care_charge number(10,2)default 0,
+neunetal_bed_charge number(10,2) default 0, 
+Exchange_transfusion_charge number(10,2) default 0,
+photo_therapy_charge  number(10,2) default 0,
+blood_sugar_charge number(10,2) default 0,
+medicine_charge number(10,2) default 0,
+cardiology_charge number(10,2) default 0,
+net_total_charge number(10,2) default 0,
+u_id  varchar2(30) default 0,
+booth_no varchar2(4) default 0,
+dt date,
+constraint fk_indoor_pat_money foreign key(in_reg_no) references in_door_Pat_Info_Main(in_reg_no) on delete cascade
+);
+
+----------------temp_test-----------------
+create table temp_test(
+m_code varchar2(5),
+s_code varchar2(20),
+m_name varchar2(40),
+s_name varchar2(70),
+test_type varchar2(20),
+charge  number(10,2),
+service_charge number(10,2) 
+);
+
+--------------temp_calculation_indoor-----------
+
+create table temp_calculation_indoor(
+temp_operation_sum number(10,2),
+temp_test_sum number(10,2),
+temp_ext_bed_sum number(10,2),
+temp_advance number(10,2),
+temp_admission_charge number(10,2),
+temp_service_charge number(10,2),
+temp_bed_sum number(10,2),
+temp_baby_care_charge  number(10,2),
+temp_Neunetal_bed_charge number(10,2),
+temp_EX_transfusion_charge number(10,2),
+photo_therapy_charge  number(10,2),
+blood_sugar_charge     number(10,2),
+temp_discount number(10,2),
+temp_total number(10,2));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

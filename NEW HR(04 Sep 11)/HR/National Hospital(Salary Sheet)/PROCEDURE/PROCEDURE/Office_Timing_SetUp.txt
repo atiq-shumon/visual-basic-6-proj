@@ -1,0 +1,44 @@
+create or replace procedure OfficeTime_SetUp_save(
+p_START_TIME varchar2,
+p_END_TIME varchar2,
+p_RELAX_TIME varchar2,
+p_ABSENT_TIME varchar2,
+p_SPECIAL_START_TIME varchar2,
+P_SPECIAL_END_TIME varchar2,
+P_SPECIAL_DAY varchar2,
+P_EFFECT_DT date,
+p_TRACK_ID number
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from st_office_time
+where TRACK_ID=p_TRACK_ID;
+if var_temp>0 then
+update st_office_time
+set 
+	START_TIME=p_START_TIME,
+	END_TIME=p_END_TIME,
+	RELAX_TIME=p_RELAX_TIME,
+	ABSENT_TIME =p_ABSENT_TIME ,
+	SPECIAL_START_TIME=p_SPECIAL_START_TIME,
+	SPECIAL_END_TIME=P_SPECIAL_END_TIME,
+	SPECIAL_DAY=P_SPECIAL_DAY,
+	EFFECT_DT=P_EFFECT_DT
+where  TRACK_ID=p_TRACK_ID;
+else
+insert into st_office_time values(
+	p_START_TIME,
+	p_END_TIME,
+	p_RELAX_TIME,
+	p_ABSENT_TIME ,
+	p_SPECIAL_START_TIME,
+	P_SPECIAL_END_TIME,
+	P_SPECIAL_DAY,
+	P_EFFECT_DT,
+	TracK_Id_For_St_Office_Time.nextval);
+end if;
+commit;
+end  OfficeTime_SetUp_save;
+/

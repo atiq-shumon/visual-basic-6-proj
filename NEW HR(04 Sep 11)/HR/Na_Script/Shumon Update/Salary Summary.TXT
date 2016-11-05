@@ -1,0 +1,561 @@
+create table salary_summary
+(
+  SalGroup number,
+  serial number,
+  head varchar2(20),
+  first_class number,
+  second_class number,
+  third_class number,
+  fourth_class number
+);
+  
+ 
+
+
+CREATE OR REPLACE PROCEDURE RPT_SALARY_SUMMARY
+(
+ P_TEST_CURSOR IN OUT TEST_PACKAGE.TEST_TYPE,
+ p_mode number,
+ st_dt date,
+ ed_dt date,
+ P_DEPT VARCHAR2
+)
+AS
+varFirstClass  number;
+varSecondClass  number;
+varThirdClass  number;
+varFourthClass  number;
+
+BEGIN
+
+ if p_mode=1 then
+    delete from salary_summary;
+     commit;
+
+
+
+------basic
+SELECT SUM(BASIC) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1
+      and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(BASIC) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(BASIC) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(BASIC) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,1,'Basic',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+
+----------house rent
+
+SELECT SUM(h_rent) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(h_rent) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(h_rent) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(h_rent) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,2,'House Rent',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+
+----------Medical Allowance
+
+SELECT SUM(med) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(med) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(med) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(med) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,3,'Medical Allowance',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+
+----------D.A. Allowance
+
+SELECT SUM(DA) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(DA) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(DA) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(DA) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,4,'Dearness Allowance',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+----------Festival Allowance
+
+SELECT SUM(Telephone) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(Telephone) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(Telephone) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(Telephone) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,5,'Festival Allowance',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+----------Tiffin Allowance
+
+SELECT SUM(TFN) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(TFN) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(TFN) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(TFN) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,6,'Tiffin Allowance',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+----------Conveyance Allowance
+
+SELECT SUM(conv) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(conv) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(conv) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(conv) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,7,'Conveyance',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+
+----------Arrear Bill
+
+SELECT SUM(Arrear) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(Arrear) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(Arrear) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(Arrear) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,8,'Arrear Bill',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+----------Others Addition
+
+SELECT SUM(others_addition) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(others_addition) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(others_addition) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(others_addition) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,9,'Others Addition',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+----------Others Allowance
+
+SELECT SUM(others_allowance) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(others_allowance) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(others_allowance) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(others_allowance) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(1,10,'Others Allowance',varFirstClass,varSecondClass,varThirdClass,varFourthClass);
+
+
+---------Deduction---------------
+----------CP FUND
+
+SELECT SUM(pf_contri_Deduction) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(pf_contri_Deduction) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(pf_contri_Deduction) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(pf_contri_Deduction) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(2,11,'C.P. Fund',-varFirstClass,-varSecondClass,-varThirdClass,-varFourthClass);
+
+
+
+----------PF
+
+SELECT SUM(pf_ln_amount) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(pf_ln_amount) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(pf_ln_amount) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(pf_ln_amount) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(2,12,'PF Loan',-varFirstClass,-varSecondClass,-varThirdClass,-varFourthClass);
+
+----------Salary Advance
+
+SELECT SUM(salary_advance) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(salary_advance) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(salary_advance) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(salary_advance) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(2,13,'Salary Advance',-varFirstClass,-varSecondClass,-varThirdClass,-varFourthClass);
+
+
+----------Other Allowance
+
+SELECT SUM(working_day) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(working_day) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(working_day) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(working_day) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(2,14,'Other Allowance',-varFirstClass,-varSecondClass,-varThirdClass,-varFourthClass);
+
+
+----------Revenue Stamp
+
+SELECT SUM(r_stamp) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(r_stamp) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(r_stamp) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(r_stamp) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(2,15,'Revenue Stamp',-varFirstClass,-varSecondClass,-varThirdClass,-varFourthClass);
+
+
+----------N.D Fund
+
+SELECT SUM(Others_deduction) into varFirstClass
+   FROM SALARY_PREPARATION
+where emp_class=1 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+ SELECT SUM(Others_deduction) into varSecondClass
+   FROM SALARY_PREPARATION
+where emp_class=2 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(Others_deduction) into varThirdClass
+   FROM SALARY_PREPARATION
+where emp_class=3 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+SELECT SUM(Others_deduction) into varFourthClass
+   FROM SALARY_PREPARATION
+where emp_class=4 and (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'));
+insert into  salary_summary
+ values(2,16,'N.D. Fund',-varFirstClass,-varSecondClass,-varThirdClass,-varFourthClass);
+
+commit;
+open p_test_cursor for
+  select * from salary_summary;
+end if; ----end of p_mode=1
+
+/*  Department Wise   */
+
+
+if p_mode=2 then
+   open p_test_cursor for
+       SELECT upper(DEPT_NM) "upper(DEPT_NM)",COUNT(DISTINCT EMP_ID) AS DISBURSEE,SUM(BASIC),SUM(H_RENT),SUM(MED),SUM(CONV),SUM(TFN),
+        SUM(DA),sum(S_da) AS NA ,SUM(DRESS_ALLOWANCE) AS DRESS_ALLOW,SUM(ARREAR),SUM(TELEPHONE) AS FB,SUM(OTHERS_ALLOWANCE),SUM(OTHERS_ADDITION),
+         SUM(PF_CONTRI_DEDUCTION),SUM(PF_LN_AMOUNT),SUM(SALARY_ADVANCE),SUM(R_STAMP),SUM(OTHERS_DEDUCTION) AS ND_DEDUCTION
+       , SUM(ADDDEDUCT_OTHER),sum(Working_day) Others_Deduction
+                 FROM SALARY_PREPARATION
+ where (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'))
+ GROUP BY upper(DEPT_NM);
+
+end if;
+
+if p_mode=3 then
+   open p_test_cursor for
+       SELECT EMP_ID ||'-'|| EMP_NM  "upper(DEPT_NM)",COUNT(DISTINCT EMP_ID) AS DISBURSEE,SUM(BASIC),SUM(H_RENT),SUM(MED),SUM(CONV),SUM(TFN),
+        SUM(DA),sum(S_da) AS NA,SUM(DRESS_ALLOWANCE) AS DRESS_ALLOW,SUM(ARREAR),SUM(TELEPHONE) AS FB,SUM(OTHERS_ALLOWANCE),SUM(OTHERS_ADDITION),
+         SUM(PF_CONTRI_DEDUCTION),SUM(PF_LN_AMOUNT),SUM(SALARY_ADVANCE),SUM(R_STAMP),SUM(OTHERS_DEDUCTION) AS ND_DEDUCTION
+       , SUM(ADDDEDUCT_OTHER),sum(Working_day) Others_Deduction
+                 FROM SALARY_PREPARATION
+ where (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'))
+            AND upper(DEPT_NM) like concat(upper(P_DEPT),'%')
+ GROUP BY EMP_ID,EMP_NM;
+
+end if;
+
+
+
+END;

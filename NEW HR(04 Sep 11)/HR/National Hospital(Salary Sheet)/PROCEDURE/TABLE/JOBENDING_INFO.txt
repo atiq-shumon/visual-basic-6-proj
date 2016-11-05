@@ -1,0 +1,10 @@
+Create table JOBENDING_INFO(
+EMP_ID varchar2(10) ,
+Emp_Name varchar2(100),
+DESIGNATION varchar2(50) not null,
+JobEnding_Type  varchar2(10),
+JobEndingStatus  varchar2(2),
+Desciption   varchar2(100),
+Department varchar2(100),
+JobEndingDate  date,
+constraint Emp_PF_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));

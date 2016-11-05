@@ -1,0 +1,42 @@
+ create or replace procedure rptledger(p_test_cursor in out test_package.test_type,
+ 				       P_User_code  varchar2,
+				       P_st_dt  date,
+				       P_ed_dt date)
+				AS
+                                cr_amount number;
+				dr_amount number; 
+			BEGIN
+		OPEN p_test_cursor FOR
+	        	select  p_st_dt as voucher_date, ' ' as voucher_no,' ' as acc_code,
+				
+				'Opening Balance' as account_name
+				,op_debit(P_User_code,P_st_dt) as debit_amt,op_credit(P_User_code,P_st_dt) as credit_amt, 1 as 	grp,0 AS TRACK_ID
+					from ledger 
+                where track_id =(select max(track_id) from ledger where acc_code=p_user_code)
+	 
+				
+                              
+		union 
+                      	select vou_date as voucher_date, (vou_type||'-'||vou_no) as voucher_no,
+			(select a.acc_code from acct a   
+                              where a.acc_code=ledger.particular_code and 						ledger.acc_code<>ledger.particular_code) as acc_code,  
+			(select a.acc_name from acct a   
+                              where a.acc_code=ledger.particular_code and ledger.acc_code<>ledger.particular_code) as account_name,dr_amt as 		                   debit_amt,cr_amt as credit_amt,2 as grp,TRACK_ID AS TRACK_ID	
+				from ledger
+ 			where (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and
+			ledger.acc_code=p_user_code and ledger.acc_code<>ledger.particular_code
+		
+               union 
+                      	select vou_date as voucher_date, (vou_type||'-'||vou_no) as voucher_no,
+			(select a.acc_code from acct a   
+                              where a.acc_code=ledger.acc_code ) as acc_code,  
+			(select a.acc_name from acct a   
+                              where a.acc_code=ledger.acc_code ) as account_name,cr_amt as debit_amt,dr_amt as credit_amt,3 as grp,TRACK_ID AS TRACK_ID	
+				from ledger
+ 			where (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and
+			particular_code=p_user_code and ledger.acc_code<>ledger.particular_code
+			and ledger.acc_code not in(select acc_head from acct);
+
+
+
+		end  RptLedger;

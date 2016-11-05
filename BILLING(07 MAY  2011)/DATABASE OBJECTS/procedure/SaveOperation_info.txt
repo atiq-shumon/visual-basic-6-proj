@@ -1,0 +1,46 @@
+create or replace procedure Save_Operation_info(
+   p_opr_code varchar2 ,
+   p_opr_name varchar2 ,
+   p_opr_type varchar2,
+   p_opr_department varchar2 ,
+   p_opr_bed  varchar2 , ---case
+   p_opr_charge number,
+   p_Annay_charge number, 
+   p_effective_date date, 
+   p_u_id varchar2
+   )
+as
+var_temp  number;
+var_st_dt date;
+var_ed_dt date;
+begin
+select count(*) into var_temp 
+from Operation_info 
+where opr_code=p_opr_code;
+
+select st_dt,ed_dt into var_st_dt,var_ed_dt
+from fiscal_year;
+
+if var_temp>0 then
+update Operation_info
+set   
+   opr_name=p_opr_name ,
+   opr_type=p_opr_type , 
+   opr_department=p_opr_department,
+   opr_bed=p_opr_bed,  
+   opr_charge=p_opr_charge , 
+   Annay_charge =p_Annay_charge,
+   effective_date=p_effective_date, 
+   u_id=p_u_id
+where opr_code=p_opr_code;
+else
+ insert into  Operation_info values(p_opr_code,p_opr_name,p_opr_type,p_opr_department,p_opr_bed,
+p_opr_charge,p_annay_charge,p_effective_date,1,p_u_id,sysdate,
+var_st_dt,var_ed_dt);
+END IF;
+commit;
+end  Save_Operation_info;
+
+ 
+
+

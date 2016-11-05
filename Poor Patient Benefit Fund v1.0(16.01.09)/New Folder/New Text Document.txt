@@ -1,0 +1,20 @@
+SELECT  B.BUDGET_CODE, 
+A.ACCOUNT_NAME,B.PROPOSED_AMOUNT ,
+(SELECT SUM(DEBIT_AMT-CREDIT_AMT)  FROM LEDGER 
+       WHERE  LEDGER.ACCOUNT_CODE=(SELECT ACCOUNT_CODE
+                                                                                FROM ACCOUNT
+                                                           WHERE ACCOUNT.USER_ACC=A.USER_ACC)) AS ACT_AMT ,1 AS INCOME
+FROM BUDGET B,ACCOUNT A
+WHERE B.BUDGET_CODE=A.USER_ACC
+AND A.ACCOUNT_group in ('5','9')
+
+UNION ALL
+
+SELECT  B.BUDGET_CODE, 
+A.ACCOUNT_NAME,B.PROPOSED_AMOUNT , (SELECT SUM(DEBIT_AMT-CREDIT_AMT)  FROM LEDGER 
+       WHERE  LEDGER.ACCOUNT_CODE=(SELECT ACCOUNT_CODE
+                                                                                FROM ACCOUNT
+                                                           WHERE ACCOUNT.USER_ACC=A.USER_ACC)) AS ACT_AMT ,2 AS INCOME
+FROM BUDGET B,ACCOUNT A
+WHERE B.BUDGET_CODE=A.USER_ACC
+AND A.ACCOUNT_group in ('6','7','8','10')

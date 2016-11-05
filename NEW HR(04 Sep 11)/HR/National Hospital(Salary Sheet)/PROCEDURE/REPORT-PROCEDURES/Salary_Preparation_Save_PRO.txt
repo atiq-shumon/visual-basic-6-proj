@@ -1,0 +1,93 @@
+create or replace procedure Salary_Preparation_Save(
+P_EMP_ID varchar2,
+P_EMP_NM varchar2,
+P_PAY_MONTH varchar2,
+P_PAY_YEAR varchar2,
+P_DESIGNATION varchar2,
+P_DEPT_NM varchar2,
+P_ATTN varchar2,
+P_LEAVE varchar2,
+P_BASIC number,
+P_H_RENT number,
+P_MED number,
+P_CONV number,
+P_TFN number,                   
+P_DA number,                    
+P_ARREAR number,                
+P_TELEPHONE number,             
+P_OTHERS_ALLOWANCE number,      
+P_OTHERS_ADDITION number,        
+P_PF_CONTRI_DEDUCTION number,   
+P_PF_LN_AMOUNT number,           
+P_SALARY_ADVANCE number,        
+P_R_STAMP number,                
+P_OTHERS_DEDUCTION number,       
+P_NET_PAYABLE number,           
+P_CREATE_DATE date,            
+P_CREATE_BY varchar2,             
+P_UPDATE_DATE date,
+P_Remarks varchar2,
+P_WORKING_DAY varchar2,
+P_SALARY_DISBURSE varchar2
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from Salary_Preparation
+where PAY_MONTH=P_PAY_MONTH and Emp_ID=p_Emp_ID AND PAY_YEAR=P_PAY_YEAR;
+if var_temp>0 then
+update Salary_Preparation
+set 
+	DA=P_DA,
+	ATTN =P_ATTN ,
+	LEAVE =P_LEAVE ,
+	ARREAR=P_ARREAR ,
+	TELEPHONE=P_TELEPHONE ,
+	OTHERS_ADDITION=P_OTHERS_ADDITION ,
+	PF_CONTRI_DEDUCTION=P_PF_CONTRI_DEDUCTION ,
+	PF_LN_AMOUNT =P_PF_LN_AMOUNT ,
+	SALARY_ADVANCE =P_SALARY_ADVANCE ,
+	R_STAMP=P_R_STAMP,           
+	OTHERS_DEDUCTION=P_OTHERS_DEDUCTION ,
+	UPDATE_DATE =P_UPDATE_DATE ,
+	Remarks=P_Remarks,
+	WORKING_DAY=P_WORKING_DAY
+where PAY_MONTH=P_PAY_MONTH and Emp_ID=p_Emp_ID AND PAY_YEAR=P_PAY_YEAR;
+else
+Insert into Salary_Preparation values(
+	P_EMP_ID ,
+	P_EMP_NM ,
+	P_PAY_MONTH ,
+	P_PAY_YEAR ,
+	P_DESIGNATION ,
+	P_DEPT_NM ,
+	P_ATTN ,
+	P_LEAVE ,
+	P_BASIC ,
+	P_H_RENT ,
+	P_MED ,
+	P_CONV ,
+	P_TFN ,
+	P_DA ,
+	P_ARREAR ,
+	P_TELEPHONE ,
+	P_OTHERS_ALLOWANCE ,
+	P_OTHERS_ADDITION ,
+	P_PF_CONTRI_DEDUCTION ,
+	P_PF_LN_AMOUNT ,
+	P_SALARY_ADVANCE ,
+	P_R_STAMP ,
+	P_OTHERS_DEDUCTION ,
+	P_NET_PAYABLE ,
+	P_CREATE_DATE ,
+	P_CREATE_BY ,
+	P_UPDATE_DATE,
+	P_Remarks,
+	P_WORKING_DAY,
+	0);
+
+end if;
+commit;
+end  Salary_Preparation_Save;
+/

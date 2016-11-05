@@ -1,0 +1,78 @@
+
+
+update salary_Preparation
+  set da=0,
+       net_payable=net_payable-((basic*15)/100)
+where pay_Month='August' and pay_year='2008'
+
+
+
+update salary_Preparation
+  set da=(basic*20)/100,S_da=(basic*15)/100,
+      arrear=arrear+(basic*20)/100, 
+       net_payable=net_payable+
+       ((basic*20)/100)+((basic*20)/100)+((basic*15)/100)
+where pay_Month='August' and pay_year='2008'
+
+
+
+update salary_Preparation
+  set arrear=0,
+       net_payable=net_payable-arrear
+where pay_Month='September' and pay_year='2008'
+
+
+
+
+
+
+
+
+
+
+update salary_Preparation a 
+  set a.designation=(select b.designation 
+      from salary_preparation b where  
+b.pay_Month='December' and b.pay_year='2009' and a.emp_id=b.emp_id and salary_type='R')
+where a.pay_Month='January' and a.pay_year='2010' and a.emp_id in (
+select emp_id 
+      from salary_preparation  where  
+pay_Month='December' and pay_year='2009')
+
+
+
+
+
+
+update salary_Preparation a 
+  set a.designation='SMO'
+where a.pay_Month in('October','November','December','January') and a.pay_year in('2009','2010')
+ and a.emp_id in ('1124','1119','1113','1117','1111','1106','1118','1107' )
+
+
+
+
+update salary_Preparation
+  set h_rent=round((CASE when (basic>=0 and basic<2000) then 0 
+            when (basic>=2000 and basic<=5000)  THEN  CASE WHEN BASIC*.65<2800 THEN 2800 ELSE BASIC*.65 END
+            when (basic>=5001 and basic<=10800)  THEN  CASE WHEN BASIC*.60<3300 THEN 3300 ELSE BASIC*.60 END
+            when (basic>=10801 and basic<=21600)  THEN  CASE WHEN BASIC*.55<6500 THEN 6500 ELSE BASIC*.55 END
+            when (basic>=21601)  THEN  CASE WHEN BASIC*.50<6500 THEN 11900 ELSE BASIC*.50 END
+            ELSE 1
+          end)),
+        MED=700,
+        CONV=(CASE WHEN EMP_CLASS!=1 THEN 150 else 0 END),
+        TFN=(case when TFN>0 then 150 else 0 end),
+       R_Stamp=0, 
+       arrear=0,
+       bonus_allowance=0,
+       S_DA=round(basic*.35),
+       PF_CONTRI_DEDUCTION=round((case when PF_CONTRI_DEDUCTION>0 then basic*.1 else 0 end))
+Where pay_Month='July' and pay_year='2010' AND SALARY_TYPE='R';
+
+
+update salary_preparation 
+    set   NET_PAYABLE=(BASIC+H_RENT+MED+CONV+TFN+DA+ARREAR+bonus_allowance+OTHERS_ADDITION+S_DA+OTHERS_ALLOWANCE)-(
+PF_CONTRI_DEDUCTION+PF_LN_AMOUNT+SALARY_ADVANCE+R_STAMP+OTHERS_DEDUCTION+nd_fund_deduct)         
+Where pay_Month='July' and pay_year='2010' AND SALARY_TYPE='R';
+

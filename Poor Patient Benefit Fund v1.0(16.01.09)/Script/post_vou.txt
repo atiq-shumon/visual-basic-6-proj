@@ -1,0 +1,95 @@
+create or replace procedure postvou(
+		p_vou_no IN   varchar2, p_vou_type IN  char)
+AS
+    CURSOR  vou_data  IS
+             SELECT track_id
+               FROM vou
+                  WHERE vou_no=p_vou_no and
+                   vou_type=p_vou_type and post_state=0;
+var_acc_code   varchar2(100);
+--var_state  varchar2(10);
+var_acc_lbl varchar2(10);
+var_acc_head  varchar2(100);
+var_track_id  integer;
+var_all_row  vou%rowtype;
+BEGIN
+
+--set transaction use rollback segment    ;
+savepoint sumon;
+OPEN  vou_data;
+
+
+ LOOP
+--while vou_data%found LOOP
+
+
+FETCH  vou_data INTO var_track_id;
+exit when vou_data%notfound;
+   select * into var_all_row from vou where track_id=var_track_id;
+   insert into ledger values(var_all_row.vou_no,
+                      var_all_row.vou_date,
+                      var_all_row.vou_narr,
+                      var_all_row.acc_code,
+        var_all_row.dr_amt,
+                      var_all_row.cr_amt,
+        var_all_row.vou_type,
+                      var_all_row.prj_code,
+                      var_all_row.u_id,
+                      var_all_row.dt,
+                      var_all_row.track_id,
+                      VAR_ALL_ROW.PARTICULAR_CODE,
+                       VAR_ALL_ROW.UNCASH_FLAG );
+   select acc_code into var_acc_code from vou
+   where track_id=var_track_id;
+   select acc_head,acc_lbl into var_acc_head,var_acc_lbl from acct
+                           where acc_code=var_acc_code;
+
+
+   if var_acc_lbl>1 then
+        <<label1>>
+
+--      loop
+
+         select * into var_all_row from vou where track_id=var_track_id;
+             insert into ledger
+                        values(var_all_row.vou_no,
+   var_all_row.vou_date,
+                       var_all_row.vou_narr,
+   --var_all_row.acc_code,
+                        var_acc_head,
+                        var_all_row.dr_amt,
+                        var_all_row.cr_amt,
+   var_all_row.vou_type,
+                        var_all_row.prj_code,
+                        var_all_row.u_id,var_all_row.dt,
+                        var_all_row.track_id,
+                        VAR_ALL_ROW.PARTICULAR_CODE,
+                       VAR_ALL_ROW.UNCASH_FLAG);
+
+   var_acc_code:=var_acc_head;
+                        --dbms_output.put_line(var_acc_code);
+        select acc_head,acc_lbl into var_acc_head,var_acc_lbl from acct
+        where acc_code=var_acc_code;
+
+       if var_acc_lbl>1 then goto label1;
+                       end if;
+             -------- exit when var_acc_lbl>1;
+          --------end loop;
+
+   ---update vou set post_state=1 where track_id =var_track_id;
+ update vou set post_state=1 where track_id in (select track_id from vou WHERE vou_no=p_vou_no and
+                   vou_type=p_vou_type and post_state=0);
+   --********************************************
+/*   FETCH  vou_data INTO var_track_id;
+   else
+   FETCH  vou_data INTO var_track_id;*/
+                 END if;
+                end loop;
+             CLOSE vou_data;
+--DEALLOCATE vou_data
+ exception
+          when others then  rollback to sumon;
+         --   if error  then rollback to sumon;
+--end if;
+       commit ;
+         END;

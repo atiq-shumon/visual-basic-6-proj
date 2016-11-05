@@ -1,0 +1,37 @@
+create or replace procedure Job_Ending_save(
+p_EMP_ID varchar2,
+p_EMP_NAME varchar2,
+p_DESIGNATION varchar,
+p_JOBENDING_TYPE varchar2,
+p_JOBENDINGDATE DATE,
+P_DESCIPTION varchar2,
+p_JOBENDINGSTATUS varchar2,
+p_Department varchar2)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from JOBENDING_INFO
+where EMP_ID=p_EMP_ID;
+if var_temp>0 then
+update JOBENDING_INFO
+set 
+	JOBENDING_TYPE=p_JOBENDING_TYPE,
+	JOBENDINGDATE=p_JOBENDINGDATE,
+	DESCIPTION=P_DESCIPTION,
+	JOBENDINGSTATUS=p_JOBENDINGSTATUS
+where EMP_ID=p_EMP_ID;
+else
+insert into JOBENDING_INFO values(
+	p_EMP_ID,
+	p_EMP_NAME,
+	p_DESIGNATION,
+	p_JOBENDING_TYPE,
+	p_JOBENDINGDATE,
+	P_DESCIPTION,
+	p_JOBENDINGSTATUS,
+	p_Department);
+end if;
+commit;
+end  Job_Ending_save;
+/

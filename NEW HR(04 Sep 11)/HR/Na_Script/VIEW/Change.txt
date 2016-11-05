@@ -1,0 +1,15 @@
+****Screen Loan Information 
+
+1. Add Txtbox on loan Screen(Form11-frmPFLoan_App) for showing Interest amount (code on installment combo)
+
+2. LoanLedgerReportform (coding Change)Find Char=zahid
+
+3. change on data base Procedure query===Rpt_Loan_Statment
+
+
+4. change on Crystal report===CrysLoanStatement
+4. change on Crystal report===CrysEmpLoanStatatus
+
+
+
+

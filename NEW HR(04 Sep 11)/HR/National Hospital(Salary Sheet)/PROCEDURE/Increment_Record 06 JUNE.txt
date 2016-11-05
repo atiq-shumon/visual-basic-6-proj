@@ -1,0 +1,11 @@
+Create table Increment_Record(
+Emp_Id varchar2(10),
+Amount number, 
+Last_Dt_Incre date, 
+Next_Dt_Incre date,
+Leave_withoutpay number,
+Leave_halfPay number,
+Update_Date date,
+TRACK_ID number,
+constraint Emp_Incre_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));
+

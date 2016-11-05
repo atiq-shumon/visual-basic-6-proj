@@ -1,0 +1,138 @@
+create table tempBl(
+  ACC_CODE                                  VARCHAR2(100),
+ ACC_NAME                                  VARCHAR2(100),
+ ACC_HEAD                                   VARCHAR2(100),
+ General_fund                              number(14,4),
+ TOT_BAL                                    NUMBER(14,4),
+ category                                  number(38), 
+ MAIN_GRP                                  NUMBER(38),
+ Sub_grp				   Number(38)
+)
+
+
+create or replace procedure rptbl  
+(
+	p_test_cursor in out test_package.test_type,p_st_dt date,p_ed_dt date)
+As
+	var_netpl number;
+	temp_dr number;
+	temp_cr number;
+        netProfitandLoss number;
+        fixedAsset number;
+        sumofGeneralFund number;
+   begin
+	delete from TempBL;
+	commit;
+
+--category 1.Non Current Liabilities called members fund and liabilities
+----------------------to get total income value
+   INSERT INTO  TempBL(((select a.acc_code,
+'Excess of Expenditure over Income',
+(select acc_head from acct where acct.acc_code=a.acc_code) ,
+0,nvl(sum(a.dr_amt-a.cr_amt),0)  ,1,5,1 from
+ ledger a,acct b where   (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+and b.acc_group in(5,8,9,10) and b.acc_lbl=1 and a.acc_code=b.acc_code and UPPER(a.VOU_TYPE)<>UPPER('OP') group by a.acc_code)));
+commit;
+
+select sum(TOT_BAL) into netProfitandLoss 
+   from  TempBL;
+
+delete from tempBL;
+commit;
+
+------------to get total fixed assets summary
+INSERT INTO  TempBL (((select a.acc_code,
+(select acc_name from acct where acct.acc_code=a.acc_code),
+(select acc_head from acct where acct.acc_code=a.acc_code) ,
+0,sum(((nvl((a.dr_amt-a.cr_amt),0)-b.salvage_value))*(select decode(b.DEP_RATE,0,1,b.dep_rate/100) from acct where acct.acc_code=b.acc_code and a.acc_code=b.acc_code)) 
+
+,2,3,0 from
+ ledger a,acct b where (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+and b.acc_group=0 and b.acc_lbl=1 and a.acc_code=b.acc_code group by a.acc_code)));
+commit;
+select sum(TOT_BAL) into fixedAsset
+   from  TempBL;
+
+delete from tempBL;
+commit;
+
+
+
+---non current liabilities  ---General Fund
+     ----------General_tot
+INSERT INTO  TempBL(((select a.acc_code,
+(select acc_name from acct where acct.acc_code=a.acc_code),
+(select acc_head from acct where acct.acc_code=a.acc_code) ,
+nvl(sum(a.dr_amt-a.cr_amt),0),0,1,1,0 from
+ ledger a,acct b where (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+and b.acc_group=4 and b.acc_lbl=1 and a.acc_code=b.acc_code and b.acc_code like '5103%' group by a.acc_code)));
+commit;
+
+---------------------showing  General_tot column
+if netProfitandLoss<0 then ----loss
+    INSERT INTO  TempBL values ( '',
+       'Excess of Income over Expenditure',
+           '',netProfitandLoss,0,1,1,1);
+ commit;
+   
+commit;
+else ---------profit
+  INSERT INTO  TempBL values ( '',
+'Excess of Expenditure over  Income',
+'',netProfitandLoss,0,1,1,1);
+ commit;
+
+end if;
+select sum(General_fund) into  sumofGeneralFund
+   from tempbl;
+commit;
+ INSERT INTO  TempBL values('','Total Members Fund','',0,sumofGeneralFund,1,1,2);
+
+ --rest of  non current liabilities  ---not General Fund
+INSERT INTO  TempBL(((select a.acc_code,
+(select acc_name from acct where acct.acc_code=a.acc_code),
+(select acc_head from acct where acct.acc_code=a.acc_code) ,0,
+nvl(sum(a.dr_amt-a.cr_amt),0) ,1,1,3
+ from
+ ledger a,acct b where (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+and b.acc_group=4 and b.acc_lbl=1 and a.acc_code=b.acc_code and b.acc_code not like '5103%' group by a.acc_code)));
+
+
+
+Commit;
+
+--Current Liabilities
+INSERT INTO  TempBL(((select a.acc_code,
+(select acc_name from acct where acct.acc_code=a.acc_code),
+(select acc_head from acct where acct.acc_code=a.acc_code) ,0,
+nvl(sum(a.dr_amt-a.cr_amt),0), 1,2,4 from
+ ledger a,acct b where (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+and b.acc_group=2 and b.acc_lbl=1 and a.acc_code=b.acc_code group by a.acc_code)));
+commit;
+
+
+--category 2.Current and Fixed Asset
+
+
+---Non Current Assets
+INSERT INTO  TempBL values ( '',
+'Fixed Asset',
+'',0,fixedAsset,2,3,5);
+ commit;
+
+
+--Current Assets
+INSERT INTO  TempBL(((select a.acc_code,
+(select acc_name from acct where acct.acc_code=a.acc_code),
+(select acc_head from acct where acct.acc_code=a.acc_code) ,0,
+nvl(sum(a.dr_amt-a.cr_amt),0),2,4,6 from
+ ledger a,acct b where (to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(a.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+and b.acc_group=1 and b.acc_lbl=1 and a.acc_code=b.acc_code group by a.acc_code)));
+commit;
+--****************************************************
+
+
+
+open p_test_cursor for
+ select * from tempBL;
+end;

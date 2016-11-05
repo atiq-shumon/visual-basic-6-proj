@@ -1,0 +1,44 @@
+create or replace procedure save_calculation_indoor(
+p_in_reg_no number,
+p_test_sum number,
+p_total_operation_sum number,
+p_bed_sum number,
+p_discount number,
+p_total number,
+p_miscelleneous_charge number,
+P_total_with_misce number,
+p_net_total_charge number,
+p_extra_bed_charge number)
+as
+var_annay_charge number;
+begin
+select sum(annay_charge) into var_annay_charge
+from Indoor_pat_Operation_info
+where in_reg_no=p_in_reg_no;
+
+
+update indoor_pat_money
+set
+ extra_bed_charge=p_extra_bed_charge,
+ anesthesia_charge=var_annay_charge,
+ test_sum=p_test_sum,
+bed_sum=p_bed_sum,
+total_operation_sum=p_total_operation_sum,
+discount=p_discount,
+total=p_total,
+miscelleneous_charge=p_miscelleneous_charge,
+total_with_misce=P_total_with_misce,
+net_total_charge=p_net_total_charge
+
+where in_reg_no=p_in_reg_no;
+commit;
+update bed_info
+set occupy_flag='0'
+where in_reg_no=p_in_reg_no;
+update in_door_Pat_Info_Main
+set release_flag=1
+where in_reg_no=p_in_reg_no;
+commit;
+delete from temp_calculation_indoor;
+commit;
+end save_calculation_indoor;

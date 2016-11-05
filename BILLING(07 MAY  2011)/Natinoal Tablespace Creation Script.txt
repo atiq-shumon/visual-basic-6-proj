@@ -1,0 +1,280 @@
+------------------Payroll --------------------------------------
+CREATE TABLESPACE NATIONAL_payroll DATAFILE 'D:\Databases\NATIONAL_payroll.dbf'
+SIZE 400M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER payroll IDENTIFIED BY payroll
+DEFAULT TABLESPACE NATIONAL_payroll
+
+   
+ GRANT CONNECT,RESOURCE,DBA TO payroll;
+
+
+------------------billing --------------------------------------
+
+ CREATE TABLESPACE NAT_bill DATAFILE 'D:\Databases\NATIONAL_bill'
+ SIZE 1500M
+ AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+
+ CREATE TEMPORARY TABLESPACE bill_temp
+ TEMPFILE 'D:\Databases\bill_temp.TMP'
+ SIZE 1000M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER HOSPITAL_billing IDENTIFIED BY NETWORK 
+DEFAULT TABLESPACE NAT_bill
+TEMPORARY TABLESPACE BILL_TEMP 
+QUOTA UNLIMITED ON NAT_BILL;
+
+   
+ GRANT CONNECT,RESOURCE,DBA TO HOSPITAL_billing ;
+
+
+
+
+------------------popular billing --------------------------------------
+
+ CREATE TABLESPACE Popular_bill DATAFILE 'D:\Databases\Popular_bill'
+ SIZE 700M
+ AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+
+CREATE USER popular_billing IDENTIFIED BY NETWORK 
+DEFAULT TABLESPACE popular_bill
+QUOTA UNLIMITED ON popular_BILL;
+
+   
+GRANT CONNECT,RESOURCE,DBA TO popular_billing ;
+
+
+
+
+------------------Accounts --------------------------------------
+
+CREATE TABLESPACE accounts_06_07 DATAFILE 'D:\Databases\accounts_06_07'
+SIZE 10M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE TEMPORARY TABLESPACE acct_temp_06_07
+ TEMPFILE 'D:\Databases\acct_temp_06_07.TMP'
+ SIZE 100M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER acct_06_07 IDENTIFIED BY dn_acct
+DEFAULT TABLESPACE accounts_06_07
+temporary tablespace acct_temp_06_07
+QUOTA UNLIMITED ON accounts_06_07;
+   
+GRANT CONNECT,RESOURCE,DBA TO acct_06_07;
+
+
+
+
+-----------acct 07 08
+
+CREATE TABLESPACE accounts_07_08 DATAFILE 'D:\Databases\accounts_07_08'
+SIZE 10M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE TEMPORARY TABLESPACE acct_temp_07_08
+ TEMPFILE 'D:\Databases\acct_temp_07_08.TMP'
+ SIZE 100M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER acct_07_08 IDENTIFIED BY dn_acct
+DEFAULT TABLESPACE accounts_07_08
+temporary tablespace acct_temp_07_08
+QUOTA UNLIMITED ON accounts_07_08;
+   
+GRANT CONNECT,RESOURCE,DBA TO acct_07_08;
+
+-----------acct 08 09
+
+CREATE TABLESPACE accounts_08_09 DATAFILE 'D:\Databases\accounts_08_09'
+SIZE 5M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE TEMPORARY TABLESPACE acct_temp_07_08
+ TEMPFILE 'D:\Databases\acct_temp_08_09.TMP'
+ SIZE 10M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER acct_08_09 IDENTIFIED BY dn_acct
+DEFAULT TABLESPACE accounts_08_09;
+temporary tablespace acct_temp_08_09
+QUOTA UNLIMITED ON accounts_08_09;
+   
+GRANT CONNECT,RESOURCE,DBA TO acct_08_09;
+
+
+
+-----------acct 09 10
+
+CREATE TABLESPACE accounts_09_10 DATAFILE 'D:\Databases\accounts_09_10'
+SIZE 5M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE TEMPORARY TABLESPACE acct_temp_09_10
+ TEMPFILE 'D:\Databases\acct_temp_09_10.TMP'
+ SIZE 10M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER acct_09_10 IDENTIFIED BY dn_acct
+DEFAULT TABLESPACE accounts_09_10
+temporary tablespace acct_temp_09_10
+QUOTA UNLIMITED ON accounts_09_10;
+   
+GRANT CONNECT,RESOURCE,DBA TO acct_09_10;
+
+
+
+-----------acct 10 11
+
+CREATE TABLESPACE accounts_10_11 DATAFILE 'D:\Databases\accounts_10_11'
+SIZE 5M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE TEMPORARY TABLESPACE acct_temp_10_11
+ TEMPFILE 'D:\Databases\acct_temp_10_11.TMP'
+ SIZE 10M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER acct_10_11 IDENTIFIED BY dn_acct
+DEFAULT TABLESPACE accounts_10_11
+temporary tablespace acct_temp_10_11
+QUOTA UNLIMITED ON accounts_10_11;
+   
+GRANT CONNECT,RESOURCE,DBA TO acct_10_11;
+
+
+------------------Pathology --------------------------------------
+CREATE TABLESPACE NATIONAL_pathology DATAFILE 'D:\Databases\NATIONAL_pathology'
+SIZE 30M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+CREATE USER hospital_pathology IDENTIFIED BY dn_hospital_pathology
+DEFAULT TABLESPACE NATIONAL_pathology
+
+   
+GRANT CONNECT,RESOURCE,DBA TO hospital_pathology;
+
+
+
+
+------------------inventory --------------------------------------
+CREATE TABLESPACE NATIONAL_inventory DATAFILE 'D:\Databases\NATIONAL_inventory'
+SIZE 300M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+
+
+ CREATE TEMPORARY TABLESPACE inventory_temp
+ TEMPFILE 'D:\Databases\inventory_temp.TMP'
+ SIZE 500M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+
+
+CREATE USER national_inventory IDENTIFIED BY dn_inventory
+DEFAULT TABLESPACE NATIONAL_inventory
+temporary tablespace inventory_temp
+QUOTA UNLIMITED ON NATIONAL_inventory;
+
+   
+ GRANT CONNECT,RESOURCE,DBA TO NATIONAL_inventory;
+
+
+
+
+-----------Poot Patient Benefit Fund
+CREATE TABLESPACE ppbf DATAFILE 'D:\Databases\ppbf.dbf'
+SIZE 10M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+/*
+CREATE TEMPORARY TABLESPACE acct_temp_07_08
+ TEMPFILE 'D:\Databases\acct_temp_07_08.TMP'
+ SIZE 100M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+*/
+
+CREATE USER ppbf IDENTIFIED BY dn_ppbf
+DEFAULT TABLESPACE ppbf;
+   
+GRANT CONNECT,RESOURCE,DBA TO ppbf;
+
+
+
+-----------------CP fund------------------------------
+CREATE TABLESPACE cpf DATAFILE 'D:\Databases\cpf.dbf'
+SIZE 10M
+AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+/*
+CREATE TEMPORARY TABLESPACE acct_temp_07_08
+ TEMPFILE 'D:\Databases\acct_temp_07_08.TMP'
+ SIZE 100M
+ EXTENT MANAGEMENT LOCAL
+ UNIFORM SIZE 5M;
+--- AUTOEXTEND ON MAXSIZE UNLIMITED;
+*/
+
+CREATE USER cpf IDENTIFIED BY dn_cpf
+DEFAULT TABLESPACE cpf;
+   
+GRANT CONNECT,RESOURCE,DBA TO cpf;
+
+
+
+
+Previleges:
+grant select on emp_info to national_inventory;
+grant select on test_info_main to hospital_pathology;
+grant select on test_info_sub to hospital_pathology;
+grant select on indoor_pat_bed_info to hospital_pathology;
+
+grant select on doctor_info to hospital_pathology;
+
+grant select on pat_info_main_out_door  to hospital_pathology;
+grant select on pat_info_sub1_out_door to hospital_pathology;
+
+
+grant select on emp_info to HOSPITAL_BILLING;
+grant select on emp_job_info to HOSPITAL_BILLING;
+grant select on st_desig to HOSPITAL_BILLING;
+
+GRANT EXECUTE ON GET_EMP_NAME TO HOSPITAL_BILLING;
+GRANT EXECUTE ON GET_EMP_CLASS TO HOSPITAL_BILLING;
+GRANT EXECUTE ON GET_EMP_DESIGNATION TO HOSPITAL_BILLING;
+
+GRANT EXECUTE ON GET_EMP_NAME TO popular_BILLING;
+GRANT EXECUTE ON GET_EMP_CLASS TO popular_BILLING;
+GRANT EXECUTE ON GET_EMP_DESIGNATION TO popular_BILLING;
+
+
+
+
+
+
+
+
+trancate table PAT_INFO_MAIN_OUT_DOOR_OLTP;
+trancate table PAT_INFO_SUB1_OUT_DOOR_OLTP;
+trancate table PAT_INFO_SUB3_OUT_DOOR_OLTP;

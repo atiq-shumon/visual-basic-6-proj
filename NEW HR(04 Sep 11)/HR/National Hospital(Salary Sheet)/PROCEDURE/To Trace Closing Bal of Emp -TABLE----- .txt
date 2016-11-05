@@ -1,0 +1,11 @@
+Create table Closing_PF_Balance(
+EMP_ID varchar2(10) ,
+Begin_Year varchar2(10),
+End_Year varchar2(10),
+Emp_Contrubution number,
+Employeer_Contribution number,
+Interest_Amount number,
+Opening_Amount number,
+Closeing_Amount number,
+Track_Id number,
+constraint Emp_PFBL_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));

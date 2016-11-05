@@ -1,0 +1,42 @@
+create or replace procedure Bonus_Update(
+    P_Pay_Month varchar2,	
+    P_Pay_year varchar2
+       
+)
+AS
+
+var_Emp_Id varchar2(10);
+Var_bonus NUMBER;
+
+October
+
+
+CURSOR MyCursor IS
+
+
+Select EMP_ID,telephone from BONUS_PREAPARATION where 
+		Pay_Month=P_Pay_Month and Pay_year=P_Pay_year;
+
+BEGIN
+	
+	OPEN MyCursor;
+	LOOP
+        	FETCH MyCursor INTO var_Emp_Id,Var_bonus ;
+		EXIT WHEN MyCursor%NOTFOUND;
+
+		Update  Salary_preparation set Telephone=Var_bonus  
+		where emp_id=var_Emp_Id and Pay_Month='October' and Pay_year='2005';			
+
+		
+		EXIT WHEN MyCursor%NOTFOUND;
+	END LOOP;
+	CLOSE MyCursor;
+	
+	 
+   COMMIT;
+END;
+
+
+
+
+select emp_id,telephone from salary_preparation where pay_month='October' and pay_year='2005';

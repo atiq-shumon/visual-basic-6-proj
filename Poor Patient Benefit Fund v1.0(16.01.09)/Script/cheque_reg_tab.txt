@@ -1,0 +1,82 @@
+CREATE TABLE CHEQUE_REG
+                       (serial_NO  number,
+                        Issue_DATE  DATE  NOT NULL, 
+                        nature varchar2(100),
+                        ID_NO  number, 
+                        cheque_no varchar2(30),
+                        Challan_no varchar2(30),
+                        party_code varchar2(30),
+			BANK_CODE VARCHAR2(30),
+                        Deposit NUMBER default 0 NOT NULL , 
+                        Bill_amt  NUMBER default 0 NOT NULL,
+                        U_ID vARCHAR2(50 byte) NOT NULL,
+                        DT  DATE default sysdate NOT NULL,
+                        paid_sts  number,
+                        rec_pay_sts number,
+                        CHK_CANCEL  NUMBER,
+                        D_O_Dep  date 
+)
+
+
+
+
+
+
+
+
+create or replace procedure s_U_D_CHQ_Reg(p_mode  number,
+                                         p_serial_NO  number,
+                                         p_Issue_DATE  DATE , 
+                                         p_nature varchar2,
+                                         p_ID_NO  number, 
+                                         p_cheque_no varchar2,
+                                         p_Challan_no varchar2,
+                                         p_party_code varchar2,
+                                         p_Bill_amt  NUMBER ,
+                                         p_U_ID vARCHAR,
+                                         p_rec_pay_sts number,
+                                         P_CHK_CANCEL NUMBER,
+					 P_BANK_CODE NUMBER,
+					 p_deposit_DATE date )
+			as 
+				begin    
+                                         if p_mode=1 then
+                                                    insert into  CHEQUE_REG (
+                                                            serial_NO,
+                                         		    Issue_DATE, 
+                                                            nature,
+                                         		    ID_NO, 
+                                         		    cheque_no,
+                                                            Challan_no,
+                                                            party_code,
+                                                            Bill_amt,
+                                                            U_ID,rec_pay_sts, CHK_CANCEL,bank_code,D_O_Dep) values
+							   (p_serial_NO,
+                                         		    p_Issue_DATE, 
+                                                            p_nature,
+                                         		    p_ID_NO, 
+                                         		    p_cheque_no,
+                                                            p_Challan_no,
+                                                            p_party_code,
+                                                            p_Bill_amt,
+                                                            p_U_ID,p_rec_pay_sts,P_CHK_CANCEL,p_bank_code,p_deposit_DATE);
+
+                                        elsif  p_mode=2 then        
+                                                 update CHEQUE_REG set 
+                                                          Issue_DATE=p_issue_date,
+                                                          nature=p_nature,
+							   Challan_no=p_challan_no,
+							    party_code=p_party_code,
+                                                            rec_pay_sts=p_rec_pay_sts,
+							    CHK_CANCEL=	P_CHK_CANCEL,
+                                                            Bill_amt=  p_Bill_amt,
+							    D_O_Dep=p_deposit_DATE	
+                                                   where   cheque_no=p_cheque_no and bank_code=p_bank_code;
+
+                                        ELSIF p_mode=3 then 
+                                                 DELETE FROM  CHEQUE_REG where   cheque_no=p_cheque_no and bank_code=p_bank_code;
+                                                          
+
+                      end if;
+                        commit;
+end;

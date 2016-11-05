@@ -1,0 +1,233 @@
+create or replace procedure S_U_d_PurchaseReturn_Main(
+    P_mode  int,
+    P_ReturnId varchar2,
+    P_ReturnDate date,
+    P_RetirnType varchar2,
+    P_SupplierId varchar2,
+    p_remarks   varchar2,
+    p_create_by   varchar2
+)
+as
+begin
+   if p_mode=1 then
+ insert into PurchaseReturnMain
+        values(P_ReturnId, P_ReturnDate,P_RetirnType,P_SupplierId,
+ p_remarks,NULL,sysdate,p_create_by);
+   end if;
+   if p_mode=2 then
+ UPDATE PurchaseReturnMain
+ SET PURRETURNDATE = P_ReturnDate,
+ SUPPLIERID = P_SupplierId,
+ REMARKS = p_remarks,
+ PURRETURNTYPE = P_RetirnType WHERE PURRETURNID = P_ReturnId;
+   end if;
+   commit;
+end;
+
+
+
+create or replace procedure S_U_d_PurchaseReturn_Sub(
+    P_mode  int,
+    P_ReturnId varchar2,
+    P_PurId varchar2,
+    P_ItemCode varchar2,
+    P_Qty number,
+    P_Rate number,
+    P_ExpDate date,
+    p_TrackId int
+    
+)
+as
+validation integer;
+begin
+   if p_mode=1 then
+	select count(*) into validation from  PurchaseReturnSub where PURRETURNID = P_ReturnId and PURID = P_PurId and to_number(ITEMCODE) = to_numer(P_ItemCode);
+	IF validation = 0 then
+ 		insert into PurchaseReturnSub
+        	values(P_ReturnId,P_PurId,P_ItemCode,P_Qty,P_Rate,P_ExpDate,(select nvl(max(trackid),0)+1 from PurchaseReturnSub));
+		
+		UPDATE PurchaseSub SET ReturnQty = ReturnQty + P_Qty WHERE PURID = P_PurId AND to_number(ITEMID) = to_number(P_ItemCode);
+	END IF;
+
+   end if;
+   
+   commit;
+end;
+
+
+
+create or replace procedure S_U_d_PurchaseReturn_Edit(
+    P_mode  int,
+    P_ReturnId varchar2,
+    P_ReturnDate date,
+    P_RetirnType varchar2,
+    P_SupplierId varchar2,
+    p_remarks   varchar2,
+    P_PurId varchar2,
+    P_ItemCode varchar2,
+    P_Qty number,
+    P_Rate number,
+    P_ExpDate date,
+    p_TrackId int,
+    P_NewTotalReturn number
+    
+)
+AS
+PreValance NUMBER;
+var_PURID varchar2(10);
+var_ITEMCODE varchar2(10);
+Var_RETURNQTY Number;
+CURSOR MyCursor IS
+    SELECT PURID, ITEMCODE, RETURNQTY
+          FROM purchasereturnsub 
+    WHERE PURRETURNID = P_ReturnId;
+
+BEGIN
+   IF p_mode = 1 then
+ 	DELETE FROM PurchaseReturnSub WHERE TRACKID = p_TrackId;
+	
+	UPDATE PurchaseSub SET ReturnQty = ReturnQty - P_Qty WHERE PURID = P_PurId AND to_number(ITEMID) = to_number(P_ItemCode);
+
+   END IF;
+
+   IF p_mode = 2 then
+	UPDATE PurchaseReturnMain SET PurReturnDate = P_ReturnDate,
+	PurReturnType = P_RetirnType, Remarks = p_remarks WHERE PurReturnId = P_ReturnId;
+
+	--
+        UPDATE PurchaseSub SET ReturnQty = ReturnQty + P_NewTotalReturn WHERE PURID = P_PurId AND to_number(ITEMID) = to_number(P_ItemCode);
+ 	UPDATE PurchaseReturnSub SET ReturnQty = P_Qty WHERE TrackId = p_TrackId;
+	
+   END IF;
+
+   
+   IF p_mode = 3 then
+	
+	OPEN MyCursor;
+	LOOP
+        	FETCH MyCursor INTO var_PURID, var_ITEMCODE, Var_RETURNQTY;
+		EXIT WHEN MyCursor%NOTFOUND;
+		UPDATE PurchaseSub SET ReturnQty = ReturnQty - Var_RETURNQTY WHERE PURID = var_PURID AND to_number(ITEMID) = to_number(var_ITEMCODE);
+		--INSERT INTO TEST VALUES (1);
+
+		DELETE FROM PurchaseReturnSub WHERE PURRETURNID = P_ReturnId AND to_number(ITEMCODE) = to_number(var_ITEMCODE);
+		EXIT WHEN MyCursor%NOTFOUND;
+	END LOOP;
+	CLOSE MyCursor;
+	DELETE FROM PurchaseReturnMain WHERE PurReturnId = P_ReturnId;
+	
+   END IF;
+   
+   COMMIT;
+END;
+
+
+create or replace procedure S_U_d_Adjustment_Main(
+    P_Mode  INTEGER,
+    P_AdjId VARCHAR2,
+    P_AdjDate DATE,
+    P_AdjType VARCHAR2,
+    P_remarks   VARCHAR2,
+    P_CreateBy VARCHAR2
+)
+AS
+BEGIN
+   IF P_Mode = 1 then
+ 	insert into AdjustmentMain
+        VALUES(P_AdjId,P_AdjDate,P_AdjType,P_remarks,Sysdate,P_CreateBy);
+   END IF;
+   
+   commit;
+end;
+
+
+create or replace procedure S_U_d_Adjustment_Sub(
+    P_Mode INTEGER,
+    P_AdjustmentId VARCHAR2,
+    P_PurId VARCHAR2,
+    P_ItemCode VARCHAR2,
+    P_Qty NUMBER,
+    P_Rate NUMBER,
+    P_ExpDate DATE,
+    p_TrackId INTEGER
+    
+)
+AS
+Validation INTEGER;
+BEGIN
+   IF P_Mode = 1 then
+	SELECT COUNT(*) INTO Validation from  AdjustmentSub where ADJUSTMENTID = P_AdjustmentId and PURID = P_PurId and ITEMCODE = P_ItemCode;
+	IF validation = 0 then
+ 		insert into AdjustmentSub
+        	values(P_AdjustmentId,P_PurId,P_ItemCode,P_Qty,P_Rate,P_ExpDate,(select nvl(max(trackid),0)+1 from AdjustmentSub));
+		
+		UPDATE PurchaseSub SET UsedQty = UsedQty + P_Qty WHERE PURID = P_PurId AND to_number(ITEMID) = to_number(P_ItemCode);
+	END IF;
+
+   end if;
+   
+   commit;
+end;
+
+
+
+create or replace procedure S_U_d_Adjustment_Edit(
+    P_Mode INTEGER,
+    P_AdjustmentId VARCHAR2,
+    P_AdjDate DATE,
+    P_AdjType VARCHAR2,
+    P_Remarks VARCHAR2,
+    P_PurId VARCHAR2,
+    P_ItemCode VARCHAR2,
+    P_Qty NUMBER,
+    P_Rate NUMBER,
+    P_ExpDate DATE,
+    p_TrackId INTEGER,
+    P_NewTotalAdj NUMBER
+    
+)
+AS
+Var_PURID VARCHAR2(10);
+Var_ITEMCODE VARCHAR2(10);
+Var_QTY Number;
+CURSOR MyCursor IS SELECT PurId, ItemCode, AdjQty FROM AdjustmentSub  WHERE AdjustmentId = P_AdjustmentId;
+
+BEGIN
+   IF p_Mode = 1 then
+ 	DELETE FROM AdjustmentSub WHERE TRACKID = p_TrackId;
+	
+	UPDATE PurchaseSub SET UsedQty = UsedQty - P_Qty WHERE PURID = P_PurId AND to_number(ITEMID) = to_number(P_ItemCode);
+
+   END IF;
+
+   IF p_Mode = 2 then
+	UPDATE AdjustmentMain SET AdjustmentDate = P_AdjDate,
+	AdjustmentType = P_AdjType, Remarks = P_Remarks WHERE AdjustmentId = P_AdjustmentId;
+
+	--
+        UPDATE PurchaseSub SET UsedQty = UsedQty + P_NewTotalAdj WHERE PURID = P_PurId AND to_number(ITEMID) = to_number(P_ItemCode);
+ 	UPDATE AdjustmentSub SET AdjQty = P_Qty WHERE TrackId = p_TrackId;
+	
+   END IF;
+
+   
+   IF p_mode = 3 then
+	
+	OPEN MyCursor;
+	LOOP
+        	FETCH MyCursor INTO Var_PURID, Var_ITEMCODE, Var_QTY;
+		EXIT WHEN MyCursor%NOTFOUND;
+		UPDATE PurchaseSub SET UsedQty = UsedQty - Var_QTY WHERE PURID = var_PURID AND to_number(ITEMID) = to_number(var_ITEMCODE);
+		EXIT WHEN MyCursor%NOTFOUND;
+	END LOOP;
+	CLOSE MyCursor;
+	DELETE FROM AdjustmentSub WHERE AdjustmentId = P_AdjustmentId;
+	DELETE FROM AdjustmentMain WHERE AdjustmentId = P_AdjustmentId;
+	
+   END IF;
+   
+   COMMIT;
+END;
+
+
+

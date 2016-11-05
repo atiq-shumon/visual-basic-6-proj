@@ -1,0 +1,177 @@
+
+
+
+CREATE         PROCEDURE [RptBL] 
+@st_dt datetime,
+@ed_dt datetime
+AS
+
+set nocount on
+
+Declare @Tot_pl money
+Declare @Opn_pl money
+
+create table #TempBL (
+	[acc_code] [varchar](10) NOT NULL,
+	[acc_name] [varchar](50) NOT NULL,
+	[acc_head] [varchar](10) NOT NULL,
+	[tot_bal] [money] DEFAULT (0.00),
+	[opn_bal] [money] DEFAULT (0.00),
+	[main_grp] [int])
+
+--non current assets
+insert into #TempBL
+select a.acc_code,
+acc_name=(select acc_name from acct where acc_code=a.acc_code),
+acc_head=(select acc_head from acct where acc_code=a.acc_code),
+tot_bal=isnull(sum(a.dr_amt-a.cr_amt),0),
+opn_bal=dbo.OpenBal(0,a.acc_code,@st_dt,''), 
+main_grp=1 from ledger a,acct b where a.acc_code=b.acc_code and
+a.acc_code like '21%' and b.acc_lbl=1 and a.vou_date<=@ed_dt 
+group by a.acc_code
+
+--if @@error<>0 goto err
+
+--current assets
+insert into #TempBL
+select a.acc_code,
+acc_name=(select acc_name from acct where acc_code=a.acc_code),
+acc_head=(select acc_head from acct where acc_code=a.acc_code),
+tot_bal=isnull(sum(a.dr_amt-a.cr_amt),0),
+opn_bal=dbo.OpenBal(0,a.acc_code,@st_dt,''),
+main_grp=2 from ledger a,acct b where a.acc_code=b.acc_code and
+a.acc_code like '11%' and b.acc_lbl=1 and a.vou_date<=@ed_dt 
+group by a.acc_code
+
+--if @@error<>0 goto err
+/*
+--closing stock1
+insert into #TempBL
+select acc_code='1119',
+acc_name=(select acc_name from acct where acc_code='1119'),
+acc_head=(select acc_head from acct where acc_code='1119'),
+tot_bal=sum(dr_amt-cr_amt),opn_bal=dbo.OpenBal_Bl(0,acc_code,''),
+main_grp=2 from ledger where acc_code='1119001' group by acc_code	
+
+--if @@error<>0 goto err
+
+--closing stock2
+insert into #TempBL
+select a.acc_code,
+acc_name=(select acc_name from acct where acc_code=a.acc_code),
+acc_head=(select acc_head from acct where acc_code=a.acc_code),
+tot_bal=isnull(sum(a.tot_bal),0),opn_bal=dbo.OpenBal_Bl(0,a.acc_code,''),
+main_grp=2 from closing_stock a,acct b where a.acc_code=b.acc_code 
+and b.acc_lbl=@lbl group by a.acc_code
+
+--if @@error<>0 goto err
+*/
+
+--current liabilities
+insert into #TempBL
+select a.acc_code,
+acc_name=(select acc_name from acct where acc_code=a.acc_code),
+acc_head=(select acc_head from acct where acc_code=a.acc_code),
+tot_bal=isnull(sum(a.cr_amt-a.dr_amt),0),opn_bal=dbo.OpenBal(0,a.acc_code,@st_dt,''),
+main_grp=3 from ledger a,acct b where a.acc_code=b.acc_code and
+a.acc_code like '31%' and b.acc_lbl=1 and a.vou_date<=@ed_dt 
+group by a.acc_code
+
+--if @@error<>0 goto err
+
+--net current assets
+insert into #TempBL
+select acc_code='001',acc_name='Net Current Assets',
+acc_head='01',tot_bal=sum(case main_grp when 2 then tot_bal
+			                when 3 then -tot_bal
+					else 0 end),
+opn_bal=sum(case main_grp when 2 then opn_bal
+			  when 3 then -opn_bal
+			  else 0 end),main_grp=4
+from #TempBL where main_grp in(2,3)
+
+--if @@error<>0 goto err
+
+--total assets
+insert into #TempBL
+select acc_code='002',acc_name='Total Assets',
+acc_head='02',tot_bal=sum(case main_grp when 1 then tot_bal
+			                when 4 then tot_bal					
+					else 0 end),
+opn_bal=sum(case main_grp when 1 then opn_bal
+ 	                  when 4 then opn_bal			  
+			  else 0 end),main_grp=5
+from #TempBL where main_grp in(1,4)
+
+--if @@error<>0 goto err
+
+--equity
+insert into #TempBL
+select a.acc_code,
+acc_name=(select acc_name from acct where acc_code=a.acc_code),
+acc_head=(select acc_head from acct where acc_code=a.acc_code),
+tot_bal=isnull(sum(a.cr_amt-a.dr_amt),0),opn_bal=dbo.OpenBal(0,a.acc_code,@st_dt,''),
+main_grp=6 from ledger a,acct b where a.acc_code=b.acc_code and
+a.acc_code like '51%' and b.acc_lbl=1 and a.vou_date<=@ed_dt 
+group by a.acc_code
+
+--if @@error<>0 goto err
+
+--Current year profit/(loss) ac
+set @Tot_pl=isnull((select sum(a.cr_amt-a.dr_amt)from ledger a,acct b 
+where a.acc_code=b.acc_code and b.acc_group in(4,5,6,7,8)
+and b.acc_lbl=1 and a.vou_date<=@ed_dt),0)
+
+set @Opn_pl=isnull((select sum(a.cr_amt-a.dr_amt)from ledger a,acct b 
+where a.acc_code=b.acc_code and b.acc_group in(4,5,6,7,8)
+and b.acc_lbl=1 and a.vou_date<@st_dt),0)
+
+insert into #TempBL
+select acc_code='X-5102',acc_name='Current Year Profit/(Loss) AC',
+acc_head='51',tot_bal=@Tot_pl,opn_bal=@Opn_pl,main_grp=6
+
+--********************************
+--********************************
+
+--non current liabilities
+insert into #TempBL
+select a.acc_code,
+acc_name=(select acc_name from acct where acc_code=a.acc_code),
+acc_head=(select acc_head from acct where acc_code=a.acc_code),
+tot_bal=isnull(sum(a.cr_amt-a.dr_amt),0),opn_bal=dbo.OpenBal(0,a.acc_code,@st_dt,''),
+main_grp=7 from ledger a,acct b where a.acc_code=b.acc_code and
+a.acc_code like '41%' and b.acc_lbl=1 and a.vou_date<=@ed_dt 
+group by a.acc_code
+
+--if @@error<>0 goto err
+
+--total liabilities
+insert into #TempBL
+select acc_code='003',acc_name='Total Liabilities',
+acc_head='03',tot_bal=sum(tot_bal),opn_bal=sum(opn_bal),
+main_grp=8 from #TempBL  where main_grp in(6,7)
+
+--if @@error<>0 goto err
+
+select * from #TempBL order by main_grp,acc_code
+
+
+set nocount off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+2

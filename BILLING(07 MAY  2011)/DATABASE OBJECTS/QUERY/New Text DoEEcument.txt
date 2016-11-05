@@ -1,0 +1,3 @@
+truncate table PAT_INFO_MAIN_OUT_DOOR_OLTP CASCADE ;
+truncate table PAT_INFO_SUB1_OUT_DOOR_OLTP;
+truncate table PAT_INFO_SUB3_OUT_DOOR_OLTP;

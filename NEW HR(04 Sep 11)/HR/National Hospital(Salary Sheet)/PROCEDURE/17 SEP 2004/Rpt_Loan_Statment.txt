@@ -1,0 +1,50 @@
+create or replace procedure Rpt_Loan_Statment(p_test_cursor in out
+test_package.test_type,
+P_EmpID varchar2,
+P_BEGIN_YEAR Date,
+P_END_YEAR Date
+)
+as
+begin
+begin
+If P_EmpID is null then
+open p_test_cursor for
+
+	
+	SELECT EMP_INFO.EMP_NM,EMP_INFO.emp_id,
+	ST_DESIG.DESIGNATION,
+	ST_DEPT.DEPT_NM,
+	St_JbType.JType_Nm,
+	loanInformation_main.LOANISSUEDATE,
+	loanInformation_main.NOOFINSTALLMENT,
+	loanInformation_main.SLABINSTALLMENTAMOUNT ,
+	loanInformation_main.ISSUEDAMOUNT
+	FROM EMP_INFO,EMP_JOB_INFO,ST_DEPT,St_Desig,St_JbType,LoanInformation_main 
+	WHERE ((EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	and  (EMP_JOB_INFO.EMP_ID=loanInformation_main.emp_id)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE) 
+	AND (EMP_JOB_INFO.DEPT=ST_DEPT.DEPT_CODE) 
+	AND (EMP_JOB_INFO.JTYPE=ST_JBTYPE.JTYPE_CODE) 
+	and (loaninformation_main.EMP_ID=P_EmpID));
+else
+open p_test_cursor for
+
+	SELECT EMP_INFO.EMP_NM,EMP_INFO.emp_id,
+	ST_DESIG.DESIGNATION,
+	ST_DEPT.DEPT_NM,
+	St_JbType.JType_Nm,
+	loanInformation_main.LOANISSUEDATE,
+	loanInformation_main.NOOFINSTALLMENT,
+	loanInformation_main.SLABINSTALLMENTAMOUNT,
+	loanInformation_main.ISSUEDAMOUNT 
+	FROM EMP_INFO,EMP_JOB_INFO,ST_DEPT,St_Desig,St_JbType,LoanInformation_main 
+	WHERE ((EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	and  (EMP_JOB_INFO.EMP_ID=loanInformation_main.emp_id)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE) 
+	AND (EMP_JOB_INFO.DEPT=ST_DEPT.DEPT_CODE) 
+	AND (EMP_JOB_INFO.JTYPE=ST_JBTYPE.JTYPE_CODE)
+	AND  (loanInformation_main.LOANISSUEDATE 
+	BETWEEN P_BEGIN_YEAR AND P_END_YEAR));
+end if ;
+end ;
+end Rpt_Loan_Statment;

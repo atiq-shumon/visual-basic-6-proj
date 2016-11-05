@@ -1,0 +1,311 @@
+create table Emp_Info(
+  Emp_Id varchar2(10) not null primary key,
+  Emp_Nm varchar2(25) not null,
+  Emp_Fat_Nm varchar2(25) ,
+  Emp_Mat_Nm varchar2(25) ,
+  DOB Date,
+  Relegion varchar2(1) not null,
+  Gender varchar2(1) not null,
+  Nationality varchar2(50),
+  P_Address varchar2(100),
+  P_Ps varchar2(50),
+  P_Post varchar2(50),
+  P_Dist varchar2(50),
+  P_Country varchar2(50),	
+  C_Address varchar2(100),  
+  C_Ps varchar2(50),
+  C_Post varchar2(50),
+  C_Dist varchar2(50),
+  C_Country varchar2(50),
+  Telephone varchar2(50),
+  Cellphone varchar2(50),
+  Email varchar2(50),
+  Code_No Varchar2(50),
+  Marital_Status varchar2(1)
+  	
+
+ );
+
+create table Emp_Job_Info(
+   Emp_Id  Varchar2(10) Constraint fk_Emp_Id references Emp_Info(Emp_Id),
+   Desig varchar2(50) not null,
+   Dept varchar2(50) not null,
+   JType varchar2(10) not null,
+   Jdate Date not null,
+   PDate Date not null,
+   File_Ref_No varchar2(50) not null,
+   Service_Bk_Nm varchar2(20) not null,
+   Responsibility varchar(200) not null,
+   Scale_Code Varchar2 (10) not null,
+   Basic_Sal number(8.2) not null,
+   Mode_Of_Payment varchar2(2) not null,
+   Bankname varchar2(50) not null,
+   Branch_name varchar2(50) ,
+   Acc_No varchar2(10) ,
+   Pf_Mem varchar2(1) not null,
+   Pf_Mem_No varchar2(10) not null,
+   Pre_Bal number(10.2) not null
+  
+
+ );
+
+ Create or Replace PACKAGE Pkg_Emp_Info AS
+    TYPE Emp_Info_cur IS REF CURSOR;
+    PROCEDURE Emp_Info_IU(
+  p_Emp_Id IN varchar2,
+  p_Emp_Nm IN varchar2,
+  p_Emp_Fat_Nm IN varchar2 ,
+  p_Emp_Mat_Nm IN varchar2 ,
+  p_DOB IN Date,
+  p_Relegion IN varchar2 ,
+  p_Gender IN varchar2 ,
+  p_Nationality IN varchar2,
+  p_P_Address IN varchar2,
+  p_P_Ps IN varchar2,
+  p_P_Post IN varchar2,
+  p_P_Dist IN varchar2,
+  p_P_Country IN varchar2,	
+  p_C_Address IN varchar2,  
+  p_C_Ps IN varchar2,
+  p_C_Post IN varchar2,
+  p_C_Dist IN varchar2,
+  p_C_Country IN varchar2,
+  p_Telephone IN varchar2,
+  p_Cellphone IN varchar2,
+  p_Email IN varchar2,
+  p_Code_No IN Varchar2,
+  p_Marital_Status IN varchar2
+                   );
+     PROCEDURE Emp_Info_GetX(
+                             p_Emp_ID IN Varchar2,
+                             p_cursor OUT Emp_Info_cur,
+                             p_errorcode OUT NUMBER);
+     PROCEDURE Emp_Job_Info_GetX(p_Emp_ID IN Varchar2,
+                             p_cursor OUT Emp_Info_cur,
+                            p_errorcode OUT NUMBER );
+  PROCEDURE  Emp_Job_Info_IU(p_Emp_Id IN  Varchar2,
+   
+   p_Desig IN varchar2 ,
+   p_Dept IN varchar2,
+   p_JType IN varchar2,
+   p_Jdate IN Date ,
+   p_PDate IN Date ,
+   p_File_Ref_No IN varchar2,
+   p_Service_Bk_Nm IN varchar2,
+   p_Responsibility IN varchar2,
+   p_Scale_Code IN number,
+   p_Basic_Sal IN number,
+   p_Mode_Of_Payment IN varchar2,
+   p_Bankname IN varchar2,
+   p_Branch_name IN varchar2 ,
+   p_Acc_No IN varchar2 ,
+   p_Pf_Mem IN varchar2,
+   p_Pf_Mem_No IN varchar2,
+   p_Pre_Bal IN number
+  
+  );
+  end Pkg_Emp_Info;
+
+Create or Replace Package Body Pkg_Emp_Info AS
+   PROCEDURE Emp_Info_IU
+   (p_Emp_Id varchar2,
+  p_Emp_Nm varchar2,
+  p_Emp_Fat_Nm varchar2 ,
+  p_Emp_Mat_Nm varchar2 ,
+  p_DOB Date,
+  p_Relegion varchar2 ,
+  p_Gender varchar2 ,
+  p_Nationality varchar2,
+  p_P_Address varchar2,
+  p_P_Ps varchar2,
+  p_P_Post varchar2,
+  p_P_Dist varchar2,
+  p_P_Country varchar2,	
+  p_C_Address varchar2,  
+  p_C_Ps varchar2,
+  p_C_Post varchar2,
+  p_C_Dist varchar2,
+  p_C_Country varchar2,
+  p_Telephone varchar2,
+  p_Cellphone varchar2,
+  p_Email varchar2,
+  p_Code_No Varchar2,
+  p_Marital_Status varchar2
+  
+                   )              
+    AS
+    L_Row_Num number:=0;
+   begin
+      select count (Emp_ID) into L_Row_Num from Emp_Info
+                    where Emp_Id =p_Emp_Id ;
+            if L_Row_Num=0 then
+                    Insert into  Emp_Info
+     values (p_Emp_Id ,
+  p_Emp_Nm ,
+  p_Emp_Fat_Nm  ,
+  p_Emp_Mat_Nm  ,
+  p_DOB ,
+  p_Relegion  ,
+  p_Gender  ,
+  p_Nationality ,
+  p_P_Address ,
+  p_P_Ps ,
+  p_P_Post ,
+  p_P_Dist ,
+  p_P_Country ,	
+  p_C_Address ,  
+  p_C_Ps ,
+  p_C_Post ,
+  p_C_Dist ,
+  p_C_Country ,
+  p_Telephone ,
+  p_Cellphone ,
+  p_Email ,
+  p_Code_No ,
+  p_Marital_Status
+    
+    
+     );
+                    delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update  Emp_Info
+                   set Emp_Id=p_Emp_Id ,
+  Emp_Nm=p_Emp_Nm ,
+  Emp_Fat_Nm=p_Emp_Fat_Nm  ,
+  Emp_Mat_Nm=p_Emp_Mat_Nm  ,
+  DOB=p_DOB ,
+  Relegion=p_Relegion  ,
+  Gender=p_Gender  ,
+  Nationality=p_Nationality ,
+  P_Address=p_P_Address ,
+  P_Ps=p_P_Ps ,
+  P_Post=p_P_Post ,
+  P_Dist=p_P_Dist ,
+  P_Country=p_P_Country ,	
+  C_Address=p_C_Address ,  
+  C_Ps=p_C_Ps ,
+  C_Post=p_C_Post ,
+  C_Dist=p_C_Dist ,
+  C_Country=p_C_Country ,
+  Telephone=p_Telephone ,
+  Cellphone=p_Cellphone ,
+  Email=p_Email ,
+  Code_No=p_Code_No ,
+  Marital_Status=p_Marital_Status
+       where Emp_Id =p_Emp_Id;
+                 delete from temp;
+      insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+procedure Emp_Job_Info_IU(p_Emp_Id  Varchar2,
+   
+   p_Desig  varchar2 ,
+   p_Dept  varchar2,
+   p_JType  varchar2,
+   p_Jdate  Date ,
+   p_PDate  Date ,
+   p_File_Ref_No  varchar2,
+   p_Service_Bk_Nm  varchar2,
+   p_Responsibility  varchar2,
+   p_Scale_Code  number,
+   p_Basic_Sal  number,
+   p_Mode_Of_Payment  varchar2,
+   p_Bankname  varchar2,
+   p_Branch_name  varchar2 ,
+   p_Acc_No  varchar2 ,
+   p_Pf_Mem  varchar2,
+   p_Pf_Mem_No  varchar2,
+   p_Pre_Bal  number
+  
+
+   )
+  AS
+    L_Row_Num number:=0;
+   begin
+      select count (Emp_Id) into L_Row_Num from Emp_Job_Info
+                    where Emp_ID=p_Emp_ID;
+            if L_Row_Num=0 then
+                    Insert into  Emp_Job_Info
+     values (p_Emp_Id  ,
+   
+   p_Desig   ,
+   p_Dept  ,
+   p_JType  ,
+   p_Jdate   ,
+   p_PDate   ,
+   p_File_Ref_No  ,
+   p_Service_Bk_Nm  ,
+   p_Responsibility  ,
+   p_Scale_Code  ,
+   p_Basic_Sal  ,
+   p_Mode_Of_Payment  ,
+   p_Bankname  ,
+   p_Branch_name   ,
+   p_Acc_No   ,
+   p_Pf_Mem  ,
+   p_Pf_Mem_No  ,
+   p_Pre_Bal 
+    );
+            delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update  Emp_Job_Info
+                   set Emp_Id=p_Emp_Id  ,
+   
+   Desig=p_Desig   ,
+   Dept=p_Dept  ,
+   JType=p_JType  ,
+   Jdate=p_Jdate   ,
+   PDate=p_PDate   ,
+   File_Ref_No=p_File_Ref_No  ,
+   Service_Bk_Nm=p_Service_Bk_Nm  ,
+   Responsibility=p_Responsibility  ,
+   Scale_Code=p_Scale_Code  ,
+   Basic_Sal=p_Basic_Sal  ,
+   Mode_Of_Payment=p_Mode_Of_Payment  ,
+   Bankname=p_Bankname  ,
+   Branch_name=p_Branch_name   ,
+   Acc_No=p_Acc_No   ,
+   Pf_Mem=p_Pf_Mem  ,
+   Pf_Mem_No=p_Pf_Mem_No  ,
+   Pre_Bal=p_Pre_Bal
+   
+                   where  Emp_ID=p_Emp_ID;
+         delete from temp;
+    insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+PROCEDURE Emp_Job_Info_GetX(p_Emp_ID IN Varchar2,
+                            p_cursor OUT Emp_Info_cur,
+                           p_errorcode OUT NUMBER )
+   IS
+  BEGIN
+      p_errorcode := 0;
+      OPEN p_cursor FOR
+        SELECT *
+        FROM Emp_Job_Info
+        WHERE  Emp_ID=p_Emp_ID;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+PROCEDURE Emp_Info_GetX(
+                            p_Emp_ID IN Varchar2,
+                            p_cursor OUT Emp_Info_cur,
+                            p_errorcode OUT NUMBER)
+    IS
+  BEGIN
+      p_errorcode := 0;
+      OPEN p_cursor FOR
+        SELECT *
+        from Emp_Info
+        where Emp_Id =p_Emp_Id ;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+ END Pkg_Emp_Info;
+/

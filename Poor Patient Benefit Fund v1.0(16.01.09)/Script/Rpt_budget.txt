@@ -1,0 +1,36 @@
+create or replace procedure rpt_budget
+(p_test_cursor in out test_package.test_type,p_mode   integer,p_fiscal_yr varchar2)
+	AS
+		begin
+
+ 	if p_mode=1 then
+             open p_test_cursor for --INCOME
+                  select b.acc_code,
+                  (select a.acc_name from acct a where a.acc_code=b.acc_code) as acc_name,
+                  (select a.acc_name_beng from acct a where a.acc_code=b.acc_code) as acc_name_beng,
+                   b.proposed_amount AS PROPOSED_AMT,
+                   (SELECT NVL(sum(l.cr_amt),0) FROM LEDGER L WHERE L.ACC_CODE=b.acc_code AND UPPER(L.VOU_TYPE)<>'OP') CR_AMT,
+                  (SELECT NVL(sum(l.Dr_amt),0) FROM LEDGER L WHERE L.ACC_CODE=b.acc_code AND UPPER(L.VOU_TYPE)<>'OP') DR_AMT,
+               1 as grp
+             from budget b
+	 where  b.fiscal_yr_code=p_fiscal_yr
+               AND B.Income_exp_indicator=1;
+
+
+    ELSIF p_mode=2 then
+             open p_test_cursor for --EXPENSE
+               select b.acc_code,
+                  (select a.acc_name from acct a where a.acc_code=b.acc_code) as acc_name,
+                  (select a.acc_name_beng from acct a where a.acc_code=b.acc_code) as acc_name_beng,
+                   b.proposed_amount AS PROPOSED_AMT,
+                   (SELECT NVL(sum(l.cr_amt),0) FROM LEDGER L WHERE L.ACC_CODE=b.acc_code AND UPPER(L.VOU_TYPE)<>'OP') CR_AMT,
+                  (SELECT NVL(sum(l.Dr_amt),0) FROM LEDGER L WHERE L.ACC_CODE=b.acc_code AND UPPER(L.VOU_TYPE)<>'OP') DR_AMT,
+               2 as grp
+             from budget b
+	 where  b.fiscal_yr_code=p_fiscal_yr
+               AND B.Income_exp_indicator=2;
+
+   end if;
+
+
+end ;

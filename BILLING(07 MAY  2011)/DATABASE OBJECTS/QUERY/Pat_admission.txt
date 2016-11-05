@@ -1,0 +1,3 @@
+select doc_dept,count(in_reg_no) as admitted
+  from in_door_pat_info_main
+group by doc_dept;

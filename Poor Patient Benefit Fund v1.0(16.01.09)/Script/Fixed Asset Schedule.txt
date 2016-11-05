@@ -1,0 +1,101 @@
+create or replace procedure rpt_asset_schedule
+( p_test_cursor in out test_package.test_type,p_Option integer,p_date1  date,p_date2 date
+)
+as
+begin
+  if p_Option=0 then  ---fixed asset schedule(upper level)
+	open p_test_cursor for 
+     select l.acc_code, (select acc_name from acct where acc_code=l.acc_code) as acc_name,
+         (select nvl(sum(dr_amt),0) from ledger where 										
+         upper(ledger.vou_type)=upper('op') and 
+	        ledger.acc_code=l.acc_code ) as opening,
+    (select nvl(sum(ledger.dr_amt),0) from ledger
+             where ledger.acc_code=l.acc_code and 
+                 upper(ledger.vou_type)<>upper('op') and 
+(to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<=to_date(to_char(p_date2,
+			'dd-mon-yyyy'),'dd-mon-yyyy')))     as addition,
+ (select nvl(sum(ledger.cr_amt),0) from ledger
+             where ledger.acc_code=l.acc_code and 
+                 upper(ledger.vou_type)<>upper('op') and 
+(to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<=to_date(to_char(p_date2,
+			'dd-mon-yyyy'),'dd-mon-yyyy')))     as addjustment
+ ,(select distinct(DEP_RATE) from acct where acc_code=l.acc_code) as  dep_rate,
+(select distinct(SALVAGE_VALUE) from acct where acc_code=l.acc_code) 
+          as salvage_value
+    from ledger  l
+               where l.acc_code like '1101%' and l.acc_code  in (select acc_code  from acct  where ACC_LBL=2)
+                  group by l.acc_code ;
+end if;
+
+/*
+end;
+ if p_Option=1 then                        ---fixed asset schedule(Lower level)
+	open p_test_cursor for 
+	     select l.acc_code,
+             (select acc_name from acct where acc_code=l.acc_code) as                           acc_name
+,
+        (select nvl(sum(dr_amt),0) from ledger where 							upper(ledger.vou_type)=upper('op') and 
+       				 ledger.acc_code not  in (select acc_head  from acct) and ledger.acc_code=l.acc_code)  as opening
+ ,  (select DEP_RATE from acct where acc_code=l.acc_code) as  dep_rate,
+                  (select SALVAGE_VALUE from acct where acc_code=l.acc_code) as salvage_value
+
+,
+                 (select nvl(sum(ledger.dr_amt),0) from ledger where 						ledger.acc_code=l.acc_code and                                      			upper(ledger.vou_type)<>upper('op') and ( 					                      to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<to_date(to_char(p_date1,
+			'dd-mon-yyyy'),'dd-mon-yyyy')))          as prev_addition
+,
+			(select nvl(sum(ledger.cr_amt),0) from ledger where  						ledger.acc_code=l.acc_code and                                      upper(ledger.vou_type)<>upper('op') and (                                			to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                  		 )) as prev_addjust,
+
+
+               (select nvl(sum(ledger.dr_amt),0) from ledger where                                    		ledger.acc_code=l.acc_code and                                      			upper(ledger.vou_type)<>upper('op') and (                                       			to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and 						to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=
+			to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))) as addition, 	               (select nvl(sum(ledger.cr_amt),0) from ledger where             	             ledger.acc_code=l.acc_code and upper(ledger.vou_type)<>upper('op') and (                          to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=
+		      to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and  		                        to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') )) 			as                         adjust
+
+                        from ledger  l
+               where l.acc_code like '11%' and   l.acc_code not in (
+select acc_head  from acct)
+                  group by l.acc_code ;
+end if;
+
+
+*/
+if p_Option=2 then   -------stock schedule
+	open p_test_cursor for 
+		    select l.acc_code,
+		          (select acc_name from acct where acc_code=l.acc_code) as acc_name,
+		              (select nvl(sum(dr_amt),0) from ledger where upper(ledger.vou_type)=upper('op') and 
+                                      ledger.acc_code=l.acc_code) as opening,
+		                  (select distinct(DEP_RATE) from acct where acc_code=l.acc_code) as dep_rate,
+                       (select distinct(SALVAGE_VALUE) from acct where acc_code=l.acc_code) as  
+                             salvage_value,(select nvl(sum(ledger.dr_amt),0) from ledger where   ledger.acc_code=l.acc_code and 
+                           upper(ledger.vou_type)<>upper('op') and (                                			to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                  		 )) as prev_addition, (select nvl(sum(ledger.cr_amt),0) from ledger where 
+                    ledger.acc_code=l.acc_code and upper(ledger.vou_type)<>upper('op') and (                                			to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                  		 )) as prev_addjust,
+                            (select nvl(sum(ledger.dr_amt),0) from ledger where 
+                             ledger.acc_code=l.acc_code and      
+                                upper(ledger.vou_type)<>upper('op') and  (                          to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=
+		      to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and  		                        to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') )) as addition,
+                                  (select nvl(sum(ledger.cr_amt),0) from ledger where    
+                  ledger.acc_code=l.acc_code and upper(ledger.vou_type)<>upper('op')     and  (                          to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=
+		      to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and  		                        to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+			<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy') ))  as  adjust
+
+   	      from ledger  l
+             
+       where l.acc_code like '2101%' and l.acc_code  in (select acc_code from acct where acc_lbl='2')
+           group by l.acc_code ;
+end if;
+
+end;
+	      
+

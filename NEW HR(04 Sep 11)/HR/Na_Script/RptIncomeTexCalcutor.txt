@@ -1,0 +1,29 @@
+create or replace procedure rpt_Income_tax_calc(
+ P_TEST_CURSOR IN OUT TEST_PACKAGE.TEST_TYPE,
+ p_mode number,
+ st_dt date,
+ ed_dt date,
+ P_emp_id VARCHAR2
+)
+AS
+
+BEGIN
+/*  staff wise   */
+
+if p_mode=1 then
+   open p_test_cursor for
+       SELECT EMP_ID employee_id,(SELECT DECODE(GENDER,1,'M','F') FROM EMP_INFO WHERE EMP_INFO.EMP_ID=SALARY_PREPARATION.EMP_ID) SEX, MAX(EMP_NM) employee_name, MAX(upper(DEPT_NM)) department_name, MAX(upper(DESIGNATION)) DESIGNATION,SUM(BASIC),SUM(H_RENT),SUM(MED),SUM(CONV),SUM(TFN),
+        SUM(DA),sum(S_da) AS NA,SUM(DRESS_ALLOWANCE) AS DRESS_ALLOW,SUM(ARREAR),SUM(Bonus_Allowance) AS FB,SUM(OTHERS_ALLOWANCE),SUM(OTHERS_ADDITION),SUM(EDU_ASST_ALLOWANCE),
+         SUM(PF_CONTRI_DEDUCTION),SUM(PF_LN_AMOUNT),SUM(SALARY_ADVANCE),SUM(R_STAMP),SUM(ND_FUND_DEDUCT) AS ND_DEDUCTION
+       ,sum(OTHERS_DEDUCTION) Others_Deduction
+                 FROM SALARY_PREPARATION
+ where (to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            >=to_date(to_char(st_dt,'dd-mon-rrrr'),'dd-mon-rrrr')
+           and to_date(to_char(create_date,'dd-mon-rrrr'),'dd-mon-rrrr')
+            <=to_date(to_char(ed_dt,'dd-mon-rrrr'),'dd-mon-rrrr'))
+            AND upper(emp_id) =upper(P_emp_id) 
+         group by emp_id;
+
+end if;
+
+END;

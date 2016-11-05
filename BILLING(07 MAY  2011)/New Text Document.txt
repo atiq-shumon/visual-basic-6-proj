@@ -1,0 +1,204 @@
+CREATE TABLE BED_TEMP(
+  IN_REG_NO VARCHAR2(10),
+  END_DATE DATE,
+  SERIAL_NO INTEGER,
+  YRCODE VARCHAR2(10)
+);
+
+INSERT INTO BED_TEMP SELECT IN_REG_NO,ADMISSION_DATE,SERIAL_NO,YRCODE
+  FROM INDOOR_PAT_BED_INFO WHERE SERIAL_NO=3;
+
+UPDATE INDOOR_PAT_BED_INFO A
+ SET A.ED_DT=(SELECT B.dt FROM indoor_pat_money B
+     WHERE B.IN_REG_NO=A.IN_REG_NO AND B.YRCODE=A.YRCODE
+          )
+WHERE A.SERIAL_NO=(select max(serial_no) from indoor_pat_bed_info where
+  in_reg_no=a.in_reg_no and yrcode=a.yrcode) 
+
+
+
+
+
+
+update in_door_pat_info_main a
+  set a.release_date=(select max(b.dt) from indoor_pat_money b
+        where a.in_reg_no=b.in_reg_no )
+where a.release_flag=1 
+     and to_char(a.dt,'yyyy')='2006'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create or replace procedure SavePatient_info_out_door(
+	p_in_reg_no number,
+	p_booth varchar2,
+	p_pat_name  varchar2,
+	P_DOC_DEPT VARCHAR2,
+	P_DOCTOR_ID VARCHAR2,
+        p_sex varchar2,
+	p_age  varchar2,
+        P_religion varchar2,
+	p_addr1 varchar2,
+	P_u_id varchar2,
+	p_total_charge  number,
+	p_disc  number,
+	p_net_paid number,
+	p_indoor_out_door_flag integer,
+	p_staff_poor_pat_disc_flag integer,
+	p_staff_id varchar2,
+	P_YRCODE VARCHAR2,
+	P_Y_M_D VARCHAR2
+	)
+as
+	cursor c1(CURSOR_BOOTH VARCHAR2) is
+		 select  m_code , s_code,charge,service_charge
+		       from temp_test 
+		 WHERE TO_NUMBER(BOOTH)=TO_NUMBER(CURSOR_BOOTH);
+
+var_m_code    varchar2(20);
+var_s_code   varchar2(40);
+var_charge     number(10,2);
+var_s_charge     number(10,2);
+VAR_MAX_REC_NO NUMBER;
+
+begin
+ 
+ 	IF  c1%ISOPEN THEN
+  		  CLOSE C1;
+	END IF;
+
+        open c1(P_BOOTH);
+
+   IF C1%ISOPEN THEN
+ 
+      select max(rec_no)+1 INTO VAR_MAX_REC_NO
+           from  receipt_no_counter;
+
+	 insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+	  commit;
+
+    
+	insert into pat_info_main_out_door(
+		in_reg_no,
+		reg_no,
+		booth,
+		pat_name,
+		sex,
+		age,
+		religion,
+		addr1,
+		phone,
+		doc_dept,
+		u_id ,
+		Dt,
+	        Y_M_D,
+	        DOCTOR_ID,
+	        YRCODE
+		)
+	values(
+		p_in_reg_no,
+		VAR_MAX_REC_NO,
+		p_booth,
+		p_pat_name,
+		p_sex,
+		p_age,
+		p_religion,
+		p_addr1,
+		NULL,
+		P_DOC_DEPT ,
+		p_u_id ,
+		Sysdate,
+	        P_Y_M_D,
+	        P_DOCTOR_ID,
+	        P_YRCODE
+		);
+       
+
+	  loop
+
+          fetch c1 into  var_m_code,var_s_code,var_charge,var_s_charge;
+	  exit when c1%notfound;
+	
+        insert into pat_info_sub1_out_door(
+		 in_reg_no,
+	         reg_no,
+ 		 m_code,
+		 s_code,
+		 test_charge,
+	        service_charge,
+		 indoor_out_door_test_flag,
+	         u_id,
+		 dt,
+		 booth,YRCODE
+	)values(
+        	p_in_reg_no,
+		VAR_MAX_REC_NO,
+		var_m_code,
+		var_s_code,
+	        var_charge,
+	        var_s_charge,
+		p_indoor_out_door_flag,
+	        p_u_id,
+ 		sysdate,
+		p_booth,
+		 P_YRCODE
+		 );
+	end loop;
+
+
+
+ insert into pat_info_sub3_out_door(
+	        in_reg_no,
+	        reg_no,
+	        total_amt,
+		disc ,
+	        net_paid  ,
+		u_id,
+		dt,
+                ext_column1, ----------booth
+		staff_poor_pat_disc_flag,
+		emp_id ,YRCODE,
+                DOC_DEPT,
+                DOCTOR_ID
+	)values(
+		 p_in_reg_no,
+		 VAR_MAX_REC_NO,
+	         p_total_charge,
+		 p_disc,
+		 p_net_paid  ,
+		 p_u_id,
+		 sysdate,
+		 p_booth      ,
+		 p_staff_poor_pat_disc_flag,
+		 p_staff_id,P_YRCODE,
+                 P_DOC_DEPT,
+	         P_DOCTOR_ID 
+  	 );
+
+	 
+        commit;
+         
+        close c1;
+	 
+	
+   end if; /* end of c1%ISOPEN  */
+
+	delete  from temp_test 
+           	 WHERE TO_NUMBER(BOOTH)=TO_NUMBER(P_BOOTH);
+        commit;
+end SavePatient_info_out_door ;

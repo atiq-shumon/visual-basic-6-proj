@@ -1,0 +1,49 @@
+create or replace procedure Increment_Information_save(
+P_EMP_ID varchar2,
+P_AMOUNT Number,
+P_LAST_DT_INCRE Date,
+P_NEXT_DT_INCRE Date,
+P_LEAVE_WITHOUTPAY number,
+P_LEAVE_HALFPAY number,
+P_UPDATE_DATE date)
+as
+var_temp number;
+Var_LastBasic number;
+Var_Add_InremAndLAstbasic number;
+
+begin
+Select BASIC_SAL into Var_LastBasic from emp_job_info
+where Emp_Id=P_EMP_ID;
+Var_Add_InremAndLAstbasic :=Var_LastBasic +P_AMOUNT;
+select count(*) into var_temp
+from INCREMENT_RECORD
+where EMP_ID=p_EMP_ID and LAST_DT_INCRE=P_LAST_DT_INCRE AND NEXT_DT_INCRE=P_NEXT_DT_INCRE ;
+if var_temp>0 then
+update INCREMENT_RECORD
+set 
+	AMOUNT=Var_Add_InremAndLAstbasic,
+	LEAVE_WITHOUTPAY=P_LEAVE_WITHOUTPAY,
+	LEAVE_HALFPAY=P_LEAVE_HALFPAY,
+	UPDATE_DATE=P_UPDATE_DATE
+where EMP_ID=p_EMP_ID and LAST_DT_INCRE=P_LAST_DT_INCRE AND NEXT_DT_INCRE=P_NEXT_DT_INCRE ;
+Update emp_job_info 
+	Set BASIC_SAL=Var_Add_InremAndLAstbasic
+where Emp_Id=P_EMP_ID;
+else
+insert into INCREMENT_RECORD values(
+	P_EMP_ID,
+	--P_AMOUNT,
+	Var_Add_InremAndLAstbasic,
+	P_LAST_DT_INCRE,
+	P_NEXT_DT_INCRE,
+	P_LEAVE_WITHOUTPAY,
+	P_LEAVE_HALFPAY,
+	P_UPDATE_DATE,
+	Track_Id_For_Incre.nextval);
+Update emp_job_info 
+	Set BASIC_SAL=Var_Add_InremAndLAstbasic
+where Emp_Id=P_EMP_ID;
+end if;
+commit;
+end  Increment_Information_save;
+/

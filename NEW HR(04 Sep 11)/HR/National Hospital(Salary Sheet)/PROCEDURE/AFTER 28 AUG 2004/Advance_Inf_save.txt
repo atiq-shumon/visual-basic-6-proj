@@ -1,0 +1,41 @@
+create or replace procedure Advance_Inf_save(
+p_EMP_ID varchar2,
+P_ADV_ID varchar2,
+P_ADV_ISSUE_DT date,
+P_ADV_AMT number,
+P_NUM_INST number,
+p_NOTES varchar2,
+P_PAID_INSTALLED number,
+P_Balance number)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from Advance_Info
+where EMP_ID=p_EMP_ID and ADV_ID=P_ADV_ID ;
+if var_temp>0 then
+update Advance_Info
+set 
+	ADV_ISSUE_DT=P_ADV_ISSUE_DT ,
+	ADV_AMT=P_ADV_AMT ,
+	NUM_INST=P_NUM_INST ,
+	NOTES=p_NOTES ,
+	PAID_INSTALLED=P_PAID_INSTALLED,
+	Balance=P_Balance 
+where EMP_ID=p_EMP_ID and ADV_ID=P_ADV_ID ;
+else
+insert into Advance_Info values(
+	p_EMP_ID ,
+	P_ADV_ID ,
+	P_ADV_ISSUE_DT ,
+	P_ADV_AMT ,
+	P_NUM_INST ,
+	p_NOTES ,
+	P_PAID_INSTALLED,
+	P_Balance,
+	Track_Id_For_Advance.nextval
+);
+end if;
+commit;
+end  Advance_Inf_save;
+/

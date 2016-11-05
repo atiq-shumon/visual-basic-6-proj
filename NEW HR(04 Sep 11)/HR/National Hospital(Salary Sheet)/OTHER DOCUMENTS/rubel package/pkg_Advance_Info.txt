@@ -1,0 +1,123 @@
+Create or Replace PACKAGE Pkg_Advance_Info AS
+    TYPE Advance_Info_cur IS REF CURSOR;
+    PROCEDURE Advance_Info_cur_IU(p_Emp_Id IN varchar2,
+p_Adv_Id IN number,
+p_Adv_Issue_Dt IN date ,
+p_Adv_Amt IN number ,
+p_Num_Inst IN number ,
+p_Notes IN varchar2,
+p_Ref_status IN number
+
+   
+                   );
+     PROCEDURE Advance_Info_GetX(
+                             
+			     p_Adv_Id IN Varchar2,
+                             p_cursor OUT Advance_Info_cur,
+                             p_errorcode OUT NUMBER);
+
+    PROCEDURE Advance_Refund_Info_GetX(p_Adv_Id IN Varchar2,
+                             p_cursor OUT Advance_Info_cur,
+                            p_errorcode OUT NUMBER );
+
+
+  PROCEDURE  Advance_Refund_Info_IU(p_Adv_Id IN number ,
+ p_Pay_Month IN number,
+ p_Pay_Year IN number,
+ p_Inst_Amt IN number
+  );
+end Pkg_Advance_Info;
+
+
+Create or Replace Package Body Pkg_Advance_Info AS
+PROCEDURE Advance_Info_cur_IU(p_Emp_Id  varchar2,
+p_Adv_Id  number,
+p_Adv_Issue_Dt  date ,
+p_Adv_Amt  number ,
+p_Num_Inst  number ,
+p_Notes  varchar2,
+p_Ref_status  number
+                   )
+AS
+    L_Row_Num number:=0;
+   begin
+      select count (Adv_ID) into L_Row_Num from Advance_Info
+                    where Adv_Id =p_Adv_Id ;
+            if L_Row_Num=0 then
+                    Insert into  Advance_Info
+     values (p_Emp_Id  ,p_Adv_Id  ,p_Adv_Issue_Dt   ,p_Adv_Amt   ,p_Num_Inst   ,p_Notes  ,p_Ref_status   );
+                    delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update  Advance_Info
+                   set Emp_Id=p_Emp_Id  ,
+   Adv_Id=p_Adv_Id  ,
+   Adv_Issue_Dt=p_Adv_Issue_Dt   ,
+   Adv_Amt=p_Adv_Amt   ,
+   Num_Inst=p_Num_Inst   ,
+   Notes=p_Notes  ,
+   Ref_status=p_Ref_status
+                   where Adv_Id =p_Adv_Id ;
+                 delete from temp;
+      insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+PROCEDURE  Advance_Refund_Info_IU(p_Adv_Id  number ,
+ p_Pay_Month  number,
+ p_Pay_Year  number,
+ p_Inst_Amt  number
+  )
+  AS
+    L_Row_Num number:=0;
+   begin
+      select count (Adv_Id) into L_Row_Num from Advance_Refund_Info
+                    where Adv_Id =p_Adv_Id;
+            if L_Row_Num=0 then
+                    Insert into  Advance_Refund_Info
+     values (p_Adv_Id   ,p_Pay_Month  ,p_Pay_Year  ,p_Inst_Amt  );
+            delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update Advance_Refund_Info
+                   set Adv_Id=p_Adv_Id   ,
+   Pay_Month=p_Pay_Month  ,
+   Pay_Year=p_Pay_Year  ,
+   Inst_Amt=p_Inst_Amt
+                   where Adv_Id =p_Adv_Id;
+         delete from temp;
+    insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+PROCEDURE Advance_Info_GetX(
+        p_Adv_Id IN Varchar2,
+                             p_cursor OUT Advance_Info_cur,
+                             p_errorcode OUT NUMBER)
+   IS
+  BEGIN
+      p_errorcode := 0;
+      OPEN p_cursor FOR
+        SELECT *
+        FROM Advance_Info
+        WHERE  Adv_Id=p_Adv_Id;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+PROCEDURE Advance_Refund_Info_GetX(p_Adv_Id IN Varchar2,
+                             p_cursor OUT Advance_Info_cur,
+                            p_errorcode OUT NUMBER )
+    IS
+  BEGIN
+      p_errorcode := 0;
+      OPEN p_cursor FOR
+        SELECT *
+        FROM Advance_Refund_Info
+        WHERE  Adv_Id=p_Adv_Id;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+ END Pkg_Advance_Info;
+/

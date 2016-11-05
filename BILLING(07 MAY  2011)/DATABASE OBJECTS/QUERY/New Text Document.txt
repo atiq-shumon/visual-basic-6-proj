@@ -1,0 +1,13 @@
+
+select s_name  "Sub Name",MAX(DECODE(SUBSTR(S_CODE,3,2),'01',charge)) "CABIN",MAX(DECODE(SUBSTR(S_CODE,3,2),'02',charge)) "PAYING",,
+MAX(DECODE(SUBSTR(S_CODE,3,2),'04',charge)) "Out-case",MAX(DECODE(SUBSTR(S_CODE,3,2),'05',charge)) "OPD Only",
+  from test_info_sub GROUP by s_code
+
+
+SELECT S_NAME,MAX(CABIN),MAX(PAYING),MAX(OPD_Free),MAX(OUT_CASE)
+FROM (select S_NAME SUB_NAME,S_NAME,DECODE(SUBSTR(S_CODE,3,2),'01',charge,0)  CABIN
+    ,DECODE(SUBSTR(S_CODE,3,2),'02',charge,0) "PAYING"
+     ,DECODE(SUBSTR(S_CODE,3,2),'03',charge,0) OPD_Free
+    ,DECODE(SUBSTR(S_CODE,3,2),'04',charge,0) OUT_CASE
+     from test_info_sub WHERE M_CODE='01' )
+GROUP BY SUB_NAME

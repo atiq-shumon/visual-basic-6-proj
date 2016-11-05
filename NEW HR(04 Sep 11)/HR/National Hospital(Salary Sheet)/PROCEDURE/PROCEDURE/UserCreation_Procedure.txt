@@ -1,0 +1,75 @@
+CREATE OR REPLACE  PROCEDURE pro_soft_pass(
+P_u_id varchar2
+,P_u_name varchar2
+,P_User_Group_Name varchar2
+,P_user_pass varchar2
+,P_Created_By varchar2
+,P_Access BOOLEAN
+,P_status char)
+AS
+ P_Message varchar2(100);
+ var_User_Group_Code varchar2(10);
+ var_temp number;
+ var_user_gorup_code_upd varchar2(10);
+
+begin
+select User_Group_Code into var_user_gorup_code_upd
+      from UserGroup
+ where User_Group_Name=p_User_Group_Name
+		and user_pass=P_user_pass and Access=p_Access
+             and  u_id=P_u_id ;
+if P_status='S' then	----Save User  profile
+
+	select count(*) into var_temp from soft_pass where u_id=P_u_id;
+
+	if var_temp>0 then
+	
+		Update soft_pass set User_Group_Code= var_user_gorup_code_upd;
+			
+	-----	set p_Message='User profile updated successfully!'
+	
+	else
+	 
+		select User_Group_Code into var_User_Group_Code 
+                      from UserGroup
+                where User_Group_Name=P_User_Group_Name;
+
+		insert into soft_pass (u_id,u_name,User_Group_Code,User_Pass,Create_By,Access) 
+		values (P_u_id ,p_u_name,var_User_Group_Code,P_user_pass,p_Created_By,p_Access);
+
+		-----set P_Message='User'+ ' (' +P_u_id + ') ' +'created successfully!'
+	     end if;
+
+end if;
+
+if P_status='U' then
+	update soft_pass set u_name=p_u_name,Create_By=p_Created_By,Access=p_Access
+	where u_id=P_u_id ;
+	
+------	set @Message='Update done successfully!'
+
+end if;
+
+if P_status='P' then
+	update soft_pass set user_pass=P_user_pass
+	where u_id=P_u_id ;
+---	set p_Message='Password saved Successfully!'
+
+end if;
+
+if P_status='C'	 then		----Change Password
+	update soft_pass set user_pass=P_user_pass
+	where u_id=P_u_id ;
+----	set p_Message='Password changed Successfully!'
+end if;
+
+if P_status='D' then
+	delete from soft_pass where u_id=p_u_id;
+------	set p_Message='User'+ ' (' +P_u_id  + ') ' +'deleted successfully!'
+   end if;
+
+---select Message=p_Message
+commit;
+end  pro_soft_pass;
+ 
+

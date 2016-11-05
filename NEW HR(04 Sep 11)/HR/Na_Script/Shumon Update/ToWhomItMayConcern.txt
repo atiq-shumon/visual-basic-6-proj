@@ -1,0 +1,87 @@
+create or replace procedure   Rpt_ToWhomitMayConcern   
+           (p_test_cursor in out
+test_package.test_type,
+P_Emp_Id varchar2,
+P_FromDate Date,
+P_ToDate date
+)
+as
+ TELEPHONE  number;
+begin
+/*
+select sum(TELEPHONE) into TELEPHONE  from Salary_Preparation
+where to_char(emp_id)=to_char(P_Emp_Id)  and create_date between P_FromDate  and P_ToDate;
+*/
+
+open p_test_cursor for
+select 1 as grp,1 AS SRL ,' Basic Salary' as BS,BASIC as basic ,count(basic) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+  and create_date between P_FromDate  and P_ToDate AND BASIC >0
+ group by basic
+union
+select 1 as grp,2 AS SRL,' House Rent' as BS,H_RENT as basic, count(H_RENT) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate AND H_RENT>0
+group by H_RENT
+union
+select 1 as grp,3 AS SRL ,' Medical Allowance' as BS,Med as basic, count(Med) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate AND Med>0
+group by Med
+union
+select 1 as grp,4 AS SRL,' D.A.' as BS,DA as basic, count(DA) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate and DA>0
+group by DA
+union
+select 1 as grp,5 AS SRL,' Conveyance' as BS,Conv as basic, count(conv) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate and conv>0
+group by conv
+union
+select 1 as grp,6 AS SRL,' Tiffin Allowance' as BS,TFN as basic, count(TFN ) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate and TFN>0
+group by TFN 
+
+union
+select 1 as grp,7 AS SRL,' Arrear Bill' as BS,Arrear as basic, count(Arrear) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate and arrear>0
+group by Arrear
+
+union
+select 1 as grp,8 AS SRL,' Two Festival Allowances' as BS,Telephone as basic, count(Telephone) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate and Telephone>0
+group by Telephone
+
+union
+select 2 as grp,9 AS SRL,'       Deduction- C.P. Fund' as BS,-PF_CONTRI_DEDUCTION as basic, count(PF_CONTRI_DEDUCTION) as Count_Basic from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate AND PF_CONTRI_DEDUCTION>0
+group by PF_CONTRI_DEDUCTION;
+
+
+
+ /*
+select BASIC ,' 01.    Basic Salary'  as Title ,1 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+  and create_date between P_FromDate  and P_ToDate
+
+union all
+select H_RENT as BASIC,'02.    House Rent' as Title ,2 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate
+
+union all
+select MED as BASIC,' 03.    Medical Allowance' as Title ,3 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate
+union all
+select DA as BASIC,' 04.    D.A.' as Title ,4 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+and create_date between P_FromDate  and P_ToDate and DA>0
+union all
+select ARREAR as BASIC,' 05.    Arrear Bill' as Title,5 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+and create_date between P_FromDate  and P_ToDate and Arrear>0
+union all
+
+select TELEPHONE as BASIC,' 06.    Two Festival Allowance' as Title,6 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate  and TELEPHONE  >0
+
+union all
+select PF_CONTRI_DEDUCTION as BASIC,'     Deduction- C.P. Fund' as Title,7 as grop from salary_preparation where to_char(emp_id)=to_char(P_Emp_Id)
+ and create_date between P_FromDate  and P_ToDate
+
+order by grop;
+*/
+
+end Rpt_ToWhomitMayConcern;

@@ -1,0 +1,753 @@
+create or replace procedure Rpt_receipt_group 
+ 	(p_test_cursor in out test_package.test_type,
+			p_index in  integer,
+			p_text in  varchar2,
+			p_dt1 in  date,p_dt2 in  date,
+                        p_date_sepc_flag integer,
+			p_date_spec date,
+			p_shift_specific integer,
+			p_shift_text varchar2)
+    as
+            var_shift_start_time_hr   number(10);
+		var_shift_end_time_hr      number(10);
+            var_shift_start_time_min  number(10);
+		var_shift_end_time_min    number(10);  
+            var_shift_start_time_sec   number(10);
+		var_shift_end_time_sec   number(10);   
+		var_shift_start_time varchar2(30);
+		var_shift_end_time varchar2(30);
+             VAR_SHIFT_END_TIME_NIGHT NUMBER(10);
+             
+begin
+	delete from IN_OUT_RECEIPT_ALL;
+		commit;
+ if p_date_sepc_flag=0 then             ---means not enabled AND NOT DATE SPECIFIC
+                  if p_index=1 and p_shift_specific=0  then --------all COLLECTION OF DATE  TO DATE
+				insert into IN_OUT_RECEIPT_ALL(
+					    select  
+			      			b.reg_no,
+							b.net_paid
+						from pat_info_sub3_out_door b
+					where b.dt between p_dt1 and p_dt2);
+				  insert into IN_OUT_RECEIPT_ALL( --------advance
+		     				select  
+			       	 		b.receipt_no,
+					  		b.advance				
+				    		    from advance b
+						where b.dt between p_dt1 and p_dt2); 
+		              insert into in_out_receipt_all( -------Others money
+            	                	 select b.receipt_no ,b.amount
+                  	             	 from  others_money b
+                        	        where b.rec_date between p_dt1 and p_dt2);
+
+			         insert into in_out_receipt_all( -------in_door_pat_money
+            		                	 select b.pat_id ,b.net_total_charge
+                        		       	 from  indoor_pat_money b
+                                		where b.dt between p_dt1 and p_dt2);
+			         open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+		END IF; --------End of all COLLECTION OF   DATE TO DATE 
+     		if p_index=1 and p_shift_specific=1  then -------- DATE to date AND shift spcefic all
+                			select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),
+                				to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+	                			to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+		 		into 
+                				var_shift_start_time_hr,
+						var_shift_end_time_hr ,
+                				var_shift_start_time_min,
+						var_shift_end_time_min,  
+                				var_shift_start_time_sec,
+						var_shift_end_time_sec     
+               			from shift_setup
+	 		     where shift_name=p_shift_text ;
+	     if var_shift_start_time_hr>var_shift_end_time_hr then       
+			 	insert into IN_OUT_RECEIPT_ALL(
+			     			select  
+                              		DISTINCT(b.reg_no),
+							b.net_paid
+						from pat_info_sub3_out_door b,shift_setup c
+							where b.dt between p_dt1 and p_dt2 and
+      	           		 c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+         				and 23 );
+ 				insert into IN_OUT_RECEIPT_ALL( ---rest part of night
+			     			select  
+                              		DISTINCT(b.reg_no),
+							b.net_paid
+						from pat_info_sub3_out_door b,shift_setup c
+							where b.dt between p_dt1 and p_dt2 and
+      	           		 c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between 0 and  var_shift_end_time_hr );
+
+
+               		 insert into IN_OUT_RECEIPT_ALL(-------advance
+				 		select  
+			        				b.receipt_no,
+				  				b.advance
+						from advance b,shift_setup c
+						where b.dt between p_dt1 and p_dt2 and 
+                         			c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+         						and 23 );
+ 				insert into IN_OUT_RECEIPT_ALL(-------rest part of night
+				 		select  
+			        				b.receipt_no,
+				  				b.advance
+						from advance b,shift_setup c
+						where b.dt between p_dt1 and p_dt2 and 
+                         			c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between 0
+         						and var_shift_end_time_hr );
+
+                   		insert into in_out_receipt_all(
+                              		 select b.pat_id ,b.net_total_charge
+                               		 from  indoor_pat_money b,shift_setup c
+                               where b.dt between p_dt1 and p_dt2 and 
+                         			c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+         						and 23); 
+				insert into in_out_receipt_all(
+                              		 select b.pat_id ,b.net_total_charge
+                               		 from  indoor_pat_money b,shift_setup c
+                               where b.dt between p_dt1 and p_dt2 and 
+                         			c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between 0
+         						and var_shift_start_time_hr); 
+				insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where b.rec_date between  p_dt1 and p_dt2 and to_number(to_char(b.rec_date,'hh24')) not between 0 and var_shift_end_time_night);  
+   						-------------rest part of night
+  				insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where  b.rec_date between  p_dt1 and p_dt2 and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_night);  
+
+
+
+
+
+                         open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+             ELSE
+                     insert into IN_OUT_RECEIPT_ALL( 
+		     		 		select  
+			      			b.reg_no,
+							b.net_paid
+						from pat_info_sub3_out_door b,shift_setup c
+							where dt between p_dt1 and p_dt2 and 
+     								c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       							and var_shift_end_time_hr )  ;
+       			insert into IN_OUT_RECEIPT_ALL( ------ADVANCE
+		     						select  
+			        					receipt_no,
+				  					advance				
+								from advance b,shift_setup c
+								where dt between p_dt1 and p_dt2 and 
+     									c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+      							 and var_shift_end_time_hr  )  ;
+
+                        insert into in_out_receipt_all( ----INDOOR PAT MONEY
+                              		 select pat_id ,net_total_charge
+                               		 from  indoor_pat_money b,shift_setup c
+                                       		where dt between p_dt1 and p_dt2 and 
+     								c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+      							and var_shift_end_time_hr  )  ;
+
+			
+
+				insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where b.rec_date between  p_dt1 and p_dt2 and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr
+ and var_shift_end_time_night);  
+   				
+
+
+        				open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                  			 END IF;
+	end if; ---------------------------end of shift specific
+  /*if p_index=5 and p_shift_specific=1  then --------user and DATE to date AND shift spcefic 
+	select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),
+                to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+                to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+		 into 
+            		    var_shift_start_time_hr,
+					var_shift_end_time_hr ,
+                			var_shift_start_time_min,
+					var_shift_end_time_min,  
+ 		              	 var_shift_start_time_sec,
+					var_shift_end_time_sec     
+                from shift_setup
+				where upper(shift_name)=upper(p_shift_text) ;
+		if var_shift_start_time_hr>var_shift_end_time_hr then       
+				 insert into IN_OUT_RECEIPT_ALL(
+				 select  
+				      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where b.dt between p_dt1 and p_dt2 and
+					b.u_id=p_text and 
+                               to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23 ) ;
+
+		 					insert into in_out_receipt_all(
+                              		 select pat_id ,net_total_charge
+                               		 from  others_money b,shift_setup c
+                                       		where dt between p_dt1 and p_dt2 and 
+     								c.shift_name=p_shift_text and to_number(to_char(b.dt,'HH24')) between 0
+      							and var_shift_end_time_hr  )  ;
+
+
+                         --------------------rest part of night
+                     insert into IN_OUT_RECEIPT_ALL(
+				 select  
+				      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where b.dt between p_dt1 and p_dt2 and
+					b.u_id=p_text and 
+                        to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr); 
+ 			insert into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where b.dt between p_dt1 and p_dt2 and
+				 b.u_id=p_text and 
+                               to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23 or  to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr); 
+	    insert into in_out_receipt_all( -------in_door_pat_money
+                              select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                               where b.dt between p_dt1 and p_dt2 and
+					 b.u_id=p_text and 
+                              to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+		and 23 or  to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr );
+           open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                   ELSE
+                     insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where b.dt between p_dt1 and p_dt2 and  b.u_id=p_text 
+                                 and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr );   
+ 				insert into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where b.dt between p_dt1 and p_dt2  and b.u_id=p_text 
+                                and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr ); 
+       		insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+            where b.dt between p_dt1 and p_dt2  and b.u_id=p_text 
+                               and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr );
+                           open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                     END IF;
+     end if;*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+else----------------p_date_sepc_flag=1 
+
+
+
+           --------all COLLECTION OF A  DATE 
+   select to_number(to_char(shift_end_time,'HH24')) into VAR_SHIFT_END_TIME_NIGHT from shift_setup where upper(shift_name)=upper('night');
+
+
+
+	if p_index=1 and p_shift_specific=0  then --------all COLLECTION OF A  DATE 
+      
+                                             -----all tests receipts---------
+
+
+                 open p_test_cursor for
+			 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid 
+				    from pat_info_sub3_out_door b
+		     where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+						 and to_number(to_char(b.dt,'hh24')) 
+						not between 0 and VAR_SHIFT_END_TIME_NIGHT
+-----------------------------------------------------                 next part of night
+            
+                  
+
+                  union    
+            
+              
+		   select  1 as grp,b.reg_no as recipt_no, b.net_paid as net_paid
+					from pat_info_sub3_out_door b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+                       AND TO_NUMBER(to_char(b.dt,'HH24')) BETWEEN 0 AND VAR_SHIFT_END_TIME_NIGHT
+
+
+
+
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid				
+				from advance b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') 
+                            and to_number(to_char(b.dt,'hh24')) not between 0 and var_shift_end_time_night
+-----------------------------------------------------                 next part of night
+                   --------advance
+
+
+            union
+
+               select 2 as grp,	b.receipt_no as recipt_no,b.advance as net_paid				
+			from advance b
+	       where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+               AND TO_NUMBER(to_char(b.dt,'HH24'))BETWEEN 0 AND VAR_SHIFT_END_TIME_NIGHT
+
+
+                   -------Others money receipts------------
+
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid
+                       from  others_money b
+                 where to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+             and to_number(to_char(b.rec_date,'hh24')) not between 0 and var_shift_end_time_night  
+   						-------------rest part of night
+  		 -------Others money------------
+
+
+          union
+        	 select  3 as grp , b.receipt_no as recipt_no ,b.amount  as net_paid
+                        from  others_money b
+                 where to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+             and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_night  
+         
+
+
+
+
+           -------diagnostic refund receipts---------------------------------
+
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid
+                        from diag_refund b
+        where to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+	and to_number(to_char(b.rec_date,'hh24')) not between 0 and var_shift_end_time_night 
+   						-------------rest part of night
+  	 -------diagnostic refund
+
+
+        union
+         select 4 as grp ,b.rec_no as recipt_no ,b.amount as net_paid
+                from  diag_refund b
+         where to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')and 
+         to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_night
+         
+
+         -------release    receipt all---------------
+
+
+
+
+     union
+        
+       Select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid
+                  from  indoor_pat_money b
+      where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and 
+      to_number(to_char(b.dt,'hh24')) not between 0 and var_shift_end_time_night
+
+-----------------------------------------------------                 next part of night
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid
+             from  indoor_pat_money b
+        where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+                          AND TO_NUMBER(to_char(b.dt,'HH24'))BETWEEN 0 AND VAR_SHIFT_END_TIME_NIGHT;
+
+
+         
+END IF;
+
+
+	if p_index=1 and p_shift_specific=1  then -------- DATE AND shift spcefic all
+			  select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),
+		               to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+	                to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+		 into 
+                		var_shift_start_time_hr,
+				var_shift_end_time_hr ,
+                		var_shift_start_time_min,
+				var_shift_end_time_min,  
+               		 var_shift_start_time_sec,
+				var_shift_end_time_sec     
+                from shift_setup
+				where upper(shift_name)=upper(p_shift_text) ;
+		if var_shift_start_time_hr>var_shift_end_time_hr then       
+			insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	b.reg_no,
+					b.net_paid
+				from pat_info_sub3_out_door b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') AND
+                          to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23 );
+------------------------------------------------------rest part of night
+               insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	b.reg_no,
+					b.net_paid
+				from pat_info_sub3_out_door b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1 ,'dd-mon-yyyy') AND
+                      to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr);
+			insert into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	b.receipt_no,
+				  		b.advance				
+					from advance b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') AND
+                          to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23);
+     ----------rest par of night
+           insert into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	b.receipt_no,
+				  		b.advance				
+					from advance b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy') AND 
+              to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr); 
+         insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select b.pat_id ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                                where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') AND
+                        	  to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+					and 23 );
+    --------------rest part of night
+              insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select b.pat_id ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                                where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy') AND
+                        	  to_number(to_char(b.dt,'HH24')) between 	
+               0 and var_shift_end_time_hr);
+
+			insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr AND
+ 23);  
+   						-------------rest part of night
+  				insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where  to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_night);  
+
+    insert into in_out_receipt_all( -------diag_refund
+                            	 select b.rec_no ,b.amount
+                               	 from  diag_refund b
+                                where to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr AND
+ 23);  
+   						-------------rest part of night
+  				insert into in_out_receipt_all( -------diag_refund
+                            	 select b.rec_no ,b.amount
+                               	 from  diag_refund b
+                                where  to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_night);  
+
+
+
+			         open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+  		ELSE
+                    insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	b.reg_no,
+					b.net_paid
+				from pat_info_sub3_out_door b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') AND
+                          to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr );
+			insert into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	b.receipt_no,
+				  		b.advance				
+					from advance b
+			where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') AND
+                         to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr ); 
+       insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select b.pat_id ,b.net_total_charge
+                               	 from  indoor_pat_money b
+           where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') AND
+                          to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr);
+		insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between  var_shift_start_time_hr
+	 and var_shift_end_time_hr); 
+         insert into in_out_receipt_all( -------diag refund
+                            	 select b.rec_no ,b.amount
+                               	 from  diag_refund b
+                                where to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between  var_shift_start_time_hr
+	 and var_shift_end_time_hr);  
+  
+   			
+                             open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                   END IF;
+	end if;
+if p_index=2 and p_shift_specific=0  then -------- DATE AND shift_spcefic 
+ 		 select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),
+                to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+                to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+		 into 
+                var_shift_start_time_hr,
+		var_shift_end_time_hr ,
+                var_shift_start_time_min,
+		var_shift_end_time_min,  
+                var_shift_start_time_sec,
+		var_shift_end_time_sec     
+                from shift_setup
+				where upper(shift_name)=upper(p_text) ;
+		if var_shift_start_time_hr>var_shift_end_time_hr then       
+                     insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')   
+                               and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23);
+           ---------------rest part of night
+                insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')  
+                 and  to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr);
+           	insert  into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+		       and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+
+	and 23);
+---------------------rest part of night 
+         	insert  into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+				                         and to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr );
+                       insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                               where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+				AND 
+                               to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23);              ------REST PART OF NIGHT
+             insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                               where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+				               and  to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr); 
+				Insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr
+ And 23);  
+   						-------------rest part of night
+  				insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where  to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_night);  
+
+
+
+                                 open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                   ELSE
+                       insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')  and
+				                    to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr);   
+                insert  into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')  and
+                                 to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       			and var_shift_end_time_hr  );
+               insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                   where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and
+                                to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       			and var_shift_end_time_hr);
+		insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where to_char(b.rec_date ,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr
+ and var_shift_end_time_night);  
+ 			
+			         open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                     END IF;
+end if;
+ 	-------DATE,SHIFT AND USER SPECIFIC
+
+       if p_index=5 and p_shift_specific=1  then -------- DATE AND shift spcefic user
+ 		 select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),
+                		to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+		                to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+		 into 
+                		var_shift_start_time_hr,
+				var_shift_end_time_hr ,
+		                var_shift_start_time_min,
+				var_shift_end_time_min,  
+		                var_shift_start_time_sec,
+				var_shift_end_time_sec     
+                from shift_setup
+				where upper(shift_name)=upper(p_shift_text) ;
+
+		if var_shift_start_time_hr>var_shift_end_time_hr then       
+                     		insert into IN_OUT_RECEIPT_ALL(
+						 select  
+						      	distinct(b.reg_no),
+							b.net_paid
+						from pat_info_sub3_out_door b
+					where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and 
+						upper(b.u_id)=upper(p_text)  
+		                      and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+					and 23);
+           ---------------rest part of night
+		                insert into IN_OUT_RECEIPT_ALL(
+						 select  
+						      	distinct(b.reg_no),
+							b.net_paid
+						from pat_info_sub3_out_door b
+					where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy') and 
+				upper(b.u_id)=upper(p_text) 
+	                 and  to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr);
+	           	insert  into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+				and upper(b.u_id)=upper(p_text)  
+                               and to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23);
+---------------------rest part of night 
+         	insert  into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+				and upper(b.u_id)=upper(p_text) 
+                         and to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr );
+
+
+              insert into in_out_receipt_all( -------Others money
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where  upper(b.u_id)=upper(p_text) AND  to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')and to_number(to_char(b.rec_date,'hh24'))  between  var_shift_START_time_hr  and 23 );  
+   						-------------rest part of night
+ 			 insert into in_out_receipt_all( -------Others money -------REST PART OF NIGHT
+                            	 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where  upper(b.u_id)=upper(p_text) AND  
+			to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_hr );  
+
+
+         insert into in_out_receipt_all( -------diag discount
+                            	 select b.rec_no ,b.amount
+                               	 from  diag_refund b
+                                where  upper(b.u_id)=upper(p_text) AND  to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')and to_number(to_char(b.rec_date,'hh24'))  between  var_shift_START_time_hr  and 23 );  
+   						-------------rest part of night
+ 			 insert into in_out_receipt_all( --------diag discount -------REST PART OF NIGHT
+                            	 select b.rec_no ,b.amount
+                               	 from  diag_refund b
+                                where  upper(b.u_id)=upper(p_text) AND  
+			to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')and to_number(to_char(b.rec_date,'hh24'))  between 0 and var_shift_end_time_hr );  
+
+
+                       insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                               where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')
+				and b.u_id=p_text AND 
+                               to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+	and 23);
+             insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                               where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec+1,'dd-mon-yyyy')
+				and b.u_id=p_text 
+               and  to_number(to_char(b.dt,'HH24')) between 0 and var_shift_end_time_hr); 
+                                 open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+              ELSE
+                       insert into IN_OUT_RECEIPT_ALL(
+				 select  
+			      	distinct(b.reg_no),
+					b.net_paid
+				from pat_info_sub3_out_door b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')  and
+				 upper(b.u_id)=upper(p_text)  AND 
+                   to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       and var_shift_end_time_hr);   
+                insert  into IN_OUT_RECEIPT_ALL( --------advance
+		     			select  
+			       	 	distinct(b.receipt_no),
+				  		b.advance				
+					from advance b
+				where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')  and
+				b.u_id=p_text  AND 
+                                 to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       			and var_shift_end_time_hr  );
+
+		   	 insert into in_out_receipt_all( -------Others money                             	
+				 select b.receipt_no ,b.amount
+                               	 from  others_money b
+                                where  upper(b.u_id)=upper(p_text) AND  
+			to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr
+ and var_shift_end_time_hr);  
+
+ insert into in_out_receipt_all( -------diag_discount                  	
+				 select b.rec_no ,b.amount
+                               	 from  diag_refund b
+                                where  upper(b.u_id)=upper(p_text) AND  
+			to_char(b.rec_date,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy')and to_number(to_char(b.rec_date,'hh24'))  between var_shift_start_time_hr
+ and var_shift_end_time_hr);  
+
+
+               insert into in_out_receipt_all( -------in_door_pat_money
+                            	 select distinct(b.pat_id) ,b.net_total_charge
+                               	 from  indoor_pat_money b
+                   where to_char(b.dt,'dd-mon-yyyy')=to_char(p_date_spec,'dd-mon-yyyy') and
+				b.u_id=p_text  AND 
+                                to_number(to_char(b.dt,'HH24')) between var_shift_start_time_hr
+       			and var_shift_end_time_hr);
+			         open p_test_cursor for select * from IN_OUT_RECEIPT_ALL order by RECEIPT_NO asc;
+                     END IF;
+		end if;
+  
+end if;
+end  Rpt_receipt_group 
+;
+
+

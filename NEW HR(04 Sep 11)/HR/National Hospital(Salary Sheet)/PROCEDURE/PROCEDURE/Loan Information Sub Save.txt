@@ -1,0 +1,38 @@
+create or replace procedure LoanInformation_Sub_save(
+p_EMP_ID varchar2,
+p_LOANREFUNDEDDATE date,
+p_NOOFINTALLMENTPAID number,
+p_AMOUNTPAID number,
+p_CURRENTBALANCE number,
+p_NOTES varchar2,
+p_LOANREFUNDNO varchar2)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from LOANINFORMATION_SUB
+where EMP_ID=p_EMP_ID and NOOFINTALLMENTPAID=p_NOOFINTALLMENTPAID;
+if var_temp>0 then
+update LOANINFORMATION_SUB
+set 
+	NOOFINTALLMENTPAID=p_NOOFINTALLMENTPAID,
+	AMOUNTPAID=p_AMOUNTPAID,
+	CURRENTBALANCE=p_CURRENTBALANCE,
+	NOTES =p_NOTES,
+	LOANREFUNDNO=p_LOANREFUNDNO
+
+where EMP_ID=p_EMP_ID and NOOFINTALLMENTPAID=p_NOOFINTALLMENTPAID;
+
+else
+insert into LOANINFORMATION_SUB values(
+	p_EMP_ID ,
+	p_LOANREFUNDEDDATE ,
+	p_NOOFINTALLMENTPAID,
+	p_AMOUNTPAID,
+	p_CURRENTBALANCE,
+	p_NOTES,
+	p_LOANREFUNDNO);
+end if;
+commit;
+end  LoanInformation_Sub_save;
+/

@@ -1,0 +1,4 @@
+if {RPT_BUDGET.GRP}="Income" then
+    "Avq"
+else
+     "e¨q"

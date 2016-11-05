@@ -1,0 +1,30 @@
+create or replace procedure Fiscal_Yr_setup_save(
+P_BEGIN_DATE date,
+P_END_DATE date,
+P_ENTRY_DATE date,
+P_ENTRY_BY varchar2
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from fISCAL_Year_SetUp
+where ENTRY_DATE=P_ENTRY_DATE ;
+if var_temp>0 then
+update fISCAL_Year_SetUp
+set 
+	BEGIN_DATE=P_BEGIN_DATE ,
+	END_DATE=P_END_DATE,
+	ENTRY_BY=P_ENTRY_BY
+where ENTRY_DATE=P_ENTRY_DATE ;
+else
+insert into fISCAL_Year_SetUp values(
+	P_BEGIN_DATE,
+	P_END_DATE,
+	P_ENTRY_DATE,
+	P_ENTRY_BY,
+	Track_Id_For_FiscalYr.nextval);
+end if;
+commit;
+end  Fiscal_Yr_setup_save;
+/

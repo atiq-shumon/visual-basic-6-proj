@@ -1,0 +1,70 @@
+select DISTINCT M.reg_no  total
+       from Pat_Info_Sub1_out_door M
+    where     (((to_char(M.dt,'dd-mon-yyyy') ='30-aug-2008'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	or ((to_char(M.dt,'dd-mon-yyyy') ='31-aug-2007'
+	 and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+       and m.reg_no=n.reg_no and m.test_charge=N.total_amt
+
+
+
+
+select n.NET_PAID charge from 
+ Pat_Info_Sub3_out_door N
+where (((to_char(N.dt,'dd-mon-yyyy') ='08-may-2010'
+       and to_number(to_char(N.dt,'hh24'))  between 8 and 23))
+	or ((to_char(N.dt,'dd-mon-yyyy') ='09-may-2010'
+ and to_number(to_char(N.dt,'hh24'))  between 0 and 7)))
+minus
+select sum(M.test_charge) charge  
+       from Pat_Info_Sub1_out_door M
+    where     (((to_char(M.dt,'dd-mon-yyyy') ='08-may-2010'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	or ((to_char(M.dt,'dd-mon-yyyy') ='09-may-2010'
+	 and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+group by m.reg_no
+
+
+
+
+
+select N.reg_no reg from 
+ Pat_Info_Sub3_out_door N
+where (((to_char(N.dt,'dd-mon-yyyy') ='08-may-2010'
+       and to_number(to_char(N.dt,'hh24'))  between 8 and 23))
+	or ((to_char(N.dt,'dd-mon-yyyy') ='09-may-2010'
+ and to_number(to_char(N.dt,'hh24'))  between 0 and 7)))
+minus
+select DISTINCT M.reg_no reg  
+       from Pat_Info_Sub1_out_door M
+    where     (((to_char(M.dt,'dd-mon-yyyy') ='08-may-2010'
+       and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	or ((to_char(M.dt,'dd-mon-yyyy') ='09-may-2010'
+	 and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+
+
+
+
+
+
+
+
+
+
+
+select in_reg_no,bed_sum reg from 
+ indoor_pat_money N
+where 
+(((to_char(N.dt,'dd-mon-yyyy') ='06-feb-2010'
+       and to_number(to_char(N.dt,'hh24'))  between 8 and 23))
+	or ((to_char(N.dt,'dd-mon-yyyy') ='07-feb-2010'
+ and to_number(to_char(N.dt,'hh24'))  between 0 and 7))) and bed_sum<>0
+minus
+select in_reg_no,bed_sum reg from 
+ indoor_pat_dept_info N
+where 
+(((to_char(N.dt,'dd-mon-yyyy') ='06-feb-2010'
+       and to_number(to_char(N.dt,'hh24'))  between 8 and 23))
+	or ((to_char(N.dt,'dd-mon-yyyy') ='07-feb-2010'
+ and to_number(to_char(N.dt,'hh24'))  between 0 and 7))) and bed_sum<>0
+

@@ -1,0 +1,593 @@
+create or replace procedure RptCheque_status  (p_test_cursor in out test_package.test_type
+,
+p_Option integer
+,p_account varchar2,p_acc_party varchar2
+,p_date1  date,p_date2 date)
+as
+begin
+if p_Option=1 then -------all 
+  open p_test_cursor for 
+        select  1 as payment_validation,0 as serial_NO,  '' as nature ,'' as  party_code,'Opening Balance'  as paty_name,
+	     '' as head_name, 
+              p_date1 as Issue_DATE, 0 as CHK_CANCEL,0 as ID_NO,'' as cheque_no,'' as Challan_no,0 as deposit ,0 as Payment,0 as tax,0 as vat ,
+                     0 as security ,opn_bal_cheque(p_account,p_date1,p_date2)  as opening ,U_id
+                        ,
+                       0 as paid_sts,
+                     0 as rec_pay_sts,
+                      0 as  CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       Bill_amt=(select max(bill_amt) from cheque_reg)  and rownum=1
+           -----
+    union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=2) ---MEANS NOT DEPOSIT                      
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+   union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=1) ---MEANS NOT DEPOSIT
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+    union       --------deposit  
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, Bill_amt as deposit ,0 as Payment,0 as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4  and rec_pay_sts=0 --MEANS DEPOSIT 
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+  UNION           ---------------tax
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1  AND  rec_pay_sts=2 ---MEANS NOT DEPOSIT
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------tax
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1   and rec_pay_sts=1 ---MEANS  DEPOSIT
+            and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=2  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   0 as payment_validation,serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=1   
+              and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=2  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=1   
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'));
+       end if;
+if p_Option=2 then -------Unpaid   ---if recpaysts=1 means updaid
+  open p_test_cursor for 
+        select  1 as payment_validation,0 as serial_NO,  '' as nature ,'' as  party_code,'Opening Balance'  as paty_name,
+	     '' as head_name, 
+              p_date1 as Issue_DATE, 0 as CHK_CANCEL,0 as ID_NO,'' as cheque_no,'' as Challan_no,0 as deposit ,0 as Payment,0 as tax,0 as vat ,
+                     0 as security ,opn_bal_cheque(p_account,p_date1,p_date2)  as opening ,U_id
+                        ,
+                       0 as paid_sts,
+                     0 as rec_pay_sts,
+                      0 as  CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       Bill_amt=(select max(bill_amt) from cheque_reg) and rownum=1 
+           -----
+           /*
+    union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=1) ---MEANS NOT DEPOSIT                      
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               */
+   union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=1) ---MEANS NOT DEPOSIT
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               /*
+    union       --------deposit  
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, Bill_amt as deposit ,0 as Payment,0 as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4  and rec_pay_sts=1 --MEANS DEPOSIT 
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               */
+  UNION           ---------------tax
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1  AND  rec_pay_sts=1 ---MEANS NOT DEPOSIT
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------tax
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1   and rec_pay_sts=1 ---MEANS  DEPOSIT
+            and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=1  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   0 as payment_validation,serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=1   
+              and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=1  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=1   
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'));
+       end if;
+if p_Option=3 then -------paid   ---if recpaysts=2 means paid
+  open p_test_cursor for 
+        select  1 as payment_validation,0 as serial_NO,  '' as nature ,'' as  party_code,'Opening Balance'  as paty_name,
+	     '' as head_name, 
+              p_date1 as Issue_DATE, 0 as CHK_CANCEL,0 as ID_NO,'' as cheque_no,'' as Challan_no,0 as deposit ,0 as Payment,0 as tax,0 as vat ,
+                     0 as security ,opn_bal_cheque(p_account,p_date1,p_date2)  as opening ,U_id
+                        ,
+                       0 as paid_sts,
+                     0 as rec_pay_sts,
+                      0 as  CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       Bill_amt=(select max(bill_amt) from cheque_reg) and rownum=1 
+           -----
+           
+    union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=2) ---MEANS NOT DEPOSIT                      
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               /*
+   union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=2) ---MEANS NOT DEPOSIT
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               
+               */
+               /*
+    union       --------deposit  
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, Bill_amt as deposit ,0 as Payment,0 as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4  and rec_pay_sts=2 --MEANS DEPOSIT 
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               */
+  UNION           ---------------tax
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1  AND  rec_pay_sts=2 ---MEANS NOT DEPOSIT
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------tax
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1   and rec_pay_sts=2 ---MEANS  DEPOSIT
+            and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=2  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   0 as payment_validation,serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=2   
+              and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=2  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=2   
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'));
+       end if;
+if p_Option=4 then -------received   ---if recpaysts=0 means paid
+  open p_test_cursor for 
+        select  1 as payment_validation,0 as serial_NO,  '' as nature ,'' as  party_code,'Opening Balance'  as paty_name,
+	     '' as head_name, 
+              p_date1 as Issue_DATE, 0 as CHK_CANCEL,0 as ID_NO,'' as cheque_no,'' as Challan_no,0 as deposit ,0 as Payment,0 as tax,0 as vat ,
+                     0 as security ,opn_bal_cheque(p_account,p_date1,p_date2)  as opening ,U_id
+                        ,
+                       0 as paid_sts,
+                     0 as rec_pay_sts,
+                      0 as  CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       Bill_amt=(select max(bill_amt) from cheque_reg)  and rownum=1
+           -----
+  /*
+    union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=0) ---MEANS NOT DEPOSIT                      
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               
+   union
+				 -----------payment-----------ORIGINAL AMOUNT
+      select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,0 as deposit ,Bill_amt as Payment,0 as tax,0 as vat ,0 as security ,0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4 and (rec_pay_sts=0) ---MEANS NOT DEPOSIT
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+               */
+    union       --------deposit  
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, Bill_amt as deposit ,0 as Payment,0 as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=4  and rec_pay_sts=0 --MEANS DEPOSIT 
+               and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+  UNION           ---------------tax
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1  AND  rec_pay_sts=0 ---MEANS NOT DEPOSIT
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------tax
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,Bill_amt  as tax,0 as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=1   and rec_pay_sts=0 ---MEANS  DEPOSIT
+            and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=0  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+ UNION           ---------------VAT
+         select   0 as payment_validation,serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,Bill_amt as vat ,0 as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=2  and rec_pay_sts=0   
+              and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 1 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security ,0 as opening , U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=0  
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+UNION           ---------------SECURITY
+         select 0 as payment_validation, serial_NO, nature , party_code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no, 0 as deposit ,0 as Payment,0  as tax,0 as vat ,Bill_amt as security , 0 as opening ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+                       (bank_code=p_account) and id_no=3  and rec_pay_sts=0   
+             and (to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(Issue_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'));
+       end if;
+end ;

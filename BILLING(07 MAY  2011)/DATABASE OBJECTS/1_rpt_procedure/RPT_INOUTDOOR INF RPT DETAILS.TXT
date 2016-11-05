@@ -1,0 +1,81 @@
+create or replace view  detail_view
+ as
+select  a.m_code,greatest(a.s_code) as s_code ,a.in_reg_no,a.reg_no,a.dt
+ from pat_info_sub1_out_door a
+
+--EXEC Rptinout_door_inf_rec_Detail(:C,1,'1',SYSDATE,SYSDATE,1,SYSDATE-500,1,'1')
+
+CREATE OR REPLACE PROCEDURE Rptinout_door_inf_rec_Detail	
+(p_test_cursor in out test_package.test_type,
+			p_index in  integer,
+			p_text in  varchar2,
+			p_dt1 in  date,p_dt2 in  date,
+                        p_flag integer,
+			p_date_spec date,
+			p_shift_specific integer,
+			p_shift_text varchar2)
+    as
+           
+           
+begin
+
+	delete from IN_OUT_RECEIPT_ALL_DETAIL;
+		commit;
+INSERT INTO IN_OUT_RECEIPT_ALL_DETAIL 
+
+ 		 select  1 AS FIRST ,a.m_code AS M_CODE ,a.s_code AS S_CODE,
+                             a.IN_REG_NO
+ AS REG_NO,a.reg_no AS REC_NO, (select b.net_paid from
+      pat_info_sub3_out_door b where b.reg_no=a.reg_no) 
+   as PAID_AMT 
+  	                  from  detail_view a
+               where   
+              ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_date_spec,'dd-mon-yyyy') 
+                      and to_number(to_char(a.dt,'hh24'))  between 8 and 23))
+		or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_date_spec+1,'dd-mon-yyyy') and 
+  to_number(to_char(a.dt,'hh24'))  between 0 and 7)) 
+ UNION
+
+		select  2 AS FIRST,'0' AS M_CODE,'00' AS S_CODE,3 AS REG_NO,
+			       	 	b.receipt_no AS REC_NO,
+				  		b.advance AS PAID_AMT				
+					from advance b
+			where ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_date_spec,'dd-mon-yyyy') 
+                      and to_number(to_char(b.dt,'hh24'))  between 8 and 23))
+		or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_date_spec+1,'dd-mon-yyyy') and 
+  to_number(to_char(b.dt,'hh24'))  between 0 and 7)) 
+
+
+UNION
+
+
+                            	 select 3 AS FIRST ,TO_CHAR(B.SERIAL_NO) AS M_CODE,'00' AS S_CODE,3 AS REG_NO, b.receipt_no  AS REC_NO
+,b.amount AS PAID_AMT
+                               	 from  others_money b
+                                where ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_date_spec,'dd-mon-yyyy') 
+                      and to_number(to_char(b.rec_date,'hh24'))  between 8 and 23))
+		or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_date_spec+1,'dd-mon-yyyy') and 
+                    to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)) 
+  
+UNION
+                            	 select 4 AS FIRST,'00' AS M_CODE,'00' AS S_CODE,3  AS REG_NO ,b.rec_no AS REC_NO ,b.amount AS PAID_AMT
+                               	 from diag_refund b
+                                where ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_date_spec,'dd-mon-yyyy') 
+                      and to_number(to_char(b.rec_date,'hh24'))  between 8 and 23))
+		or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_date_spec+1,'dd-mon-yyyy') and 
+                    to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)) 
+  
+   UNION
+                            	 select 5 AS FIRST,'00' AS M_CODE,'00' AS S_CODE,3  AS REG_NO ,b.pat_id AS REC_NO ,b.net_total_charge AS PAID_AMT
+                               	 from  indoor_pat_money b
+                       where ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_date_spec,'dd-mon-yyyy') 
+                      and to_number(to_char(b.dt,'hh24'))  between 8 and 23))
+		or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_date_spec+1,'dd-mon-yyyy') and 
+  to_number(to_char(b.dt,'hh24'))  between 0 and 7)) ;
+
+
+			  open p_test_cursor for 
+                          select * 
+         from IN_OUT_RECEIPT_ALL_DETAIL ORDER BY RECEIPT_NO ASC;
+
+end ;

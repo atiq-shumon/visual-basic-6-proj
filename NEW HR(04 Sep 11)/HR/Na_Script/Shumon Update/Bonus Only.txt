@@ -1,0 +1,47 @@
+ Insert into Salary_Preparation
+  select EMP_ID ,
+  EMP_NM ,
+  'August' ,
+  '2011' ,
+  DESIGNATION ,
+  DEPT_NM ,
+  ATTN ,
+  LEAVE ,
+  0 ,
+  0 ,
+  0 ,
+  0 ,
+  0 ,
+  0 ,
+  0 ,
+  0,
+  0,
+  0,
+  0 ,
+  0 ,
+  0 ,
+  0,
+  0,
+  basic ,
+  sysdate ,
+  CREATE_BY ,
+  sysdate,
+  'Only Festival Bonus',
+  WORKING_DAY,
+  0,
+  emp_Class,0,'B',basic,0,0,basic,0,EMP_POSITION_SERIAL,EMP_DESIGNATION_LEVEL from Salary_Preparation
+ where PAY_MONTH='July' and
+ PAY_YEAR='2011' and Salary_type='R'
+
+
+update Salary_Preparation
+set basic=0,pay_Month='August',pay_year='2011'
+ where PAY_MONTH='August' and
+ PAY_YEAR='2011' and Salary_type='B'
+
+------delete hindu,chiristian from Eid bonus
+delete from salary_preparation where pay_Month='August' and pay_year='2011' and salary_type='B' and 
+EMP_ID in (select distinct emp_id from emp_info where relegion<>0) ;
+
+
+delete from salary_preparation where pay_Month='August' and pay_year='2011';

@@ -1,0 +1,85 @@
+--======================= PF TABLE SCRIPT==============--
+
+DROP TABLE PF_RECEIVE CASCADE CONSTRAINT;
+
+CREATE TABLE PF_RECEIVE(
+	PF_RECEIVE_ID                            	NUMBER			NOT NULL,
+	SOURCE_OF_FUND                                  VARCHAR2(15)		NULL,
+	DESCRIPTION                                     VARCHAR2(250)		NULL,
+	RECEIVE_DATE                                  	DATE			NULL,
+	RECEIVED_AMOUNT                                 NUMBER(10,2)		NULL,
+	RECEIVE_TYPE                                  	VARCHAR2(5)		NULL,
+	CHECK_NO                                        VARCHAR2(50)		NULL,
+	ACCOUNT_NO                                      VARCHAR2(150)		NULL,
+	BANK_CODE                                       VARCHAR2(15)		NULL,
+	VOUCHER_NO                                      VARCHAR2(50)		NULL,
+	ACCOUNT_TYPE                                    VARCHAR2(15)		NULL,
+	CONSTRAINT PK_PF_RECEIVE PRIMARY KEY(PF_RECEIVE_ID));
+			
+--INSERT INTO PF_RECEIVE values (1,'001','Contribution','01-MAY-2006',20000,'Check','CK-001','AC-001','001','VC-001','001');
+--INSERT INTO PF_RECEIVE values(2,'001','Contribution','01-MAY-2006',20000,'Check','CK-001','AC-001','001','VC-001','001');
+
+
+DROP TABLE PF_PAYMENT CASCADE CONSTRAINT;
+
+CREATE TABLE PF_PAYMENT(
+	PF_PAYMENT_ID                            	NUMBER			NOT NULL,
+	PURPOSE_OF_PAYMENT                              VARCHAR2(15)		NULL,
+	DESCRIPTION                                     VARCHAR2(250)		NULL,
+	PAYMENT_DATE                                  	DATE			NULL,
+	PAYMENT_AMOUNT                                  NUMBER(10,2)		NULL,
+	PAYMENT_TYPE                                  	VARCHAR2(5)		NULL,
+	CHECK_NO                                        VARCHAR2(50)		NULL,
+	ACCOUNT_NO                                      VARCHAR2(150)		NULL,
+	BANK_CODE                                       VARCHAR2(15)		NULL,
+	VOUCHER_NO                                      VARCHAR2(50)		NULL,
+	ACCOUNT_TYPE                                    VARCHAR2(15)		NULL,
+	CONSTRAINT PK_PF_PAYMENT PRIMARY KEY(PF_PAYMENT_ID));
+	
+
+--INSERT INTO PF_PAYMENT values (1,'001','To Emp','01-MAY-2006',10000,'Check','CK-001','AC-001','001','VC-001','001');
+--INSERT INTO PF_PAYMENT values(2,'001','To Emp','01-MAY-2006',10000,'Check','CK-001','AC-001','001','VC-001','001');
+
+
+DROP TABLE MEMBER_FUND CASCADE CONSTRAINT;
+CREATE TABLE MEMBER_FUND(
+	TRACK_ID       		                        NUMBER(5)		NOT NULL,
+	ACCOUNT_TYPE                           		VARCHAR2(15) 	        NULL,
+	ACCOUNT_NO                           		VARCHAR2(100) 	        NULL,
+	BANK_CODE                           		VARCHAR2(15) 	        NULL,
+	AMOUNT                           		NUMBER(12,2) 	        NULL,
+	CONSTRAINT PK_MEMBER_FUND PRIMARY KEY(TRACK_ID));
+
+--INSERT INTO MEMBER_FUND values(1,'001','AC-001','001',30000);
+--INSERT INTO MEMBER_FUND values(2,'001','AC-002','002',30000);
+
+
+
+
+--====L_PF_SOURCEOF_FUND
+DROP TABLE L_PF_SOURCEOF_FUND CASCADE CONSTRAINT;
+CREATE TABLE L_PF_SOURCEOF_FUND(
+	SOURCE_ID                               	VARCHAR2(10)		NOT NULL,
+	SOURCE_NAME                           		VARCHAR2(100) 	        NULL,
+	CONSTRAINT PK_PF_SOU_FUND PRIMARY KEY(SOURCE_ID));
+
+			--data--
+INSERT INTO L_PF_SOURCEOF_FUND VALUES('001','Others');
+
+
+
+			---TABLE L_PF_PAYMENT_PURPOSE--
+DROP TABLE L_PF_PAYMENT_PURPOSE CASCADE CONSTRAINT;
+
+CREATE TABLE L_PF_PAYMENT_PURPOSE(
+	PURPOSE_ID                               	VARCHAR2(10)		NOT NULL,
+	PURPOSE_NAME                           		VARCHAR2(100) 	        NULL,
+	CONSTRAINT PK_PF_PAYMENT_PUR PRIMARY KEY(PURPOSE_ID));
+			--data--
+INSERT INTO L_PF_PAYMENT_PURPOSE VALUES('001','Final Setlement');
+INSERT INTO L_PF_PAYMENT_PURPOSE VALUES('002','PF Loan');
+INSERT INTO L_PF_PAYMENT_PURPOSE VALUES('003','Others');
+
+
+
+

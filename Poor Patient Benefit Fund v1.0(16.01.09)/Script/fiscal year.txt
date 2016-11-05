@@ -1,0 +1,9 @@
+create table fiscal_year(  code varchar2(10), 
+			   comp_setup  varchar2(100),
+			   st_year   date not null,
+			   ed_year   date not null,
+			   u_id    varchar2(10) not null ,
+			   dt  date default sysdate,
+			   serial_no  number,
+                     constraint fiscal_yr_pk primary key(code)
+			);

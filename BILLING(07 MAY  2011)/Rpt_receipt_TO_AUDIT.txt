@@ -1,0 +1,461 @@
+
+
+create or replace procedure Rpt_receipt_TO_AUDIT 
+ 	(p_test_cursor in out test_package.test_type,
+			p_mode in  integer,
+			p_dt1 in  date,p_dt2 in  date,
+                        p_u_id in varchar2)
+    as
+                   
+begin
+ 
+    If p_mode=1   then 
+           open p_test_cursor for
+		 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid ,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+				    from pat_info_sub3_out_door b
+		     where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND b.net_paid<=0 
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid	,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+				from advance b
+			  where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND B.ADVANCE<=0
+
+                          -------Others money receipts------------
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                       from  others_money b
+                  where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+
+             AND B.AMOUNT<=0
+    
+          -------diagnostic refund receipts---------------------------------
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                        from diag_refund b
+        where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+        AND B.AMOUNT<=0
+
+            -------release    receipt all---------------
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid,(select user_name from security where user_id=b.u_id) userID,b.in_reg_no as registration_no,b.dt as creation_date
+             from  indoor_pat_money b
+        where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+              AND B.NET_TOTAL_CHARGE<=0;
+
+
+END IF;
+
+
+
+
+
+----Zero Only
+
+ If p_mode=2   then 
+           open p_test_cursor for
+		 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+				    from pat_info_sub3_out_door b
+		     where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND b.net_paid=0 
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid,(select user_name from security where user_id=b.u_id) userID	,b.in_reg_no as registration_no,b.dt as creation_date		
+				from advance b
+			  where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND B.ADVANCE=0
+
+                          -------Others money receipts------------
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                       from  others_money b
+                  where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+
+             AND B.AMOUNT=0
+    
+          -------diagnostic refund receipts---------------------------------
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                        from diag_refund b
+        where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+        AND B.AMOUNT=0
+
+            -------release    receipt all---------------
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+             from  indoor_pat_money b
+        where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+              AND B.NET_TOTAL_CHARGE=0;
+
+
+END IF;
+
+
+----Minus Only
+ If p_mode=3   then 
+           open p_test_cursor for
+		 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+				    from pat_info_sub3_out_door b
+		     where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND b.net_paid<0 
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid	,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date 		
+				from advance b
+			  where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND B.ADVANCE<0
+
+                          -------Others money receipts------------
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                       from  others_money b
+                  where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+
+             AND B.AMOUNT<0
+    
+          -------diagnostic refund receipts---------------------------------
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                        from diag_refund b
+        where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+        AND B.AMOUNT<0
+
+            -------release    receipt all---------------
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+             from  indoor_pat_money b
+        where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+              AND B.NET_TOTAL_CHARGE<0;
+
+
+END IF;
+
+--User Wise all Only
+ If p_mode=4   then 
+           open p_test_cursor for
+		 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid,(select user_name from security where user_id=b.u_id) userID  ,b.in_reg_no as registration_no,b.dt as creation_date
+				    from pat_info_sub3_out_door b
+		     where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND b.net_paid<=0  and upper(b.u_id)=upper(p_u_id)
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid	,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date			
+				from advance b
+			  where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND B.ADVANCE<=0 and upper(b.u_id)=upper(p_u_id)
+
+                          -------Others money receipts------------
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                       from  others_money b
+                  where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+
+             AND B.AMOUNT<=0 and upper(b.u_id)=upper(p_u_id)
+    
+          -------diagnostic refund receipts---------------------------------
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                        from diag_refund b
+        where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+        AND B.AMOUNT<=0  and upper(b.u_id)=upper(p_u_id)
+
+            -------release    receipt all---------------
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+             from  indoor_pat_money b
+        where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+              AND B.NET_TOTAL_CHARGE<=0 and upper(b.u_id)=upper(p_u_id);
+
+
+END IF;
+
+
+
+
+  --User Wise Zero Only
+ If p_mode=5   then 
+           open p_test_cursor for
+		 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid,(select user_name from security where user_id=b.u_id) userID  ,b.in_reg_no as registration_no,b.dt as creation_date
+				    from pat_info_sub3_out_door b
+		     where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND b.net_paid=0  and upper(b.u_id)=upper(p_u_id)
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid	,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date			
+				from advance b
+			  where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND B.ADVANCE=0 and upper(b.u_id)=upper(p_u_id)
+
+                          -------Others money receipts------------
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                       from  others_money b
+                  where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+
+             AND B.AMOUNT=0 and upper(b.u_id)=upper(p_u_id)
+    
+          -------diagnostic refund receipts---------------------------------
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                        from diag_refund b
+        where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+        AND B.AMOUNT=0  and upper(b.u_id)=upper(p_u_id)
+
+            -------release    receipt all---------------
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+             from  indoor_pat_money b
+        where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+              AND B.NET_TOTAL_CHARGE=0 and upper(b.u_id)=upper(p_u_id);
+
+
+END IF;
+
+--User Wise Minus Only
+ If p_mode=6   then 
+           open p_test_cursor for
+		 select 1 as  grp, b.reg_no as recipt_no ,b.net_paid as net_paid,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date
+				    from pat_info_sub3_out_door b
+		     where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND b.net_paid<0  and upper(b.u_id)=upper(p_u_id)
+                        --------all advance  receipts  -------------
+               union
+    			select 2 grp, b.receipt_no as recipt_no , b.advance as net_paid	,(select user_name from security where user_id=b.u_id) userID ,b.in_reg_no as registration_no,b.dt as creation_date			
+				from advance b
+			  where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+
+                            AND B.ADVANCE<0 and upper(b.u_id)=upper(p_u_id)
+
+                          -------Others money receipts------------
+          union 
+
+         	 select 3 as grp, b.receipt_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                       from  others_money b
+                  where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+
+             AND B.AMOUNT<0 and upper(b.u_id)=upper(p_u_id)
+    
+          -------diagnostic refund receipts---------------------------------
+
+        union
+
+        select 4 as grp , b.rec_no as recipt_no ,b.amount as net_paid,(select user_name from security where user_id=b.u_id) userID ,0 as registration_no,b.rec_date as creation_date
+                        from diag_refund b
+        where (((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))   between 8 and 23)) or 
+                     (to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+                      and to_date(to_char(b.rec_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.rec_date,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.rec_date,'hh24'))  between 0 and 7)))
+        AND B.AMOUNT<0  and upper(b.u_id)=upper(p_u_id)
+
+            -------release    receipt all---------------
+
+    union
+      	 select  5 as grp ,b.pat_id as recipt_no ,b.net_total_charge as net_paid,(select user_name from security where user_id=b.u_id) userID,b.in_reg_no as registration_no,b.dt as creation_date
+             from  indoor_pat_money b
+        where (((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(b.dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                          <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(b.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(b.dt,'hh24'))  between 0 and 7)))
+              AND B.NET_TOTAL_CHARGE<0 and upper(b.u_id)=upper(p_u_id);
+
+
+END IF;
+
+
+end  ;
+
+

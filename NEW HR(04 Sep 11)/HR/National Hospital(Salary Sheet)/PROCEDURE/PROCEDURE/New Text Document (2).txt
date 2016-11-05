@@ -1,0 +1,29 @@
+create or replace procedure LoanInformation_Main_save(
+p_EMP_ID varchar2,
+p_LOAN_ID varchar2,
+p_NOTES varchar2)
+as
+var_temp number;
+Var_Retirement number;
+begin
+
+select MAXSEUPCOM into Var_Retirement from PARAMETER_MAIN where
+EFFDATE=(select max(EFFDATE) from PARAMETER_MAIN)
+
+select count(*) into var_temp
+from loaninformation_main
+where EMP_ID=p_EMP_ID;
+if var_temp>0 then
+update loaninformation_main
+set 
+	NOTES =p_NOTES 
+where EMP_ID=p_EMP_ID;
+else
+insert into loaninformation_main values(
+	p_EMP_ID ,
+	p_LOAN_ID ,
+	p_NOTES);
+end if;
+commit;
+end  LoanInformation_Main_save;
+/

@@ -1,0 +1,9 @@
+create or replace procedure 
+sum_charge_temp_test
+as
+temp number;
+begin
+select sum(charge) into temp
+from temp_test;
+commit;
+end sum_charge_temp_test;

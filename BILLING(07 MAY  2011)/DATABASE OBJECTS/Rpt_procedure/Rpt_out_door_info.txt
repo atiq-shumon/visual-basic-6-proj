@@ -1,0 +1,64 @@
+create or replace procedure Rptout_door_info(p_test_cursor in out test_package.test_type,
+p_index integer,p_text varchar2,p_dt1 date ,p_dt2 date)
+as
+begin
+if p_index=1 then --------all
+open p_test_cursor for
+select  a.m_code,a.m_name,
+a.s_code,a.s_name,a.test_type,a.test_charge,a.doc_dept,
+        b.total_amt,
+	b.disc,
+	b.net_paid
+from Pat_Info_Sub1_out_door a ,pat_info_sub3_out_door b
+where a.dt between p_dt1 and p_dt2 and a.reg_no=b.reg_no ;
+end if;
+
+
+if p_index=3  then -----------on test_head
+open p_test_cursor for
+select  a.m_code,a.m_name,
+a.s_code,a.s_name,a.test_type,a.test_charge,a.doc_dept,
+        b.total_amt,
+	b.disc,
+	b.net_paid
+from Pat_Info_Sub1_out_door a ,pat_info_sub3_out_door b
+where a.dt between p_dt1 and p_dt2 and a.reg_no=b.reg_no
+and a.m_name=p_text ;
+
+end if;
+
+if p_index=4 then -----------on doc_department
+open p_test_cursor for
+select  a.m_code,a.m_name,
+a.s_code,a.s_name,a.test_type,a.test_charge,a.doc_dept,
+        b.total_amt,
+	b.disc,
+	b.net_paid
+from Pat_Info_Sub1_out_door a ,pat_info_sub3_out_door b
+where a.dt between p_dt1 and p_dt2 and a.reg_no=b.reg_no
+and a.doc_dept=p_text ;
+
+end if;
+
+
+
+/*
+
+if p_index=3 then -----------on  doctor_department
+open p_test_cursor for
+select  a.m_code,(select b.m_name from test_info_main b 
+where b.m_code=a.m_code) "Test Head",
+(select c.s_name from test_info_sub c 
+where c.s_code=a.s_code and c.m_code=a.m_code) "Sub Name",
+
+a.s_code,a.test_type,a.test_charge,a.doc_dept
+from Pat_Info_Sub1_out_door a
+where a.doc_dept=p_text  ;
+
+
+end if;
+
+*/
+
+end Rptout_door_info;
+

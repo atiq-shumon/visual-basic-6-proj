@@ -1,0 +1,10 @@
+SELECT DOC_DEPT ,COUNT(operation_sum) AS COUNT_OPERATION
+  FROM INDOOR_PAT_DEPT_INFO
+WHERE RELEASE_FLAG=1 
+AND OPERATION_SUM>0
+AND (((to_char(dt,'dd-mon-yyyy') ='01-jan-2010' and to_number(to_char(dt,'hh24'))   between 8 and 23)) or
+      (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date('01-jan-2010','dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date('31-mar-2010','dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') ='31-mar-2010' and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+ GROUP BY CUBE(DOC_DEPT)

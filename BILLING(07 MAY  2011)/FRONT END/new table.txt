@@ -1,0 +1,37 @@
+create table head_wise_coll(-------------null and void now
+			  Group_no  number(14) default 0 not null,
+                          col_no number(14) default 0 not null,
+                          bed_charge    number(14,2) default 0 not null,
+                          delivery_chage number(14,2) default 0 not null,
+                          Operation_charge number(14,2) default 0 not null,
+			  Pathology_care_charge   number(14,2) default 0 not null,
+			  Cardirlogy_charge  number(14,2) default 0 not null,
+                          anaesthesia_charge number(14,2) default 0 not null,
+                          service_charge  number(14,2) default 0 not null,
+                          Birth_certificate number(14,2) default 0 not null,
+                          Nibuliser_charge number(14,2) default 0 not null,
+			  Baby_care_charge number(14,2) default 0 not null,
+ 			  skin_vd number(14,2) default 0 not null,
+		          minor_opr number(14,2) default 0 not null,
+			  Immunization number(14,2) default 0 not null,
+			  Dental number(14,2) default 0 not null,
+			  Eye_exa number(14,2) default 0 not null, 
+                          physio_therapy number(14,2) default 0 not null,
+			  Dressing number(14,2) default 0 not null,
+			  Blood_pressure  number(14,2) default 0 not null,
+			  Ambulance number(14,2) default 0 not null,
+			  Admission_charge number(14,2) default 0 not null,
+			  Outdoor_ticket_salte number(14,2) default 0 not null,
+                          immergency_ticket_sale number(14,2) default 0 not null,
+                          X_ray number(14,2) default 0 not null,
+                          Pat_Miscelleneous_charge number(14,2) default 0 not null,
+                          Admission_Advance number(14,2) default 0 not null,
+                          Refund number(14,2) default 0 not null,
+                          Miscelleneous_charge number(14,2) default 0 not null);
+			  
+			  	
+   
+create table head_wise_coll(
+			  Group_no  number(14) default 0 not null,
+                          col_no number(14) default 0 not null,
+                          charge    number(14,2) default 0 not null)

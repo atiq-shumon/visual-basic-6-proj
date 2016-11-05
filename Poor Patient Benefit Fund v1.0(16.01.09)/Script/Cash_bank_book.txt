@@ -1,0 +1,52 @@
+-----------account specific cash/bank book
+
+create or replace procedure RptCash_bank(p_test_cursor in out test_package.test_type,p_Option integer,p_account varchar2,p_date1  date,p_date2 date)
+as
+begin
+if p_Option=1 then
+ open p_test_cursor for
+             select  0 as   vou_no,p_date1 as  vou_date,''  as VOU_NARR,'' cheque_no,'' chk_date,'' AS account_code,
+              'Opening Balance' AS  account_name ,
+		op_debit_vou(p_account,p_date1) AS dr_amt,op_credit_vou(p_account,p_date1) as CR_AMT,1 AS GRP
+        from vou v  where
+              v.acc_code=p_account
+                       and upper(v.vou_type)<>upper('jv')  and v.track_id=(select max(vou.track_id) from vou where vou.acc_code=p_account)
+
+
+
+
+            union 
+      select  to_number(v.vou_no) as vou_no,v.vou_date as vou_date,v.VOU_NARR as vou_narr,v.VOU_CHQ cheque_no ,to_char(v.CHECK_DATE,'dd-mm-yy') as chk_date,
+                 v.particular_code
+            	 as account_code,
+	       (select acct.acc_name from acct  where acct.acc_code=v.particular_code
+            	)
+                as account_name,
+		v.dr_amt AS DR_AMT,v.cr_amt AS CR_AMT, 2 AS GRP
+
+        from vou v 
+          where  (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<= to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and (v.acc_code=p_account)  and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv')
+
+
+
+
+
+  union
+
+      select to_number(v.vou_no) as vou_no,v.vou_date as vou_date,v.VOU_NARR as vou_narr,v.VOU_CHQ cheque_no ,to_char(v.CHECK_DATE,'dd-mm-yy') as chk_date,
+	v.acc_code as account_code,
+	       (select acct.acc_name from acct  where acct.acc_code=v.acc_code) as account_name,
+		v.cr_amt AS DR_AMT,v.dr_amt AS CR_AMT, 3 AS GRP
+
+        from vou v 
+        where   (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.particular_code=p_account and v.acc_code<>v.particular_code
+                       and upper(v.vou_type)<>upper('jv')
+
+             ORDER BY GRP ASC ;
+  end if;
+end ;
+
+

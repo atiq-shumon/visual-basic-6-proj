@@ -1,0 +1,123 @@
+create or replace procedure Indoor_SavePatient_info(
+p_bed_type varchar2,
+p_Type_no integer,
+p_bed_no  varchar2,
+p_pat_name  varchar2,
+p_guard_name  varchar2,
+p_addr1 varchar2,
+p_addr2 varchar2,
+p_age  varchar2,
+p_sex varchar2,
+p_religion varchar2,
+p_phone varchar2,
+p_advance number,
+p_doc_dept varchar2,
+p_u_id varchar2,
+p_booth varchar2,
+p_extra_bed_flag integer
+)
+as
+var_admission_charge number;
+var_bed_charge number;
+
+var_st_dt date;
+var_ed_dt date;
+begin
+select st_dt,ed_dt into var_st_dt,var_ed_dt 
+from fiscal_year;
+
+insert into in_door_Pat_Info_Main(
+in_reg_no ,             
+pat_id ,
+pat_name  ,
+pat_guard_name ,
+sex ,
+age,
+Religion,
+addr1,
+addr2,
+phone,
+doc_dept,
+release_flag,
+dt ,
+booth  ,
+admission_date  ,
+st_dt ,
+ed_dt ,
+dt1  ,
+u_id )
+values(
+In_door_pat_info_main_seq.nextval,             
+pat_info_main_out_door_seq.nextval,---receipt no
+p_pat_name  ,
+p_guard_name ,
+p_sex   ,
+p_age   ,
+p_Religion  ,
+p_addr1  ,
+p_addr2  ,
+p_phone  ,
+p_doc_dept,
+0,
+sysdate ,
+p_booth  ,
+sysdate,
+var_st_dt ,
+var_ed_dt ,
+sysdate ,
+p_u_id );
+
+commit;
+
+insert into indoor_pat_money(in_reg_no,advance)
+values(In_door_pat_info_main_seq.currval,p_advance);
+commit;
+update bed_info
+set occupy_flag='1',
+   IN_REG_NO=In_door_pat_info_main_seq.currval
+where bed_no=p_bed_no and bed_type=P_bed_type
+and bed_ext_col=p_type_no;
+
+select bed_group,bed_charge into 
+var_admission_charge,
+var_bed_charge
+from bed_info
+where bed_no=p_bed_no and bed_type=P_bed_type
+and bed_ext_col=p_type_no;
+
+insert into Indoor_pat_bed_info(
+ in_reg_no,
+ BED_NO  ,
+ BED_TYPE,
+ Bed_type_no ,  
+ Admission_charge ,
+ BED_CHARGE     ,
+  OCCUPY_FLAG   ,
+ U_ID    ,
+ DT  ,
+ TEMP_DATE ,
+ Admission_date ,
+ extra_bed_flag ,
+ migration_flag ,
+  st_dt,
+ ed_dt
+)values(
+In_door_pat_info_main_seq.currval,
+ p_BED_NO  ,
+ p_BED_TYPE,
+ p_type_no ,  
+ var_Admission_charge ,
+ var_BED_CHARGE,
+  '1',
+p_u_id,
+  sysdate  ,
+ sysdate ,
+  sysdate ,
+ p_extra_bed_flag ,
+ 0       ,--migration flag
+ var_st_dt,
+ var_ed_dt
+);
+commit;
+end Indoor_SavePatient_info;
+

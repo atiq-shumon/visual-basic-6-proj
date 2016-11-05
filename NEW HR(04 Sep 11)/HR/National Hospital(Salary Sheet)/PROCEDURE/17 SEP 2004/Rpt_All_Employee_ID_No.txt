@@ -1,0 +1,112 @@
+create or replace procedure Rpt_All_Employee_ID_No(p_test_cursor in out
+test_package.test_type,
+P_DepartmentName varchar2,
+P_ClassId number,
+P_Sex number,
+P_Degination varchar2
+)
+as
+ V_Temp_ClassId number;
+ V_Temp_Sex number;
+
+	
+
+begin
+
+
+
+if P_ClassId not in (1,2,3,4) then
+	V_Temp_ClassId:=5;
+else
+	V_Temp_ClassId:=P_ClassId;
+
+end if;
+
+if P_Sex not in (0,1) then
+	V_Temp_Sex:=5;
+else
+	V_Temp_Sex:=P_Sex ;
+
+end if;
+
+
+
+
+
+
+If P_DepartmentName is null  and V_Temp_ClassId =5 and V_Temp_Sex =5 and P_Degination is null then
+
+	open p_test_cursor for
+	
+	SELECT EMP_INFO.EMP_ID,EMP_INFO.EMP_NM,emp_info.GENDER,emp_info.DOB, 
+	ST_DESIG.DESIGNATION,ST_DEPT.DEPT_NM
+	,EMP_JOB_INFO.Jdate,EMP_JOB_INFO.scale_code
+	FROM EMP_INFO, 
+	EMP_JOB_INFO,ST_DEPT,ST_DESIG
+	WHERE ((EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+	AND (ST_DEPT.DEPT_CODE=EMP_JOB_INFO.DEPT))
+	order by EMP_INFO.EMP_ID ;
+
+elsif P_DepartmentName is not null  and V_Temp_ClassId =5 and V_Temp_Sex =5  and P_Degination is null then
+
+	open p_test_cursor for
+	SELECT EMP_INFO.EMP_ID,EMP_INFO.EMP_NM,emp_info.GENDER,emp_info.DOB, 
+	ST_DESIG.DESIGNATION,ST_DEPT.DEPT_NM
+	,EMP_JOB_INFO.Jdate,EMP_JOB_INFO.scale_code
+	FROM EMP_INFO, 
+	EMP_JOB_INFO,ST_DEPT,ST_DESIG
+	WHERE ((EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+	AND (ST_DEPT.DEPT_CODE=EMP_JOB_INFO.DEPT)
+	AND (ST_DEPT.DEPT_NM=P_DepartmentName))
+	order by EMP_INFO.EMP_ID ;
+
+elsif P_DepartmentName is  null  and V_Temp_ClassId <> 5 and V_Temp_Sex =5 and P_Degination is null then
+
+	open p_test_cursor for
+	SELECT EMP_INFO.EMP_ID,EMP_INFO.EMP_NM,emp_info.GENDER,emp_info.DOB,
+	ST_DESIG.DESIGNATION,ST_DEPT.DEPT_NM
+	,EMP_JOB_INFO.Jdate,EMP_JOB_INFO.scale_code
+	FROM EMP_INFO, 
+	EMP_JOB_INFO,ST_DEPT,ST_DESIG
+	WHERE (	(EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+	AND (ST_DEPT.DEPT_CODE=EMP_JOB_INFO.DEPT)
+	AND substr(EMP_INFO.EMP_ID,1,1)=V_Temp_ClassId)
+	order by EMP_INFO.EMP_ID ;
+
+elsif P_DepartmentName is  null  and V_Temp_ClassId =5  and V_Temp_Sex <> 5  and P_Degination is null then
+
+	open p_test_cursor for
+	SELECT EMP_INFO.EMP_ID,EMP_INFO.EMP_NM,emp_info.GENDER,emp_info.DOB, 
+	ST_DESIG.DESIGNATION,ST_DEPT.DEPT_NM
+	,EMP_JOB_INFO.Jdate,EMP_JOB_INFO.scale_code
+	FROM EMP_INFO, 
+	EMP_JOB_INFO,ST_DEPT,ST_DESIG
+	WHERE ((EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+	AND (ST_DEPT.DEPT_CODE=EMP_JOB_INFO.DEPT)
+	AND (emp_info.GENDER=V_Temp_Sex))
+	order by EMP_INFO.EMP_ID ;	
+
+elsif P_DepartmentName is  null  and V_Temp_ClassId =5  and V_Temp_Sex = 5 and P_Degination is NOT null then
+
+	open p_test_cursor for
+	SELECT EMP_INFO.EMP_ID,EMP_INFO.EMP_NM,emp_info.GENDER,emp_info.DOB, 
+	ST_DESIG.DESIGNATION,ST_DEPT.DEPT_NM
+	,EMP_JOB_INFO.Jdate,EMP_JOB_INFO.scale_code
+	FROM EMP_INFO, 
+	EMP_JOB_INFO,ST_DEPT,ST_DESIG
+	WHERE ((EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+	AND (ST_DEPT.DEPT_CODE=EMP_JOB_INFO.DEPT)
+	AND (ST_DESIG.DESIGNATION=P_Degination))
+	order by EMP_INFO.EMP_ID ;
+
+end if ;
+end Rpt_All_Employee_ID_No;
+
+
+
+

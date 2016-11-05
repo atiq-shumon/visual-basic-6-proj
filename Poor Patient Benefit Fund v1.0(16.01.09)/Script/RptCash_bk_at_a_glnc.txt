@@ -1,0 +1,11 @@
+create table RptCash_bk_at_a_glnc(
+                vou_no  varchar(15),
+                vou_date date,
+                vou_narr varchar(200),
+                cheque_no varchar(20),
+                chk_date date,
+                account_code varchar(20),
+                account_name varchar(50),
+                dr_amt  number,
+                CR_AMT  number,
+                grp integer);

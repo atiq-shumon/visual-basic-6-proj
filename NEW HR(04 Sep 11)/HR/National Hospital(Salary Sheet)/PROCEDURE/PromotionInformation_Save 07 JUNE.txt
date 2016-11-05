@@ -1,0 +1,61 @@
+create or replace procedure PromotionInformation_Save(
+p_EMP_ID varchar2,
+P_LAST_PROM_DATE date,
+P_P_PROMOTION_EFF_DT date,
+P_CURRENT_BASIC number,
+P_CURRENT_SCALE varchar2,
+P_ENTRY_DATE date,
+P_ENTRY_BY varchar2)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from promotion_info
+where EMP_ID=p_EMP_ID AND LAST_PROM_DATE=P_LAST_PROM_DATE;
+if var_temp>0 then
+update promotion_info
+set 
+	P_PROMOTION_EFF_DT=P_P_PROMOTION_EFF_DT,
+	CURRENT_BASIC=P_CURRENT_BASIC,
+	CURRENT_SCALE=P_CURRENT_SCALE,
+	ENTRY_DATE=P_ENTRY_DATE,
+	ENTRY_BY=P_ENTRY_BY
+where EMP_ID=p_EMP_ID AND LAST_PROM_DATE=P_LAST_PROM_DATE;
+
+Update INCREMENT_RECORD
+Set
+LAST_DT_INCRE=P_LAST_PROM_DATE where
+EMP_ID=p_EMP_ID and TRACK_ID=(select max(TRACK_ID) from 
+INCREMENT_RECORD where EMP_ID=p_EMP_ID);
+uPDATE EMP_JOB_INFO  
+SET 
+  SCALE_CODE=P_CURRENT_SCALE,
+  BASIC_SAL=P_CURRENT_BASIC	
+where EMP_ID=p_EMP_ID;
+else
+insert into promotion_info values(
+	p_EMP_ID,
+	P_LAST_PROM_DATE,
+	P_P_PROMOTION_EFF_DT,
+	P_CURRENT_BASIC,
+	P_CURRENT_SCALE,
+	P_ENTRY_DATE,
+	P_ENTRY_BY,
+	Track_Id_For_Promo.NEXTVAL);
+
+uPDATE EMP_JOB_INFO  
+SET 
+  SCALE_CODE=P_CURRENT_SCALE,
+  BASIC_SAL=P_CURRENT_BASIC	
+where EMP_ID=p_EMP_ID;
+
+Update INCREMENT_RECORD
+Set
+LAST_DT_INCRE=P_LAST_PROM_DATE where
+EMP_ID=p_EMP_ID and TRACK_ID=(select max(TRACK_ID) from 
+INCREMENT_RECORD where EMP_ID=p_EMP_ID);
+
+end if;
+commit;
+end  PromotionInformation_Save;
+/

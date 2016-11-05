@@ -1,0 +1,1207 @@
+
+create or replace procedure Rpt_head_wise_statistics
+	(p_test_cursor in out test_package.test_type,
+	SELECT_FLAG INTEGER,
+        p_date  date,
+        p_date1 date,
+	p_date2 date)
+AS
+var_bed_STAT1 number(14,4);
+var_bed_STAT2 number(14,4);
+total_bed_STAT number(14,4);
+var_repository  number(16,4);
+var_repository_STAT number(16,4):=0;
+       var_repository_Medicine2_STAT NUMBER(12,4):=0;
+      var_repository_Medicine2 NUMBER(12,4):=0;
+      var_repository_Surgery1_STAT  NUMBER(12,4):=0;
+      var_repository_Surgery1 NUMBER(12,4):=0;    
+      var_repository_Surgery2_STAT NUMBER(12,4):=0;
+      var_repository_Surgery2 NUMBER(12,4):=0;
+      var_repository_GYNAE1_STAT NUMBER(12,4):=0;
+      var_repository_GYNAE1 NUMBER(12,4):=0;
+     var_repository_GYNAE2_STAT  NUMBER(12,4):=0;
+     var_repository_GYNAE2 NUMBER(12,4):=0;
+     var_repository_Ophth_STAT  NUMBER(12,4):=0;
+     var_repository_Ophth NUMBER(12,4):=0;
+     var_repository_ENT_STAT  NUMBER(12,4):=0;
+    var_repository_ENT NUMBER(12,4):=0;
+     var_repository_CARD_STAT NUMBER(12,4):=0;
+     var_repository_CARD NUMBER(12,4):=0;
+     var_repository_Paediatric_STAT NUMBER(12,4):=0;
+     var_repository_Paediatric  NUMBER(12,4):=0;
+      var_repository_Skin_STAT  NUMBER(12,4):=0;
+      var_repository_Skin NUMBER(12,4):=0;
+    var_repository_OPR_Ophth_STAT   NUMBER(12,4):=0;
+	var_repository_OPR_Ophth  NUMBER(12,4):=0;
+      var_repository_DELIVERY1_STAT   NUMBER(12,4):=0;
+	var_repository_DELIVERY1  NUMBER(12,4):=0;
+      var_repository_DELIVERY2_STAT  NUMBER(12,4):=0;
+	var_repository_DELIVERY2  NUMBER(12,4):=0;
+      var_repository_OPR_SUR1_STAT  NUMBER(12,4):=0;
+	 var_repository_OPR_SUR1  NUMBER(12,4):=0;
+      var_repository_OPR_SUR2_STAT NUMBER(12,4):=0;
+     var_repository_OPR_SUR2  NUMBER(12,4):=0;
+      var_repository_OPR_GYE1_STAT  NUMBER(12,4):=0;
+	 var_repository_OPR_GYE1  NUMBER(12,4):=0;
+      var_repository_OPR_GYE2_STAT  NUMBER(12,4):=0;
+	 var_repository_OPR_GYE2  NUMBER(12,4):=0;
+      var_repository_OPR_ENT_STAT  NUMBER(12,4):=0;
+	var_repository_OPR_ENT  NUMBER(12,4):=0;
+       VAR_TEST_CHAR_PATH_STAT  NUMBER(12,4):=0;
+     VAR_TEST_CHAR_PATH  NUMBER(12,4):=0;
+        VAR_TEST_CHAR_PATH_OUT_STAT NUMBER(12,4):=0;
+		VAR_TEST_CHAR_PATH_OUT NUMBER(12,4):=0;
+         VAR_ECG_STAT NUMBER(12,4):=0; 
+	VAR_ECG  NUMBER(12,4):=0;
+ VAR_ETT_STAT NUMBER(12,4):=0; 
+VAR_ETT NUMBER(12,4):=0; 
+         VAR_ECHO_STAT NUMBER(12,4):=0;
+       VAR_ECHO  NUMBER(12,4):=0;
+        VAR_CARDIOLOGY_STAT  NUMBER(12,4):=0;
+       VAR_CARDIOLOGY  NUMBER(12,4):=0;
+        VAR_anesthesia_charge_STAT    NUMBER(12,4):=0;
+        VAR_anesthesia_charge NUMBER(12,4):=0;
+        VAR_service_charge_STAT NUMBER(12,4):=0;
+        VAR_service_charge  NUMBER(12,4):=0;
+        VAR_nebuliser_charge_STAT NUMBER(12,4):=0;
+       VAR_nebuliser_charge NUMBER(12,4):=0;
+         VAR_baby_care_charge_STAT NUMBER(12,4):=0;
+         VAR_baby_care_charge  NUMBER(12,4):=0;
+            VAR_admission_charge_STAT NUMBER(12,4):=0;
+         VAR_admission_charge NUMBER(12,4):=0;
+        VAR_miscelleneous_charge_STAT    NUMBER(12,4):=0;
+        VAR_miscelleneous_charge NUMBER(12,4):=0;
+       var_advance_STAT NUMBER(12,4):=0; 
+      var_advance NUMBER(12,4):=0;
+     var_birth_certificate_STAT  NUMBER(12,4):=0;
+     var_birth_certificate  NUMBER(12,4):=0;
+     var_minor_opr_STAT  NUMBER(12,4):=0; 
+      var_minor_opr NUMBER(12,4):=0;
+     var_immniza_STAT  NUMBER(12,4):=0;
+     var_immniza  NUMBER(12,4):=0;
+     var_dental_STAT  NUMBER(12,4):=0; 
+     var_dental  NUMBER(12,4):=0;
+     var_eye_opr_STAT   NUMBER(12,4):=0; 
+     var_eye_opr NUMBER(12,4):=0;
+     var_physio_STAT NUMBER(12,4):=0; 
+     var_physio NUMBER(12,4):=0;
+    var_dressing_STAT   NUMBER(12,4):=0;
+    var_dressing NUMBER(12,4):=0;
+    var_ambulance_STAT NUMBER(12,4):=0; 
+     var_ambulance NUMBER(12,4):=0;
+    var_ultrasono_STAT NUMBER(12,4):=0; 
+    var_ultrasono NUMBER(12,4):=0;
+    var_out_ticket_STAT  NUMBER(12,4):=0;
+      var_out_ticket NUMBER(12,4):=0;
+    var_emm_ticket_STAT NUMBER(12,4):=0;
+    var_emm_ticket NUMBER(12,4):=0;
+    var_other_money_STAT  NUMBER(12,4):=0;
+     var_other_money NUMBER(12,4):=0;
+    var_ind_x_STAT  NUMBER(12,4):=0;
+     var_ind_x NUMBER(12,4):=0;
+    var_out_x_STAT  NUMBER(12,4):=0;
+     var_out_x NUMBER(12,4):=0;
+    var_blood_tranfu_STAT   NUMBER(12,4):=0;
+    var_blood_tranfu NUMBER(12,4):=0;
+    var_discount_STAT NUMBER(12,4):=0;
+      var_discount  NUMBER(12,4):=0;
+    var_disc_STAT NUMBER(12,4):=0;
+     var_disc  NUMBER(12,4):=0;
+    var_neg_advance_STAT  NUMBER(12,4):=0;
+    var_neg_advance NUMBER(12,4):=0;
+    var_photo_STAT  NUMBER(12,4):=0;
+     var_photo NUMBER(12,4):=0;
+    var_incubator_STAT NUMBER(12,4):=0;
+     var_incubator NUMBER(12,4):=0;
+    var_blood_sugar_STAT  NUMBER(12,4):=0;
+    var_blood_sugar NUMBER(12,4):=0;
+    var_ex_trans_STAT  NUMBER(12,4):=0; 
+      var_ex_trans  NUMBER(12,4):=0;
+    var_ext_bed_STAT  NUMBER(12,4):=0;
+     var_ext_bed NUMBER(12,4):=0;
+    var_refund_STAT  NUMBER(12,4):=0;
+    var_refund NUMBER(12,4):=0;
+    var_neunetal  number(12,4):=0;
+    var_neunetal_STAT number(12,4):=0;
+VAR_DATE  DATE;
+VAR_DATE1 date;
+VAR_DATE2 date;
+BEGIN
+IF SELECT_FLAG=1 THEN
+         
+       delete from  head_wise_STAT;
+       commit;      
+       insert into  head_wise_STAT(Group_no,col_no,charge) values(1,1,nvl((select COUNT(in_reg_no) From indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Medicine-1') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+         insert into  head_wise_STAT(Group_no,col_no,charge) values(1,2,nvl((select COUNT(in_reg_no) From indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Medicine-2') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,3,nvl( (select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-1') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,4,nvl( (select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-2') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,5,nvl( (select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-1') )  
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,6,nvl((select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-2') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,7,nvl(( select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Ophth.') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,8,nvl( (select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('ENT') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,9,nvl( (select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Card.') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,10,nvl(( select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Paediatric') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,11,nvl( (select COUNT(in_reg_no) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Skin VD') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+--------------delivery charge----------------------------------------------------
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(2,12,nvl( (select COUNT(delivery_charge) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-1') ) 
+						and delivery_charge >0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(2,13,nvl( (select COUNT(delivery_charge) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-2') ) 
+						and delivery_charge >0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+----------------------------------------------operation--------------------------------
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,14,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-1') ) 
+						and total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,15,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-2') ) 
+						and total_operation_SUM>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,16,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-1') ) 
+						and  total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,17,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-2') ) 
+						and  total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,18,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('ENT') ) 
+						and total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+ insert into head_wise_stat(Group_no,col_no,charge) values(3,19,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Ophth.') ) 
+						and total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+----------------test charge---------------------------------------------------
+
+insert into head_wise_stat(Group_no,col_no,charge) values(4,20,nvl((select  count(DISTINCT(reg_no))  from pat_info_sub1_out_door   where  m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('01','02','03','04','05','06','10'))  and in_reg_no!=0 and
+test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23)) or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1 ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+  insert into head_wise_stat(Group_no,col_no,charge) values(4,21,nvl((select  count(DISTINCT(reg_no))  from pat_info_sub1_out_door   where  
+					                m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('01','02','03','04','05','06','10'))  and   in_reg_no=0 and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+    insert into head_wise_stat(Group_no,col_no,charge) values(5,22,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door where  
+					                m_code  in ('07') and s_code in('0101','0102','0103','0104','0201','0202','0203','0204') and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+    insert into head_wise_stat(Group_no,col_no,charge) values(5,23,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door where  
+           				                 m_code  in ('07') and s_code in('0301','0302','0303','0304') and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+     insert into head_wise_stat(Group_no,col_no,charge) values(5,24,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('07') and s_code in('0401','0402','0403','0404','0501','0502','0503','0504') and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+    insert into head_wise_stat(Group_no,col_no,charge) values(5,25,nvl((select count(CARDIOLOGY_CHARGE)  
+       from indoor_pat_money 
+    where   CARDIOLOGY_CHARGE>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+/* ---------------Not Required--------------------------------------------------
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,26,nvl((select count(ANESTHESIA_CHARGE)  
+       from indoor_pat_money 
+    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+    insert into head_wise_stat(Group_no,col_no, charge) values(6,27,nvl((select STAT(service_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+ insert into head_wise_stat(Group_no,col_no, charge) values(6,28,nvl((select STAT(NEBULISER_CHARGE)  
+       from indoor_pat_money 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no, charge) values(6,29,nvl((select STAT(baby_care_charge)  
+       from indoor_pat_money 
+    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,30,nvl((select STAT(admission_charge)  
+       from indoor_pat_money 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,31,nvl((select STAT(miscelleneous_charge)  
+       from indoor_pat_money  
+    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,32,nvl((select STAT(advance)  
+       from advance 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(14,33,nvl((select STAT(NEUNETAL_BED_CHARGE)  
+       from indoor_pat_money  
+    where   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+*/
+
+   insert into head_wise_stat(Group_no,col_no,charge) values(14,34, ------------Birht certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('19') and test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+  insert into head_wise_stat(Group_no,col_no,charge) values(14,35, ------------Minor Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('18') and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+  insert into head_wise_stat(Group_no,col_no,charge) values(14,36, ------------Immunizartion Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('08') and   test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,37, ------------Dental certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('13') and test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,38, ------------EyE Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('17') and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no,charge) values(14,39, ------------Physiotherapy Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('11') and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,40, ------------Dressing Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('14') and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+/*
+insert into head_wise_stat(Group_no,col_no,charge) values(14,41, ------------AmbulanceOperation certificate
+           nvl((select STAT(test_charge) from pat_info_sub1_out_door  where  
+					                 m_code  in ('12') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+*/
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,42, ------------Ultrasonogram certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('15') and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+/*
+insert into head_wise_stat(Group_no,col_no,charge) values(14,43, ------------Outdoor ticekt certificate
+           nvl((select STAT(amount) from others_money  where  
+					                 serial_no=1 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+						or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no,charge) values(14,44, ------------EMMER ticekt certificate
+           nvl((select STAT(amount) from others_money  where  
+					                 serial_no=2 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+						or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no,charge) values(14,45, ------------Otehrs money   ticekt certificate
+           nvl((select STAT(amount) from others_money  where  
+					                 serial_no=3 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+						or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+
+
+
+*/
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,46,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where    ---------indoor x ray
+					                 m_code  in ('09') and in_reg_no!=0 and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no,charge) values(14,47,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where    ---------outdoor x ray
+					                 m_code  in ('09') and in_reg_no=0 and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+         -----Blood Transfusion
+
+insert into head_wise_stat(Group_no,col_no,charge) values(4,48,nvl((select  count(DISTINCT(reg_no))  from pat_info_sub1_out_door   where  m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('16'))   and
+test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23)) or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1 ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+/*
+  
+ insert into head_wise_stat(Group_no,col_no,charge) values(4,48,    -----Blood Transfusion
+           nvl((select STAT(test_charge) from pat_info_sub1_out_door  where  
+					                m_code  in ('16') and   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+----------------
+    insert into head_wise_stat(Group_no,col_no, charge) values(14,49,nvl((select -STAT(discount)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+  insert into head_wise_stat(Group_no,col_no, charge) values(14,50,nvl((select -STAT(disc)  
+       from Pat_Info_Sub3_out_door 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+----insert into head_wise_stat(Group_no,col_no, charge) values(14,51,0);
+insert into head_wise_stat(Group_no,col_no, charge) values(14,51,nvl((select -STAT(advance)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,52,nvl((select STAT(photo_therapy_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,53,nvl((select STAT(INCUBATOR_CHARGE)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,54,nvl((select STAT(BLOOD_SUGAR_CHARGE)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,55,nvl((select STAT(Exchange_transfusion_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,56,nvl((select NVL(STAT(EXTRA_BED_CHARGE),0)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,57,nvl((select NVL(STAT(amount),0)  
+       from diag_refund 
+    where  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+					or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+
+*/
+
+    open p_test_cursor for 
+        select * from  head_wise_stat order by  col_no ;    
+END IF;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IF SELECT_FLAG=2 THEN
+       delete from  head_wise_stat;
+     	
+  
+       commit;      
+       insert into  head_wise_STAT(Group_no,col_no,charge) values(1,1,nvl((select COUNT(bed_SUM) 		from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Medicine-1') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,2,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Medicine-2') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,3,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-1') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,4,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-2') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,5,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-1') )  
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,6,nvl((select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-2') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,7,nvl(( select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Ophth.') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,8,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('ENT') ) 
+						and bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,9,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Card.') ) 
+						and  bed_SUM>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,10,nvl(( select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Paediatric') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(1,11,nvl( (select COUNT(bed_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Skin VD') ) 
+						and  bed_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+--------------delivery charge----------------------------------------------------
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(2,12,nvl( (select COUNT(delivery_charge) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-1') ) 
+						and delivery_charge >0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(2,13,nvl( (select COUNT(delivery_charge) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-2') ) 
+						and delivery_charge >0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+----------------------------------------------operation--------------------------------
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,14,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-1') ) 
+						and total_operation_SUM>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,15,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Surgery-2') ) 
+						and total_operation_SUM>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,16,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-1') ) 
+						and  total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,17,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Gynae-2') ) 
+						and  total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(3,18,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('ENT') ) 
+						and total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+ insert into head_wise_stat(Group_no,col_no,charge) values(3,19,nvl( (select COUNT(total_operation_SUM) from indoor_pat_money where  in_reg_no 
+				in(select in_reg_no  from in_door_pat_info_main
+					 where upper(doc_dept)=upper('Ophth.') ) 
+						and total_operation_SUM>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+----------------test charge---------------------------------------------------
+
+insert into head_wise_stat(Group_no,col_no,charge) values(4,20,nvl((select  count(DISTINCT(reg_no))  from pat_info_sub1_out_door   where  m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('01','02','03','04','05','06','10'))  and in_reg_no!=0 and
+test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+  insert into head_wise_stat(Group_no,col_no,charge) values(4,21,nvl((select  count(DISTINCT(reg_no))  from pat_info_sub1_out_door   where  
+					                m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('01','02','03','04','05','06','10'))  and   in_reg_no=0 and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+    insert into head_wise_stat(Group_no,col_no,charge) values(5,22,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door where  
+					                m_code  in ('07') and s_code in('0101','0102','0103','0104','0201','0202','0203','0204') and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+    insert into head_wise_stat(Group_no,col_no,charge) values(5,23,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door where  
+           				                 m_code  in ('07') and s_code in('0301','0302','0303','0304') and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+     insert into head_wise_stat(Group_no,col_no,charge) values(5,24,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('07') and s_code in('0401','0402','0403','0404','0501','0502','0503','0504') and test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+    insert into head_wise_stat(Group_no,col_no,charge) values(5,25,nvl((select count(CARDIOLOGY_CHARGE)  
+       from indoor_pat_money 
+    where   CARDIOLOGY_CHARGE>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+/* ---------------Not Required--------------------------------------------------
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,26,nvl((select count(ANESTHESIA_CHARGE)  
+       from indoor_pat_money 
+    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+    insert into head_wise_stat(Group_no,col_no, charge) values(6,27,nvl((select STAT(service_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+ insert into head_wise_stat(Group_no,col_no, charge) values(6,28,nvl((select STAT(NEBULISER_CHARGE)  
+       from indoor_pat_money 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no, charge) values(6,29,nvl((select STAT(baby_care_charge)  
+       from indoor_pat_money 
+    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,30,nvl((select STAT(admission_charge)  
+       from indoor_pat_money 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,31,nvl((select STAT(miscelleneous_charge)  
+       from indoor_pat_money  
+    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(6,32,nvl((select STAT(advance)  
+       from advance 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+    insert into head_wise_stat(Group_no,col_no,charge) values(14,33,nvl((select STAT(NEUNETAL_BED_CHARGE)  
+       from indoor_pat_money  
+    where   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+*/
+
+   insert into head_wise_stat(Group_no,col_no,charge) values(14,34, ------------Birht certificate
+           nvl((select count(test_charge) from pat_info_sub1_out_door  where  
+					                 m_code  in ('19') and test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+  insert into head_wise_stat(Group_no,col_no,charge) values(14,35, ------------Minor Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('18') and  test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+  insert into head_wise_stat(Group_no,col_no,charge) values(14,36, ------------Immunizartion Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('08') and   test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,37, ------------Dental certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('13') and test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,38, ------------EyE Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('17') and  test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,39, ------------Physiotherapy Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('11') and  test_charge>0 and(((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,40, ------------Dressing Operation certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('14') and  test_charge>0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+/*
+insert into head_wise_stat(Group_no,col_no,charge) values(14,41, ------------AmbulanceOperation certificate
+           nvl((select STAT(test_charge) from pat_info_sub1_out_door  where  
+					                 m_code  in ('12') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+*/
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,42, ------------Ultrasonogram certificate
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where  
+					                 m_code  in ('15') and  test_charge>0 and   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or
+    (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') 
+    and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+     <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+/*
+insert into head_wise_stat(Group_no,col_no,charge) values(14,43, ------------Outdoor ticekt certificate
+           nvl((select STAT(amount) from others_money  where  
+					                 serial_no=1 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+						or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no,charge) values(14,44, ------------EMMER ticekt certificate
+           nvl((select STAT(amount) from others_money  where  
+					                 serial_no=2 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+						or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no,charge) values(14,45, ------------Otehrs money   ticekt certificate
+           nvl((select STAT(amount) from others_money  where  
+					                 serial_no=3 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+						or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+
+
+
+*/
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,46,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where    ---------indoor x ray
+					                 m_code  in ('09') and in_reg_no!=0 and  test_charge>0 AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(14,47,
+           nvl((select count(DISTINCT(reg_no)) from pat_info_sub1_out_door  where    ---------outdoor x ray
+					                 m_code  in ('09') and in_reg_no=0 and  test_charge>0 and 
+(((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+insert into head_wise_stat(Group_no,col_no,charge) values(4,48,nvl((select  count(DISTINCT(reg_no))  from pat_info_sub1_out_door   where  m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('16'))   and
+test_charge>0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+        to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) 
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+/*
+--------------problem
+ insert into head_wise_stat(Group_no,col_no,charge) values(4,48,    -----Blood Transfusion
+           nvl((select STAT(test_charge) from pat_info_sub1_out_door  where  
+					                m_code  in ('16') and   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+----------------
+    insert into head_wise_stat(Group_no,col_no, charge) values(14,49,nvl((select -STAT(discount)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+  insert into head_wise_stat(Group_no,col_no, charge) values(14,50,nvl((select -STAT(disc)  
+       from Pat_Info_Sub3_out_door 
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+----insert into head_wise_stat(Group_no,col_no, charge) values(14,51,0);
+insert into head_wise_stat(Group_no,col_no, charge) values(14,51,nvl((select -STAT(advance)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,52,nvl((select STAT(photo_therapy_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,53,nvl((select STAT(INCUBATOR_CHARGE)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+						or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,54,nvl((select STAT(BLOOD_SUGAR_CHARGE)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,55,nvl((select STAT(Exchange_transfusion_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,56,nvl((select NVL(STAT(EXTRA_BED_CHARGE),0)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+insert into head_wise_stat(Group_no,col_no, charge) values(14,57,nvl((select NVL(STAT(amount),0)  
+       from diag_refund 
+    where  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+					or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+
+*/
+
+    open p_test_cursor for 
+        select * from  head_wise_stat order by  col_no ;    
+END IF;
+end ;              

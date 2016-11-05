@@ -1,0 +1,80 @@
+create or replace procedure temp_indoor_calculation(p_in_reg_no 
+number)
+as
+var_annay_charge number;
+var_opr_sum number;
+var_temp_operation_sum number;
+var_temp_test_sum number;
+var_date_calculation number;
+var_bed_charge number;
+var_total_bed_charge number;
+var_admission_charge number;
+var_count number;
+
+---------for extra bed---
+var_st_dt date;
+var_ed_dt date;
+var_charge number;
+var_date_ext_bed number;
+ext_charge_total number;
+date_calcu number:=0;
+
+cursor c1 is
+select bed_charge,start_date,end_date 
+from Indoor_pat_Extra_bed_info
+where in_reg_no=p_in_reg_no;
+
+begin
+open c1;
+
+select count(in_reg_no) into var_count
+from Indoor_pat_Extra_bed_info
+where in_reg_no=p_in_reg_no;
+
+
+
+----------fetching cursor----------------
+while var_count>0 loop
+fetch c1 into var_charge,var_st_dt,var_ed_dt;
+if var_ed_dt is null then
+ var_ed_dt:=sysdate;
+end if;
+select  round(var_ed_dt-var_st_dt) into var_date_ext_bed
+from dual;
+
+date_calcu:=date_calcu+var_date_ext_bed;
+---total extra bed_charge-------
+var_count:=var_count-1;
+end loop;
+
+ext_charge_total:=date_calcu*var_charge;
+
+
+
+select round( sysdate - admission_date) into 
+var_date_calculation
+from in_door_Pat_Info_Main where in_reg_no=p_in_reg_no;
+
+select BED_CHARGE*var_date_calculation,admission_charge into var_bed_charge,
+var_admission_charge
+from  
+Indoor_pat_bed_info where in_reg_no=p_in_reg_no;
+
+select sum(test_charge) into var_temp_test_sum
+from Pat_Info_Sub1_out_door
+where in_reg_no=p_in_reg_no;
+----------fom operation charge ------------------------
+select sum( Opr_CHARGE ),sum(annay_charge) 
+into var_temp_operation_sum,var_annay_charge
+from Indoor_pat_Operation_info
+where in_reg_no=p_in_reg_no;
+
+var_opr_sum:=var_temp_operation_sum+var_annay_charge;
+
+insert into temp_calculation_indoor
+(temp_operation_sum,temp_test_sum,temp_ext_bed_sum,temp_bed_sum,temp_admission_charge )values(var_opr_sum,var_temp_test_sum,ext_charge_total,var_bed_charge,var_admission_charge);
+close c1;
+commit;
+end temp_indoor_calculation; 
+
+

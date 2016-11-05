@@ -1,0 +1,50 @@
+create or replace procedure Save_extra_Bed_info_indoor(
+p_in_reg_no number,
+p_bed_charge number,
+p_u_id varchar2,
+p_st_ed_date date,
+p_booth varchar2)
+as
+
+temp number;
+temp1 number;
+
+var_flag integer;
+begin
+select count(start_date),count(end_date)
+ into temp,temp1
+from Indoor_pat_Extra_bed_info
+where in_reg_no=p_in_reg_no;
+
+
+
+if temp1=temp then
+insert into Indoor_pat_Extra_bed_info(
+		in_reg_no,
+		bed_charge,
+		u_id,
+		dt,
+		Start_date,
+		booth)
+values(
+		p_in_reg_no,
+		p_bed_charge,
+		p_u_id,
+		sysdate,
+		p_st_ed_date,
+		p_booth);
+
+       
+else
+    
+   update Indoor_pat_Extra_bed_info
+       set 
+          u_id=p_u_id,
+          dt=sysdate,          
+          end_date=p_st_ed_date
+       where in_reg_no=p_in_reg_no;
+             
+
+end if;
+commit;
+end Save_extra_Bed_info_indoor;

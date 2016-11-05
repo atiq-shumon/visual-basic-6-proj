@@ -1,0 +1,755 @@
+create or replace procedure s_U_d_item_unit_info(
+    p_mode  int,
+    p_unit_code varchar2,
+    p_unit_name varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as     
+
+begin
+   if p_mode=1 then
+      insert into item_unit_info 
+         values(p_unit_code,p_unit_name,p_remarks,sysdate,p_create_by);
+
+   elsif p_mode=2 then
+        update item_unit_info 
+          set  unit_name=p_unit_name,
+               remarks=p_remarks,
+               create_date=sysdate,
+               create_by=p_create_by 
+          where to_number(unit_code)=to_number(p_unit_code);
+
+  elsif p_mode=3 then
+       delete from item_unit_info where to_number(unit_code)=to_number(p_unit_code);
+  end if;
+
+ commit;
+
+end;
+
+
+
+create or replace procedure s_U_d_item_cate_info(
+    p_mode  int,
+    p_cate_code varchar2,
+    p_cate_name varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as     
+
+begin
+   if p_mode=1 then
+      insert into item_cate_info 
+         values(p_cate_code,p_cate_name,p_remarks,sysdate,p_create_by);
+
+   elsif p_mode=2 then
+        update item_cate_info 
+          set  cate_name=p_cate_name,
+               remarks=p_remarks,
+               create_date=sysdate,
+               create_by=p_create_by 
+          where to_number(cate_code)=to_number(p_cate_code);
+
+  elsif p_mode=3 then
+       delete from item_cate_info where to_number(cate_code)=to_number(p_cate_code);
+  end if;
+
+ commit;
+
+end;
+
+
+
+
+
+
+
+create or replace procedure s_U_d_item_group_info(
+    p_mode  int,
+    p_group_code varchar2,
+    p_group_name varchar2,
+    p_type_code  varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as     
+
+begin
+   if p_mode=1 then
+      insert into item_group_info 
+         values(p_group_code,p_group_name,p_type_code,p_remarks,sysdate,p_create_by);
+
+   elsif p_mode=2 then
+        update item_group_info 
+          set  group_name=p_group_name,
+               remarks=p_remarks,
+               create_date=sysdate,
+               create_by=p_create_by 
+          where to_number(group_code)=to_number(p_group_code)
+      and to_number(type_code)=to_number(p_type_code);
+
+  elsif p_mode=3 then
+       delete from item_group_info where to_number(group_code)=to_number(p_group_code)
+      and to_number(type_code)=to_number(p_type_code);
+  end if;
+
+ commit;
+
+end;
+
+
+
+create or replace procedure s_U_d_item_type_info(
+    p_mode  int,
+    p_type_code varchar2,
+    p_type_name varchar2,
+    p_cate_code  varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as
+begin
+   if p_mode=1 then
+      insert into item_type_info
+         values(p_type_code,p_type_name,p_cate_code,p_remarks,sysdate,p_create_by);
+   elsif p_mode=2 then
+        update item_type_info
+          set  type_name=p_type_name,
+               remarks=p_remarks,
+               create_date=sysdate,
+               create_by=p_create_by
+          where to_number(cate_code)=to_number(p_cate_code)
+      and to_number(type_code)=to_number(p_type_code);
+  elsif p_mode=3 then
+       delete from item_type_info where to_number(type_code)=to_number(p_type_code)
+      and to_number(cate_code)=to_number(p_cate_code);
+  end if;
+ commit;
+end;
+
+
+
+create or replace procedure s_U_d_item_issue_type(
+    p_mode  int,
+    p_type_code varchar2,
+    p_type_name varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as     
+
+begin
+   if p_mode=1 then
+      insert into item_issue_type
+         values(p_type_code,p_type_name,p_remarks,sysdate,p_create_by);
+
+   elsif p_mode=2 then
+        update item_issue_type
+          set  type_name=p_type_name,
+               remarks=p_remarks,
+               create_date=sysdate,
+               create_by=p_create_by 
+          where to_number(type_code)=to_number(p_type_code);
+
+  elsif p_mode=3 then
+       delete from item_issue_type where to_number(type_code)=to_number(p_type_code);
+  end if;
+
+ commit;
+
+end;
+
+
+
+
+----exec S_U_d_item_info(2,'0001','test item fdsfdsa','01','01','02',1,'',sysdate,'00001'
+create or replace procedure S_U_d_item_info(
+    p_mode  int,
+    p_item_code varchar2,
+    p_item_name varchar2,
+    p_cate_code varchar2,
+    p_group_code varchar2,
+    p_unit_code  varchar2,
+    p_re_ord_lbl   number,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2,
+    p_type_code varchar2
+)
+as     
+max_number  varchar2(5);
+begin
+   if p_mode=1 then
+       
+      select to_char(nvl(max(to_number(item_code)),0)+1,'0000') into max_number from item_info ;
+             
+      insert into item_info
+         values(max_number, p_item_name,p_cate_code,p_group_code ,p_unit_code,p_re_ord_lbl,p_remarks,sysdate,p_create_by,p_type_code);
+
+   elsif p_mode=2 then
+        update item_info
+          set  item_name=p_item_name,
+               cate_code=p_cate_code ,
+               group_code=p_group_code,
+               unit_code=p_unit_code,
+               re_ord_lbl=p_re_ord_lbl,
+               remarks=p_remarks,
+               create_date=sysdate,
+               create_by=p_create_by,
+               type_code=p_type_code 
+          where to_number(item_code)=to_number(p_item_code);
+
+  elsif p_mode=3 then
+       delete from  item_info where to_number(item_code)=to_number(p_item_code);
+  end if;
+
+ commit;
+
+end;
+
+
+
+create or replace procedure S_U_d_purchase_info_main(
+   
+    p_mode  int,
+    p_purid varchar2,
+    p_pur_date date,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as     
+max_number  varchar2(6);
+begin
+   if p_mode=1 then
+       
+                 
+      insert into PurchaseMain
+         values(p_purid, p_pur_date,'O','Op-001',null,p_remarks,NULL,sysdate,p_create_by,sysdate);
+
+   end if;
+
+   if p_mode=2 then
+       update PurchaseMain
+            
+         set remarks=p_remarks,
+              PurDate=p_pur_date
+      where PurId =p_PurId ;
+   end if; 
+   commit;
+end;
+
+
+
+create or replace procedure S_U_d_purchase_info_opn(
+    p_mode  int,
+    p_purid varchar2,
+    p_itemId  varchar2,
+    p_URate   number,
+    p_PurQty   number,
+    p_exp_date date,
+    p_track_id integer
+)
+as     
+max_number  varchar2(5);
+validation integer;
+begin
+   if p_mode=1 then
+        select count(*) into validation from  PurchaseSub where purid=p_purid and to_number(itemId)=to_number(p_itemId);
+        
+       if validation=0 then
+          insert into PurchaseSub
+         	values(p_purid, p_itemId,p_URate,p_PurQty 
+                ,0,0,p_exp_date,(select nvl(max(trackid),0)+1 from PurchaseSub));
+    
+       end if;	
+   end if;  
+
+  if p_mode=2 then
+       
+     update PurchaseSub
+       set itemId=p_itemId,
+            URate=p_URate,
+            PurQty =p_PurQty ,
+            exp_date=p_exp_date
+        where trackid= p_track_id;
+  
+  end if;
+
+ if p_mode=3 then
+     
+     delete from PurchaseSub
+        where PurId =p_PurId ;
+
+       delete from PurchaseMain
+     where PurId =p_PurId ;
+  
+  end if;
+
+if p_mode=4 then
+     
+     delete from PurchaseSub
+         where trackid= p_track_id;
+    
+  end if;
+
+
+
+
+    commit;
+
+end;
+
+
+
+
+create or replace procedure S_U_d_purchase_info_main_p(
+    p_mode  int,
+    p_purid varchar2,
+    p_pur_date date,
+    p_supplier_id varchar2,
+    p_challan_no varchar2,
+    P_purchase_type varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2,
+    p_challan_date date
+)
+as
+max_number  varchar2(10);
+begin
+   if p_mode=1 then
+      insert into PurchaseMain
+         values(p_purid, p_pur_date,P_purchase_type,p_supplier_id,
+            p_challan_no,p_remarks,NULL,sysdate,p_create_by, p_challan_date);
+  end if;
+   if p_mode=2 then
+      update PurchaseMain
+       set PurDate=p_pur_date,PurType=P_purchase_type,
+       SupplierId=p_supplier_id,
+       ChallanNo=p_challan_no,
+       CHALLAN_DATE=p_challan_date,
+      remarks=p_remarks
+     where PurId =p_PurId ;
+   end if;
+   commit;
+end;
+
+
+create or replace procedure S_U_d_purchase_info_S_P
+
+(
+    p_mode  int,
+    p_purid varchar2,
+    p_itemId  varchar2,
+    p_PurQty   number,
+    p_URate   number,
+    p_exp_date date,
+    p_track_id integer
+)
+as
+max_number  varchar2(5);
+validation integer;
+begin
+   if p_mode=1 then
+        select count(*) into validation from  PurchaseSub where purid=p_purid and itemId=p_itemId;
+
+       if validation=0 then
+          insert into PurchaseSub
+          values(p_purid, p_itemId,p_URate,p_PurQty
+                ,0,0,p_exp_date,(select nvl(max(trackid),0)+1 from PurchaseSub));
+
+       end if;
+   end if;
+
+  if p_mode=2 then
+     
+     update PurchaseSub
+       set itemId=p_itemId,
+            URate=p_URate,
+            PurQty =p_PurQty ,
+            exp_date=p_exp_date
+        where trackid= p_track_id;
+
+  end if;
+
+ if p_mode=3 then
+
+     delete from PurchaseSub
+        where PurId =p_PurId ;
+
+       delete from PurchaseMain
+     where PurId =p_PurId ;
+
+
+  end if;
+if p_mode=4 then
+
+     delete from PurchaseSub
+         where trackid= p_track_id;
+
+  end if;
+
+
+
+
+    commit;
+
+end;
+
+
+
+
+
+
+create or replace procedure S_U_d_issue_info_main(
+    p_mode  int,
+    p_issueid varchar2,
+    p_issue_date date,
+    p_issue_type varchar2,
+    p_issue_to varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2,
+    p_indent_no varchar2,
+    p_indent_date  date,
+    p_reg_no  varchar2  
+)
+as
+max_number  varchar2(10);
+begin
+   if p_mode=1 then
+      insert into IssueMain
+         values(p_issueid,p_issue_date,p_issue_type,p_issue_to,
+        p_remarks,sysdate,p_create_by,p_indent_no,p_indent_date,p_reg_no);
+  
+
+   end if;
+   if p_mode=2 then
+       update issueMain  
+       set IssueDate=p_issue_date, IssueType=p_issue_type , 
+           IssueTo=p_issue_to,remarks=p_remarks,indent_no=p_indent_no,
+           indent_date=p_indent_date,reg_no=p_reg_no
+     where issueId =p_issueid ;
+   end if;
+   commit;
+
+end;
+
+
+
+
+
+create or replace procedure S_U_d_issue_info_S_P
+(
+    p_mode  int,
+    p_issueid varchar2,
+    p_purid varchar2,
+    p_itemId  varchar2,
+    p_issueQty   number,
+    p_URate   number,
+    p_track_id integer
+)
+as
+max_number  varchar2(5);
+validation integer;
+var_item_qty number(18,2);
+var_pur_id varchar(10);
+var_item_code varchar(10);
+var_issue_qty number(10);
+var_new_balance number(18,2);
+preQty number(18,2);
+Balance number(18,2);
+
+ cursor mycursor is
+   select PurchaseId,itemcode,qty
+           from issuesub
+  where issueid=p_issueid ; 
+
+     
+begin
+    open mycursor;
+
+  
+   if p_mode=1 then
+        
+          insert into IssueSub 
+          values(p_issueid,p_purid,p_itemId,p_issueQty,p_URate
+              ,(select nvl(max(trackid),0)+1 from IssueSub));
+
+
+         select nvl(UsedQty,0) into var_item_qty
+               from PurchaseSub
+         where PurId= p_purid and to_number(itemId)=to_number(p_itemId) ;
+         update PurchaseSub
+         set UsedQty=UsedQty +p_issueQty
+         where PurId= p_purid and to_number(itemId)=to_number(p_itemId);
+       
+  end if;
+
+
+  if p_mode=2 then ----update item
+      
+     SELECT nvl(qty,0)  into preqty 
+            from IssueSub
+        WHERE TrackId = p_track_id;
+     
+       var_new_balance:=p_issueQty-Preqty;
+
+
+     
+     update IssueSub
+       set ItemCode=p_itemId,
+            URate=p_URate,
+            Qty=p_issueQty ,
+            purchaseid=p_purid
+        where trackid= p_track_id;
+
+
+       update PurchaseSub 
+          set UsedQty=UsedQty+var_new_balance
+        where PurId= p_purid and to_number(itemId)=to_number(p_itemId);
+
+            
+  end if;
+
+ if p_mode=3 then
+
+    
+    loop
+        fetch mycursor into   var_pur_id ,var_item_code ,var_issue_qty;
+        exit when mycursor%notfound;
+        select nvl(UsedQty,0) into var_item_qty
+               from PurchaseSub
+       where PurId= var_pur_id and to_number(itemId)=to_number(var_item_code) ;
+ 
+        update PurchaseSub
+           set UsedQty=UsedQty -var_issue_qty
+       where PurId=  var_pur_id and to_number(itemId)=to_number(var_item_code);
+
+      exit when mycursor%notfound;   
+   
+    end loop;
+
+
+     delete from IssueSub
+     where issueId =p_issueid ;
+
+       delete from  issueMain
+     where issueId =p_issueid ;
+
+  end if;
+if p_mode=4 then
+     delete from IssueSub
+         where trackid= p_track_id;
+     select nvl(UsedQty,0) into var_item_qty
+               from PurchaseSub
+    where PurId= p_purid and to_number(itemId)=to_number(p_itemId);
+
+         update PurchaseSub
+           set UsedQty=UsedQty -p_issueQty
+       where PurId= p_purid and to_number(itemId)=to_number(p_itemId);
+ end if;
+   commit;
+ close mycursor;
+
+end;
+
+
+
+
+
+
+
+create or replace procedure S_U_d_issuereturn_info_main(
+    p_mode  int,
+    p_returnid varchar2,
+    p_return_date date,
+    p_return_type varchar2,
+    p_ReturnFrom varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2
+)
+as
+max_number  varchar2(10);
+begin
+  if p_mode=1 then
+      insert into IssueReturnMain
+         values(p_returnid,p_return_date,p_return_type,p_ReturnFrom,
+        p_remarks,sysdate,p_create_by);
+   end if;
+  if p_mode=2 then
+     update IssuereturnMain
+           set	ReturnDate=p_return_date,
+                ReturnType=p_return_type,
+                ReturnFrom=p_ReturnFrom,
+                Remarks=p_remarks,
+                create_by=p_create_by 
+        where ReturnId=p_ReturnId;
+   end if ;
+ commit;
+end;
+/
+
+
+
+
+
+
+
+
+create or replace procedure S_U_d_issuereturn_info_S_P
+(
+    p_mode  int,
+    p_returnid varchar2,
+    p_issueid varchar2,
+    p_purchaseid varchar2,
+    p_return_date date,
+    p_return_type varchar2,
+    p_return_from varchar2,
+    p_itemId  varchar2,
+    p_returnQty   number,
+    p_URate   number,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2,
+    p_track_id integer
+)
+as
+max_number  varchar2(5);
+validation integer;
+var_item_qty number(18,2);
+var_issue_id varchar(10);
+var_purchase_id varchar2(10);
+var_item_code varchar2(10);
+var_return_qty number(10);
+
+cursor mycursor is
+   select issueId,itemcode,qty,PurchaseId
+        from issuereturnsub
+  where ReturnId=p_returnid ; 
+
+     
+begin
+
+   
+   if p_mode=1 then
+        
+          insert into IssueReturnSub
+          values(p_returnid,p_issueid,p_purchaseid,p_itemId,p_returnQty,p_URate
+              ,(select nvl(max(trackid),0)+1 from IssueReturnSub));
+           
+          
+     update PurchaseSub
+           set UsedQty=UsedQty-p_returnQty
+       where PurId=p_purchaseid 
+              and to_number(itemid)=to_number(p_itemid);         
+     end if;
+
+  if p_mode=2 then
+        
+        
+
+         update PurchaseSub
+           set UsedQty=UsedQty +p_returnQty
+       where PurId=p_purchaseid
+              and to_number(itemid)=to_number(p_itemid);
+       
+  end if;
+
+
+  if p_mode=3 then
+          open mycursor;
+
+           loop		
+
+     		   fetch mycursor into   var_issue_id ,var_item_code ,var_return_qty,var_purchase_id;
+                   exit when mycursor%notfound;
+     		   select nvl(UsedQty,0) into var_item_qty
+       		        from PurchaseSub
+     		  where PurId=var_purchase_id and to_number(itemId)=to_number(var_item_code) ;
+ 
+      		  update PurchaseSub
+       		    set UsedQty=var_item_qty +var_return_qty
+      		 where PurId=var_purchase_id  and to_number(itemId)=to_number(var_item_code);
+
+     		 exit when mycursor%notfound;   
+   
+ 	   end loop;
+
+          
+        
+          delete from IssueReturnSub where returnid=p_returnid;
+          delete from issuereturnmain where returnid=p_returnid;
+        close mycursor;
+          
+  end if;
+
+   if p_mode=4 then
+          update PurchaseSub
+              set UsedQty=UsedQty +p_returnQty
+          where PurId=p_purchaseid
+              and to_number(itemid)=to_number(p_itemid);
+     
+        
+          delete from IssueReturnSub where returnid=p_returnid and trackid=p_track_id ;
+
+          
+          
+          
+  end if;
+ 
+ commit;
+
+end;
+
+
+
+
+
+create or replace package special_issue
+
+
+
+
+
+create or replace procedure S_U_d_issue_info_main(
+    p_mode  int,
+    p_issueid varchar2,
+    p_issue_date date,
+    p_issue_type varchar2,
+    p_issue_to varchar2,
+    p_remarks   varchar2,
+    p_create_date date,
+    p_create_by   varchar2,
+    p_indent_no varchar2,
+    p_indent_date  date  
+)
+as
+max_number  varchar2(10);
+begin
+   if p_mode=1 then
+      insert into IssueMain
+         values(p_issueid,p_issue_date,p_issue_type,p_issue_to,
+        p_remarks,sysdate,p_create_by,p_indent_no,p_indent_date);
+  
+
+   end if;
+   if p_mode=2 then
+       update issueMain  
+       set IssueDate=p_issue_date, IssueType=p_issue_type , 
+           IssueTo=p_issue_to,remarks=p_remarks,indent_no=p_indent_no,
+           indent_date=p_indent_date
+     where issueId =p_issueid ;
+   end if;
+   commit;
+
+end;

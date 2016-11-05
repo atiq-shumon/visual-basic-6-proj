@@ -1,0 +1,149 @@
+create or replace procedure RptCash_book_at_a_glnc(p_test_cursor in out test_package.test_type,p_Option integer,p_account varchar2,p_date1  date,p_date2 date)
+as
+VAR_OPN_CASH_DR  NUMBER:=0;
+VAR_OPN_CASH_cr  NUMBER:=0;
+VAR_OPN_BANK_Dr  NUMBER:=0;
+VAR_OPN_BANK_cr  NUMBER:=0;
+
+
+
+
+VAR_clo_CASH_DR  NUMBER:=0;
+VAR_clo_CASH_cr  NUMBER:=0;
+VAR_clo_BANK_Dr  NUMBER:=0;
+VAR_clo_BANK_cr  NUMBER:=0;
+
+
+
+VAR_clo_CASH_DR_part  NUMBER:=0;
+VAR_clo_CASH_cr_part  NUMBER:=0;
+VAR_clo_BANK_Dr_part  NUMBER:=0;
+VAR_clo_BANK_cr_part  NUMBER:=0;
+
+
+
+
+begin
+     if p_Option=1 then
+           VAR_OPN_CASH_DR:=NVL(op_dr_vou_Hd_sum('2103',p_date1),0);
+           VAR_OPN_CASH_CR:=NVL(op_Cr_vou_Hd_sum('2103',p_date1),0);
+           VAR_OPN_BANK_DR:=NVL(op_dr_vou_Hd_sum('2102',p_date1),0);
+           VAR_OPN_BANK_CR:=NVL(op_Cr_vou_Hd_sum('2102',p_date1),0);
+
+
+
+
+      select nvl(sum(v.dr_amt),0) ,nvl(sum(v.cr_amt),0) into  VAR_clo_CASH_DR ,VAR_clo_CASH_cr
+           from vou v 
+          where 
+   (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.acc_code in (select acc_code from acct where ACC_HEAD LIKE'2103%') and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv');
+
+
+     select nvl(sum(v.dr_amt),0) ,nvl(sum(v.cr_amt),0) into VAR_clo_BANK_Dr, VAR_clo_BANK_cr
+           from vou v 
+          where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.acc_code in (select acc_code from acct where ACC_HEAD LIKE '2102%') and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv');
+
+
+
+ --------for particular
+    
+      select nvl(sum(v.dr_amt),0) ,nvl(sum(v.cr_amt),0) into  VAR_clo_CASH_cr_part,VAR_clo_CASH_DR_part 
+           from vou v 
+          where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.particular_code in (select acc_code from acct where ACC_HEAD LIKE '2103%') and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv');
+
+
+     select nvl(sum(v.dr_amt),0) ,nvl(sum(v.cr_amt),0) into  VAR_clo_BANK_cr_part,VAR_clo_BANK_Dr_part
+           from vou v 
+          where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.particular_code in (select acc_code from acct where ACC_HEAD LIKE '2102%') and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv');
+
+
+
+      VAR_clo_CASH_DR:=VAR_clo_CASH_DR+VAR_clo_CASH_DR_part+VAR_OPN_CASH_DR;
+      VAR_clo_CASH_cr:=VAR_clo_CASH_cr+VAR_clo_CASH_cr_part +VAR_OPN_CASH_CR;
+      VAR_clo_BANK_Dr:=VAR_clo_BANK_Dr+VAR_clo_BANK_Dr_part+ VAR_OPN_BANK_DR;
+      VAR_clo_BANK_cr:=VAR_clo_BANK_cr+VAR_clo_BANK_cr_part+ VAR_OPN_BANK_CR; 
+
+
+    
+
+   
+  
+
+     open p_test_cursor for
+        
+         select to_number(v.vou_no) as vou_no,v.vou_date as vou_date,v.VOU_NARR as vou_narr,v.VOU_CHQ cheque_no ,to_char(v.CHECK_DATE,'dd-mm-yy') as chk_date,
+                 v.particular_code
+            	 as account_code,
+	       (select acct.acc_name from acct  where acc_code=v.particular_code
+            	)
+                as account_name,
+		v.dr_amt AS DR_AMT,v.cr_amt AS CR_AMT, VAR_OPN_CASH_DR as opn_dr_cash  ,VAR_OPN_CASH_cr as opn_cr_cash,VAR_OPN_BANK_Dr as opn_dr_bank,VAR_OPN_BANK_cr  as opn_cr_bank,VAR_clo_CASH_DR as clo_dr_cash,VAR_clo_CASH_cr as clo_cr_cash,VAR_clo_BANK_Dr as clo_dr_bank,VAR_clo_BANK_cr as clo_cr_bank,2 AS GRP
+
+        from vou v 
+          where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.acc_code in (select acc_code from acct where ACC_HEAD LIKE '2103%') and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv')
+
+
+
+         union 
+      select  to_number(v.vou_no) as vou_no,v.vou_date as vou_date,v.VOU_NARR as vou_narr,v.VOU_CHQ cheque_no ,to_char(v.CHECK_DATE,'dd-mm-yy') as chk_date,
+                 v.particular_code
+            	 as account_code,
+	       (select acct.acc_name from acct  where acc_code=v.particular_code
+            	)
+                as account_name,
+		v.dr_amt AS DR_AMT,v.cr_amt AS CR_AMT, VAR_OPN_CASH_DR as opn_dr_cash,VAR_OPN_CASH_cr as opn_cr_cash,VAR_OPN_BANK_Dr as opn_dr_bank,VAR_OPN_BANK_cr as opn_cr_bank ,VAR_clo_CASH_DR as clo_dr_cash,VAR_clo_CASH_cr as clo_cr_cash,VAR_clo_BANK_Dr as clo_dr_bank,VAR_clo_BANK_cr as clo_cr_bank,3 AS GRP
+
+        from vou v 
+          where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.acc_code in (select acc_code from acct where ACC_HEAD LIKE '2102%') and (v.acc_code<>v.particular_code)
+                       and upper(v.vou_type)<>upper('jv')
+
+
+
+  union
+
+      select  to_number(v.vou_no) as vou_no,v.vou_date as vou_date,v.VOU_NARR as vou_narr,v.VOU_CHQ cheque_no ,to_char(v.CHECK_DATE,'dd-mm-yy') as chk_date,
+	v.acc_code as account_code,
+	       (select acct.acc_name from acct  where acct.acc_code=v.acc_code) as account_name,
+		v.cr_amt AS DR_AMT,v.dr_amt AS CR_AMT, VAR_OPN_CASH_DR as opn_dr_cash,VAR_OPN_CASH_cr as opn_cr_cash,VAR_OPN_BANK_Dr as opn_dr_bank ,VAR_OPN_BANK_cr as opn_cr_bank,VAR_clo_CASH_DR as clo_dr_cash,VAR_clo_CASH_cr as clo_cr_cash ,VAR_clo_BANK_Dr as clo_dr_bank ,VAR_clo_BANK_cr as clo_cr_bank ,2 AS GRP
+
+        from vou v 
+        where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.particular_code in (select acc_code from acct where ACC_HEAD LIKE '2103%') and v.acc_code<>v.particular_code
+                       and upper(v.vou_type)<>upper('jv')
+
+    union
+
+      select  to_number(v.vou_no) as vou_no,v.vou_date as vou_date,v.VOU_NARR as vou_narr,v.VOU_CHQ cheque_no ,to_char(v.CHECK_DATE,'dd-mm-yy') as chk_date,
+	v.acc_code as account_code,
+	       (select acct.acc_name from acct  where acct.acc_code=v.acc_code) as account_name,
+		v.cr_amt AS DR_AMT,v.dr_amt AS CR_AMT,VAR_OPN_CASH_DR as opn_dr_cash,VAR_OPN_CASH_cr as opn_cr_cash ,VAR_OPN_BANK_Dr as opn_dr_bank ,VAR_OPN_BANK_cr as opn_cr_bank ,VAR_clo_CASH_DR as clo_dr_cash,VAR_clo_CASH_cr as clo_cr_cash ,VAR_clo_BANK_Dr as clo_dr_bank ,VAR_clo_BANK_cr as clo_cr_bank, 3 AS GRP
+
+        from vou v 
+        where 
+    (to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(v.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+             and v.particular_code in (select acc_code from acct where ACC_HEAD LIKE '2102%') and v.acc_code<>v.particular_code
+                       and upper(v.vou_type)<>upper('jv')
+
+             ORDER BY GRP ASC ;
+  end if;
+
+end ;
+
+

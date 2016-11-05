@@ -1,0 +1,18 @@
+create or replace procedure rpt_schedule 
+    (p_test_cursor in out test_package.test_type,p_acc_code varchar2,p_date1 date, p_date2 date)
+
+AS
+begin
+open p_test_cursor for
+select distinct(l.acc_code),
+(select acc_name from acct where acc_code=l.acc_code),
+(select acc_name_beng from acct where acc_code=l.acc_code),
+nvl((select nvl(sum(dr_amt),0) from ledger where  l.acc_code=ledger.acc_code and  to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <= to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') group by l.acc_code),0) as  opn_dr_amt ,
+nvl((select nvl(sum(cr_amt),0) from ledger where  l.acc_code=ledger.acc_code and  to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <= to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy')  group by l.acc_code),0) as opn_cr_amt,
+nvl((select nvl(sum(dr_amt),0) from ledger where  l.acc_code=ledger.acc_code and  (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))  group by l.acc_code),0) as  dr_amt ,
+nvl((select nvl(sum(cr_amt),0) from ledger where l.acc_code=ledger.acc_code and   (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) group by l.acc_code),0) as cr_amt
+
+ from ledger  l where l.acc_code in (select
+ a.acc_code from acct a where   a.acc_head=p_acc_code);
+end;
+

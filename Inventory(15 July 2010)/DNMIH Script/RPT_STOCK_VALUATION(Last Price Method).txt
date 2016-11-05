@@ -1,0 +1,97 @@
+CREATE OR REPLACE procedure rpt_stock_valuation
+     (p_test_cursor in out test_package.test_type,
+      p_option number, p_CatCode VARCHAR2,p_type_code varchar2,p_group_code varchar2,
+      p_s_date date,p_e_date date)
+as
+begin
+
+if p_option=2 then --- GROUP WISE
+open p_test_cursor for
+SELECT F.ITEM_ID item_id,F.ITEM_NAME ITEM_NAME,
+   F.unit_name UNIT_NAME,TO_CHAR(F.OPENING_STOCK+F.PURCHASE_QTY-F.ISSUE_QTY) AS STOCK,(SELECT nvl(I.URATE,0) FROM PURCHASESUB I WHERE to_number(I.itemid)=to_number(F.item_id)
+AND  I.PURID=(SELECT MAX(B.PURID) FROM PURCHASESUB B WHERE to_number(b.itemid)=to_number(F.item_id))) RATE
+
+    FROM (
+Select u.item_id item_id,u.item_name item_name,u.unit_name unit_name,sum(u.opening_stock) opening_stock,
+     sum(u.purchase_qty) purchase_Qty,sum(u.issue_qty) issue_qty
+  from (
+
+       	 select a.itemid item_id,v.item_name item_name,v.unit_name,GetOpnBalance(1,a.itemid,p_s_date) opening_stock,
+        	0 purchase_qty ,0 as issue_qty
+        	  from purchasesub a,purchasemain b,item_description_view v
+       where  a.purid =b.purid and to_number(a.itemid)=to_number(v.item_code) and to_number(v.cate_code)=to_number(p_CatCode) and  to_number(v.type_code)=to_number(p_type_code) 
+          	and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         < to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	       group by a.itemid,v.item_name,v.unit_name
+       union
+	    select a.itemid item_id,v.item_name item_name,v.unit_name unit_name,0 as opening_stock,nvl(sum(a.purqty),0) purchase_qty ,0 as issue_qty
+                  from purchasesub a,purchasemain b,item_description_view v
+       where  a.purid =b.purid and to_number(a.itemid)=to_number(v.item_code) and to_number(v.cate_code)=to_number(p_CatCode) and  to_number(v.type_code)=to_number(p_type_code) 
+	                 and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+	          to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	        group by a.itemid,v.item_name,v.unit_name
+      
+       union
+      	select a.itemcode item_id,v.item_name item_name,v.unit_name,0 as opening_stock,0 purchase_qty,nvl(sum(a.Qty),0) issue_qty
+		      from Issuesub a, IssueMain b ,item_description_view v
+       where  a.IssueId =b.IssueId and to_number(a.itemcode)=to_number(v.item_code) and to_number(v.cate_code)=to_number(p_CatCode) and  to_number(v.type_code)=to_number(p_type_code) 
+	          and (to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+	          to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	       group by a.itemcode,v.item_name,v.unit_name) u
+group by u.item_id,u.item_name,u.unit_name) F
+where ((F.OPENING_STOCK+F.PURCHASE_QTY)-F.ISSUE_QTY)>0
+order by F.item_name;
+
+end if;
+
+
+if p_option=3 then --- all
+open p_test_cursor for
+SELECT F.ITEM_ID item_id,F.ITEM_NAME ITEM_NAME,
+   F.unit_name UNIT_NAME,TO_CHAR(F.OPENING_STOCK+F.PURCHASE_QTY-F.ISSUE_QTY) AS STOCK,(SELECT nvl(I.URATE,0) FROM PURCHASESUB I WHERE to_number(I.itemid)=to_number(F.item_id)
+AND  I.PURID=(SELECT MAX(B.PURID) FROM PURCHASESUB B WHERE to_number(b.itemid)=to_number(F.item_id))) RATE
+
+    FROM (
+Select u.item_id item_id,u.item_name item_name,u.unit_name unit_name,sum(u.opening_stock) opening_stock,
+     sum(u.purchase_qty) purchase_Qty,sum(u.issue_qty) issue_qty
+  from (
+
+       	 select a.itemid item_id,v.item_name item_name,v.unit_name,GetOpnBalance(1,a.itemid,p_s_date) opening_stock,
+        	0 purchase_qty ,0 as issue_qty
+        	  from purchasesub a,purchasemain b,item_description_view v
+       where  a.purid =b.purid and to_number(a.itemid)=to_number(v.item_code) and to_number(v.cate_code)=to_number(p_CatCode) and  to_number(v.type_code)=to_number(p_type_code) and to_number(v.group_code)=to_number(p_group_code)
+          	and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         < to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	       group by a.itemid,v.item_name,v.unit_name
+       union
+	    select a.itemid item_id,v.item_name item_name,v.unit_name unit_name,0 as opening_stock,nvl(sum(a.purqty),0) purchase_qty ,0 as issue_qty
+                  from purchasesub a,purchasemain b,item_description_view v
+       where  a.purid =b.purid and to_number(a.itemid)=to_number(v.item_code) and to_number(v.cate_code)=to_number(p_CatCode) and  to_number(v.type_code)=to_number(p_type_code) and to_number(v.group_code)=to_number(p_group_code)
+	                 and (to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+	          to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	        group by a.itemid,v.item_name,v.unit_name
+      
+       union
+      	select a.itemcode item_id,v.item_name item_name,v.unit_name,0 as opening_stock,0 purchase_qty,nvl(sum(a.Qty),0) issue_qty
+		      from Issuesub a, IssueMain b ,item_description_view v
+       where  a.IssueId =b.IssueId and to_number(a.itemcode)=to_number(v.item_code) and to_number(v.cate_code)=to_number(p_CatCode) and  to_number(v.type_code)=to_number(p_type_code) and to_number(v.group_code)=to_number(p_group_code)
+	          and (to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+	          to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+	         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	       group by a.itemcode,v.item_name,v.unit_name) u
+group by u.item_id,u.item_name,u.unit_name) F
+where ((F.OPENING_STOCK+F.PURCHASE_QTY)-F.ISSUE_QTY)>0
+order by F.item_name;
+
+end if;
+end
+;
+/
+

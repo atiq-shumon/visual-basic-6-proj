@@ -1,0 +1,156 @@
+create or replace procedure RptTax_vat_sch(p_test_cursor in out test_package.test_type
+,
+p_Option integer
+,p_account varchar2,p_bank_party integer
+,p_date1  date,p_date2 date)
+
+as
+
+begin
+
+ if p_bank_party=1 then ----------------------bank
+          
+	if p_Option=1 then -------all
+		  open p_test_cursor for
+			      select rec_pay_sts, serial_NO, nature , party_code as code,(select acc_name from acct where acc_code=party_code) as paty_name,
+			      (select distinct(acc_name) 
+                			from acct
+			          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+			              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,Deposit,Bill_amt ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+
+                       (bank_code=p_account) and id_no=1   -------for tax
+
+               and Issue_DATE between p_date1 and p_date2;          
+
+
+            
+  end if;
+
+
+
+if p_Option=2 then -------all
+  open p_test_cursor for
+      select rec_pay_sts, serial_NO, nature , party_code as code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,Deposit,Bill_amt ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+
+                       (bank_code=p_account) and id_no=2  -------for VAT
+
+               and Issue_DATE between p_date1 and p_date2;          
+
+
+            
+  end if;
+
+if p_Option=3 then -------all
+  open p_test_cursor for
+      select  rec_pay_sts,serial_NO, nature , party_code as code,(select acc_name from acct where acc_code=party_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=party_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,Deposit,Bill_amt ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+
+                       (bank_code=p_account) and id_no=3  -------for Security
+
+               and Issue_DATE between p_date1 and p_date2;          
+
+
+            
+		  end if;
+
+elsif p_bank_party=2 then -----------------------''party
+
+
+
+    if p_Option=1 then -------all
+		  open p_test_cursor for
+			      select  serial_NO, nature , bank_code as code,(select acc_name from acct where acc_code=bank_code) as paty_name,
+			      (select distinct(acc_name) 
+                			from acct
+			          where acc_code=(select distinct(acc_head) from acct where acc_code=bank_code)) as head_name, 
+			              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,Deposit,Bill_amt ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+
+                       (party_code=p_account) and id_no=1 and rec_pay_sts<>1  -------for tax
+
+               and Issue_DATE between p_date1 and p_date2;          
+
+
+            
+  end if;
+
+
+
+if p_Option=2 then -------all
+  open p_test_cursor for
+      select  serial_NO, nature , bank_code as code,(select acc_name from acct where acc_code=bank_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=bank_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,Deposit,Bill_amt ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+
+                       (party_code=p_account) and id_no=2 and rec_pay_sts<>1 -------for VAT
+
+               and Issue_DATE between p_date1 and p_date2;          
+
+
+            
+  end if;
+
+if p_Option=3 then -------all
+  open p_test_cursor for
+      select  serial_NO, nature , bank_code as code,(select acc_name from acct where acc_code=bank_code) as paty_name,
+	      (select distinct(acc_name) 
+                from acct
+          where acc_code=(select distinct(acc_head) from acct where acc_code=bank_code)) as head_name, 
+              Issue_DATE, CHK_CANCEL,ID_NO,cheque_no,Challan_no,Deposit,Bill_amt ,U_id
+                        ,
+                       paid_sts,
+                       rec_pay_sts,
+                       CHK_CANCEL,
+                       D_O_Dep 
+                     from CHEQUE_REG  where 
+
+                       (bank_code=p_account) and id_no=3 and rec_pay_sts<>1 -------for Security
+
+               and Issue_DATE between p_date1 and p_date2;          
+
+
+            
+		  end if;
+
+end if;
+
+end ;
+

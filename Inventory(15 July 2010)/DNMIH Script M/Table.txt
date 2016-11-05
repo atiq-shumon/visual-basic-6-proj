@@ -1,0 +1,48 @@
+CREATE TABLE PurchaseReturnMain (
+	PurReturnId  varchar2(12)  NOT NULL ,
+	PurReturnDate date NOT NULL ,
+	PurReturnType varchar2(1)  NOT NULL ,
+	SupplierId varchar2(10) NOT NULL ,
+	Remarks varchar2(100)  NULL ,
+        voucher_no varchar2(10) NULL,
+        create_date  date,
+        create_by   varchar2(10),
+	CONSTRAINT PurchaseReturnMain_pk PRIMARY KEY(PurReturnId) 
+);
+
+
+CREATE TABLE PurchaseReturnSub (
+	PurReturnId  varchar2(12)  NOT NULL ,
+	PurId  varchar2(12)  NOT NULL ,
+	ItemCode  varchar2(4)  NOT NULL ,
+	ReturnQty number(18, 3) default 0 NOT NULL ,
+        uRate number(18,3) default 0 not null,
+	ReturRate number(18, 3) default 0 NOT NULL ,
+        exp_date date,
+	TrackId int NOT NULL 
+);
+
+
+CREATE TABLE AdjustmentMain (
+	AdjustmentId  varchar2(10)  NOT NULL ,
+	AdjustmentDate date NOT NULL ,
+	AdjustmentType varchar2(10)  NOT NULL ,
+	Remarks varchar2(100)  NULL ,
+        create_date  date,
+        create_by   varchar2(10),
+	CONSTRAINT AdjustmentMain_pk PRIMARY KEY(AdjustmentId) 
+);
+
+
+CREATE TABLE AdjustmentSub (
+	AdjustmentId  varchar2(10)  NOT NULL ,
+	PurId  varchar2(10)  NOT NULL ,
+	ItemCode  varchar2(4)  NOT NULL ,
+	AdjQty number(18, 3) default 0 NOT NULL ,
+	uRate number(18, 3) default 0 NOT NULL ,
+        exp_date date,
+	TrackId int NOT NULL 
+);
+
+
+

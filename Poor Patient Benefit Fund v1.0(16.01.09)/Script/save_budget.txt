@@ -1,0 +1,30 @@
+create or replace procedure s_u_d_budget(
+      p_mode number,
+      p_acc_code varchar2,
+      p_proposed_amount number,
+      p_create_by varchar2,
+      p_fiscal_yr_code varchar2,
+      P_Income_exp_indicator integer)
+  as
+ begin
+       if p_mode=1 then
+           insert into budget  values(p_acc_code,p_proposed_amount,sysdate,p_create_by,
+				 p_fiscal_yr_code,P_Income_exp_indicator);
+             commit;
+       end if;
+       if p_mode=2 then
+             update budget                            			                			      set  proposed_amount=p_proposed_amount,
+			cerate_by=p_create_by,
+			fiscal_yr_code=p_fiscal_yr_code,
+                        Income_exp_indicator=P_Income_exp_indicator
+               where upper(acc_code)=upper(p_acc_code) and fiscal_yr_code=p_fiscal_yr_code;
+              commit;
+       end if;
+
+
+
+     if p_mode=3 then
+         delete from budget where acc_code=p_acc_code and fiscal_yr_code=p_fiscal_yr_code;
+     end if;
+end;
+

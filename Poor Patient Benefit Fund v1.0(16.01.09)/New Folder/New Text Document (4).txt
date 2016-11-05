@@ -1,0 +1,23 @@
+select distinct(l.account_code),
+(select account_name from account where account_code=l.account_code) accountname,
+(select sum(debit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date between :p_date1 and :p_date2 group by l.account_code) as  dr_amt ,
+(select sum(credit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date between :p_date1 and :p_date2 group by l.account_code) as cr_amt,
+(select sum(debit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date < :p_date1 group by l.account_code) as  open_dr_amt ,
+(select sum(credit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date < :p_date1  group by l.account_code) as open_cr_amt,
+1 as grp
+ from ledger  l where l.account_code in (select
+ a.account_code from account a where a.account_head in(61,91) and  account_level<>0)
+and  l.voucher_date between :p_date1 and :p_date2 
+UNION
+select distinct(l.account_code),
+(select account_name from account where account_code=l.account_code) accountname,
+(select sum(debit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date between :p_date1 and :p_date2 group by l.account_code) as  dr_amt ,
+(select sum(credit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date between :p_date1 and :p_date2 group by l.account_code) as cr_amt,
+(select sum(debit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date < :p_date1 group by l.account_code) as  open_dr_amt ,
+(select sum(credit_amt) from ledger where l.account_code=ledger.account_code and  voucher_date < :p_date1  group by l.account_code) as open_cr_amt,
+2 as grp
+ from ledger  l where l.account_code in (select
+ a.account_code from account a where a.account_head in(79,81,92) and  account_level<>0)
+and  l.voucher_date between  :p_date1 and :p_date2 
+
+

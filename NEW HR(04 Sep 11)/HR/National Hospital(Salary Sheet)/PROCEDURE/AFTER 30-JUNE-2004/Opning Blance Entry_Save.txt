@@ -1,0 +1,41 @@
+create or replace procedure Closing_PF_Balance_save(
+p_EMP_ID varchar2,
+P_BEGIN_YEAR varchar2,
+P_END_YEAR varchar,
+P_EMP_CONTRUBUTION number,
+P_EMPLOYEER_CONTRIBUTION number,
+P_INTEREST_AMOUNT number,
+P_OPENING_AMOUNT number,
+P_CLOSEING_AMOUNT number)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from Closing_PF_Balance 
+where EMP_ID=p_EMP_ID and BEGIN_YEAR=P_BEGIN_YEAR and END_YEAR=P_END_YEAR;
+if var_temp>0 then
+update Closing_PF_Balance 
+set 
+	EMP_CONTRUBUTION =P_EMP_CONTRUBUTION ,
+	EMPLOYEER_CONTRIBUTION=P_EMPLOYEER_CONTRIBUTION,
+	INTEREST_AMOUNT=P_INTEREST_AMOUNT,
+	OPENING_AMOUNT=P_OPENING_AMOUNT,
+	CLOSEING_AMOUNT=P_CLOSEING_AMOUNT
+where EMP_ID=p_EMP_ID and BEGIN_YEAR=P_BEGIN_YEAR and END_YEAR=P_END_YEAR;
+else
+insert into Closing_PF_Balance values(
+	
+	p_EMP_ID,
+	P_BEGIN_YEAR,
+	P_END_YEAR,
+	P_EMP_CONTRUBUTION,
+	P_EMPLOYEER_CONTRIBUTION,
+	P_INTEREST_AMOUNT,
+	P_OPENING_AMOUNT,
+	P_CLOSEING_AMOUNT,
+	Track_Id_For_PFClosing.NEXTVAL);
+
+end if;
+commit;
+end  Closing_PF_Balance_save;
+/

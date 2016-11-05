@@ -1,0 +1,209 @@
+create or replace procedure Rpt_PurchaseStatement 
+      
+     (P_test_cursor in out test_package.test_type,
+			p_option number, StDate Date, EdDate Date, CateCode varchar2,Supplier varchar2)
+AS
+BEGIN
+IF CateCode = 'All' AND Supplier = 'All' THEN
+ Open p_test_cursor FOR
+ 	SELECT a.PurId, a.PurDate, a.SupplierId,(select group_name from item_group_info where to_number(group_code)=
+        (select to_number(group_code) from item_info where to_number(item_code)=to_number(b.itemID))) item_group, c.ITEM_NAME, b.URate, TO_CHAR(b.PurQty) as qTY ,b.PurQty, b.exp_date from 
+	PurchaseMain a, PurchaseSub b, item_info c where a.PurId = b.PurId and to_number(c.ITEM_CODE) = to_number(b.itemId)
+	and a.PurDate between StDate and EdDate and a.PurType <> 'O' ORDER BY a.PurId;
+END IF;
+IF CateCode <> 'All' AND Supplier = 'All' THEN
+ Open p_test_cursor FOR
+ 	SELECT a.PurId, a.PurDate, a.SupplierId,(select group_name from item_group_info where to_number(group_code)=
+        (select to_number(group_code) from item_info where to_number(item_code)=to_number(b.itemID))) item_group, c.ITEM_NAME, b.URate, TO_CHAR(b.PurQty) as qTY,b.PurQty, b.exp_date from 
+	PurchaseMain a, PurchaseSub b, item_info c where a.PurId = b.PurId and to_number(c.ITEM_CODE) = to_number(b.itemId)
+	and a.PurDate between StDate and EdDate and a.PurType <> 'O' and to_number(c.Cate_Code) = to_number(CateCode) ORDER BY a.PurId;
+END IF;
+END;
+
+
+
+
+
+
+
+
+
+
+create or replace procedure Rpt_IssueStatement 
+    
+     (P_test_cursor in out test_package.test_type,
+      p_option number,
+      p_s_Date Date, p_e_Date Date,
+      P_CateCode varchar2,
+      P_IssueType varchar2)
+AS
+BEGIN
+IF P_CateCode = 'All' AND P_IssueType = 'All' THEN
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+          a.IssueDate, b.type_name, c.item_name, to_char(d.Qty), d.URate from IssueMain a,
+	item_issue_type b, item_info c, IssueSub d where a.IssueId = d.IssueId and a.IssueType = b.type_code
+	and to_number(c.item_code) = to_number(d.ItemCode)
+        and (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'));
+
+END IF;
+
+
+
+IF P_CateCode = 'All' AND P_IssueType <> 'All' THEN
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+        a.IssueDate, b.type_name, c.item_name, to_char(d.Qty), d.URate from IssueMain a,
+	item_issue_type b, item_info c, IssueSub d where a.IssueId = d.IssueId and to_number(a.IssueType) = to_number(b.type_code)
+	and to_number(c.item_code) = to_number(d.ItemCode) and
+         (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	and a.IssueType = P_IssueType;
+
+END IF;
+
+IF P_CateCode <> 'All' AND P_IssueType = 'All' THEN
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+        a.IssueDate, b.type_name, c.item_name, to_char(d.Qty), d.URate from IssueMain a,
+	item_issue_type b, item_info c, IssueSub d where a.IssueId = d.IssueId and to_number(a.IssueType) = to_number(b.type_code)
+	and to_number(c.item_code) = to_number(d.ItemCode) and
+         (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	and to_number(c.Cate_code) = to_number(P_CateCode);
+
+END IF;
+
+IF  P_CateCode <> 'All' and to_char(P_IssueType) = to_char('01') THEN ---hospital_staff
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+        a.IssueDate,upper(a.issueto) ||'-'||e.emp_nm as type_name, c.item_name, to_char(d.Qty), d.URate from IssueMain a,
+	item_issue_type b, item_info c, IssueSub d ,payroll.emp_info e
+      where (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+       and upper(to_char(a.issueto)) not like upper(to_char('c%'))
+       and upper(to_char(a.issueto)) not like upper(to_char('m%'))
+        and upper(to_char(a.issueto))=upper(to_char(e.emp_id))
+	and a.IssueId = d.IssueId and to_number(a.IssueType) = to_number(b.type_code)
+	and to_number(c.item_code) = to_number(d.ItemCode)
+	and to_number(c.Cate_code) = to_number(P_CateCode) ;
+
+
+END IF;
+
+IF  P_CateCode <> 'All' and to_char(P_IssueType) = to_char('02') THEN ---member
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+        a.IssueDate,upper(a.issueto) ||'-'||e.emp_nm as type_name, c.item_name, to_char(d.Qty), d.URate from IssueMain a,
+	item_issue_type b, item_info c, IssueSub d ,payroll.emp_info e
+      where (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+       and upper(to_char(a.issueto))  like upper(to_char('m%'))
+        and upper(to_char(a.issueto))=upper(to_char(e.emp_id))
+	and a.IssueId = d.IssueId and to_number(a.IssueType) = to_number(b.type_code)
+	and to_number(c.item_code) = to_number(d.ItemCode)
+	and to_number(c.Cate_code) = to_number(P_CateCode) ;
+
+
+END IF;
+
+IF P_CateCode <> 'All' and  P_IssueType = '65' THEN  ---''college staff
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+        a.IssueDate,upper(a.issueto) ||'-'||e.emp_nm as type_name, c.item_name, to_char(d.Qty), d.URate from IssueMain a,
+	item_issue_type b, item_info c, IssueSub d ,payroll.emp_info e
+      where (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+       and upper(to_char(a.issueto)) like upper(to_char('c%'))
+        and upper(to_char(a.issueto))=upper(to_char(e.emp_id))
+	and a.IssueId = d.IssueId and to_number(a.IssueType) = to_number(b.type_code)
+	and to_number(c.item_code) = to_number(d.ItemCode)
+	and to_number(c.Cate_code) = to_number(P_CateCode) ;
+
+
+END IF;
+
+IF P_CateCode <> 'All' and  (P_IssueType <> '57' or P_IssueType <>'All' or P_IssueType <> '01'or P_IssueType <> '02')  THEN
+ Open p_test_cursor FOR
+ 	SELECT a.indent_no,a.IssueId,(select unit_name from item_unit_info where to_number(unit_code)=to_number(c.unit_code)) as unit,
+        a.IssueDate,b.type_name as type_name, c.item_name, to_char(d.Qty), d.URate
+     from IssueMain a,item_issue_type b, item_info c, IssueSub d
+      where (to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         >=to_date(to_char(p_s_date,'dd-mon-yyyy'),'dd-mon-yyyy') and
+          to_date(to_char(a.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <=to_date(to_char(p_e_date,'dd-mon-yyyy'),'dd-mon-yyyy'))
+        and to_number(a.issuetype)=to_number(p_issuetype)
+	and a.IssueId = d.IssueId and to_number(a.IssueType) = to_number(b.type_code)
+	and to_number(c.item_code) = to_number(d.ItemCode)
+	and to_number(c.Cate_code) = to_number(P_CateCode) ;
+
+
+END IF;
+
+
+END;
+
+
+create or replace procedure Rpt_ExpireDateStatement 
+     (P_test_cursor in out test_package.test_type,
+			p_option number, StDate Date, P_Cate_Code varchar2)
+AS
+BEGIN
+	IF P_Cate_Code = 'All' THEN
+		Open p_test_cursor FOR
+		SELECT a.PurId, a.PurDate, b.ITEM_NAME, c.PurQty, c.UsedQty, c.ReturnQty, c.exp_date
+		from PurchaseMain a, item_info b, PurchaseSub c where to_number(b.ITEM_CODE) = to_number(c.itemId) and a.PurId = c.PurId
+		and to_date(to_char(c.exp_date,'dd-mon-yyyy'),'dd-mon-yyyy') <= to_date(to_char(StDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+                and c.PurQty-(c.UsedQty+c.ReturnQty) > 0;
+	END IF;
+
+	IF P_Cate_Code <> 'All' THEN
+		Open p_test_cursor FOR
+		SELECT a.PurId, a.PurDate, b.ITEM_NAME, c.PurQty, c.UsedQty, c.ReturnQty, c.exp_date
+		from PurchaseMain a, item_info b, PurchaseSub c where to_number(b.ITEM_CODE) = to_number(c.itemId) and a.PurId = c.PurId
+		and to_date(to_char(c.exp_date,'dd-mon-yyyy'),'dd-mon-yyyy') <= to_date(to_char(StDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+               and to_number(b.cate_code) = to_number(P_Cate_Code) and c.PurQty-(c.UsedQty+c.ReturnQty) > 0;
+	END IF;
+	
+END;
+
+
+create or replace procedure Rpt_AdjustmentStatement 
+     (P_test_cursor in out test_package.test_type,
+			p_option number, P_Cate_Code varchar2, StDate Date, EdDate Date)
+AS
+BEGIN
+	IF P_Cate_Code = 'All' THEN
+		Open p_test_cursor FOR
+		SELECT a.AdjustmentId, a.AdjustmentDate, a.AdjustmentType, a.Remarks,
+		b.PurId, b.ItemCode, b.AdjQty, b.AdjRate, c.Item_Name from AdjustmentMain a,
+		AdjustmentSub b, item_info c where a.AdjustmentId = b.AdjustmentId
+		and to_number(b.ItemCode) = to_number(c.item_code) and a.AdjustmentDate between StDate and EdDate;
+	END IF;
+
+	IF P_Cate_Code <> 'All' THEN
+		Open p_test_cursor FOR
+		SELECT a.AdjustmentId, a.AdjustmentDate, a.AdjustmentType, a.Remarks,
+		b.PurId, b.ItemCode, b.AdjQty, b.AdjRate, c.Item_Name from AdjustmentMain a,
+		AdjustmentSub b, item_info c where a.AdjustmentId = b.AdjustmentId
+		and to_number(b.ItemCode) = to_number(c.item_code) and a.AdjustmentDate between StDate and EdDate
+		and to_number(c.cate_code) = to_number(P_Cate_Code);
+	END IF;
+END;
+
+
+
+

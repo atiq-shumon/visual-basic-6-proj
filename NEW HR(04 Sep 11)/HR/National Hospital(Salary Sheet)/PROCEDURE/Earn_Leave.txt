@@ -1,0 +1,8 @@
+Create table Earn_Leave(
+Emp_Id  varchar2(10) ,
+Total_Earn_Leave number, 
+Extra_Leave_Remain number,
+Year varchar2(10),
+Update_Date date,
+TRACK_ID number,
+constraint Emp_ER_PF_fk foreign key(Emp_ID) references EMP_INFO(Emp_ID));

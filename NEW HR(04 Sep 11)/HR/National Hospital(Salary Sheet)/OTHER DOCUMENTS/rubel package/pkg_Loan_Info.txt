@@ -1,0 +1,150 @@
+ create table Loan_Refund_Info(
+ Ln_Id number(10) not null,
+ Pay_Month number(2) not null,
+ Pay_Year number(4) not null,
+ p_Amt number(8,2) not null,
+ I_Amt number(8,2) not null,
+ primary key(Ln_Id,Pay_Month,Pay_Year)
+ );
+
+Create or Replace PACKAGE Pkg_Loan_Info AS
+   TYPE Loan_Info_cur IS REF CURSOR;
+   PROCEDURE Loan_Info_IU(p_Emp_Id IN varchar2,
+p_Ln_Id IN number,
+p_Ln_Amt IN number,
+p_Intsl_Amt IN number,
+p_Intr_Amt IN number,
+p_Intr_Rate IN number,
+p_Num_Instl IN number,
+p_Notes IN varchar2,
+p_Ref_Status IN number
+
+  
+  
+                    );
+    PROCEDURE Loan_Info_GetX(
+                            p_Ln_ID IN Varchar2,
+                            p_cursor OUT Loan_Info_cur,
+                            p_errorcode OUT NUMBER);
+
+
+    PROCEDURE Loan_Refund_Info_GetX(p_Ln_Id IN number,
+ 				p_Pay_Month IN number,
+ 				p_Pay_Year number,
+                                p_cursor OUT Loan_Info_cur,
+                                p_errorcode OUT NUMBER );
+
+
+ PROCEDURE  Loan_Refund_Info_IU(p_Ln_Id IN number,
+ p_Pay_Month IN number,
+ p_Pay_Year number,
+ p_p_Amt number,
+ p_I_Amt number
+   
+
+ );
+ end Pkg_Loan_Info;
+
+ Create or Replace Package Body Pkg_Loan_Info AS
+ PROCEDURE Loan_Info_IU(p_Emp_Id  varchar2,
+ p_Ln_Id  number,
+ p_Ln_Amt  number,
+ p_Intsl_Amt  number,
+ p_Intr_Amt  number,
+ p_Intr_Rate  number,
+ p_Num_Instl  number,
+ p_Notes  varchar2,
+ p_Ref_Status  number)
+ AS
+     L_Row_Num number:=0;
+    begin
+       select count (Ln_ID) into L_Row_Num from Loan_Info
+                     where Ln_Id =p_Ln_Id ;
+             if L_Row_Num=0 then
+                     Insert into  Loan_Info
+      values (p_Emp_Id  ,p_Ln_Id  ,p_Ln_Amt  ,p_Intsl_Amt ,
+               p_Intr_Amt  ,p_Intr_Rate  ,p_Num_Instl  ,
+               p_Notes  ,p_Ref_Status     );
+                     delete from temp;
+             insert into temp values('Data inserted successfully');
+      else
+                    update  Loan_Info
+                    set Emp_Id=p_Emp_Id  ,
+     Ln_Id=p_Ln_Id  ,
+     Ln_Amt=p_Ln_Amt  ,
+     Intsl_Amt=p_Intsl_Amt ,
+                  Intr_Amt=p_Intr_Amt  ,
+     Intr_Rate=p_Intr_Rate  ,
+     Num_Instl=p_Num_Instl  ,
+                  Notes=p_Notes  ,
+     Ref_Status=p_Ref_Status
+     where Ln_Id =p_Ln_Id ;
+                  delete from temp;
+       insert into temp values('Data updated successfully');
+            end if;
+     Commit;
+    END;
+ PROCEDURE  Loan_Refund_Info_IU(p_Ln_Id  number,
+  p_Pay_Month  number,
+  p_Pay_Year number,
+  p_p_Amt number,
+  p_I_Amt number
+  )
+   AS
+     L_Row_Num number:=0;
+    begin
+       select count (Ln_Id) into L_Row_Num from Loan_Refund_Info
+    where Ln_Id=p_Ln_Id and  Pay_Month=p_Pay_Month and Pay_Year=p_Pay_Year;
+             if L_Row_Num=0 then
+                     Insert into  Loan_Refund_Info
+      values (p_Ln_Id ,p_Pay_Month,p_Pay_Year,p_p_Amt,p_I_Amt  );
+             delete from temp;
+             insert into temp values('Data inserted successfully');
+      else
+                    update Loan_Refund_Info
+                    set Ln_Id=p_Ln_Id ,
+                           Pay_Month=p_Pay_Month,
+      Pay_Year=p_Pay_Year,
+      p_Amt=p_p_Amt,
+      I_Amt=p_I_Amt
+                    where Ln_Id=p_Ln_Id
+                          and  Pay_Month=p_Pay_Month
+     and Pay_Year=p_Pay_Year;
+          delete from temp;
+     insert into temp values('Data updated successfully');
+            end if;
+     Commit;
+    END;
+ PROCEDURE Loan_Info_GetX(
+                             p_Ln_ID IN Varchar2,
+                             p_cursor OUT Loan_Info_cur,
+                             p_errorcode OUT NUMBER)
+    IS
+   BEGIN
+       p_errorcode := 0;
+       OPEN p_cursor FOR
+         SELECT *
+         FROM Loan_Info
+         where Ln_Id =p_Ln_Id ;
+     EXCEPTION
+       WHEN OTHERS THEN
+         p_errorcode:= SQLCODE;
+     END;
+ PROCEDURE Loan_Refund_Info_GetX(p_Ln_Id  number,
+      p_Pay_Month  number,
+      p_Pay_Year number,
+                                 p_cursor OUT Loan_Info_cur,
+                                 p_errorcode OUT NUMBER )
+     IS
+   BEGIN
+       p_errorcode := 0;
+       OPEN p_cursor FOR
+         SELECT *
+         FROM Loan_Refund_Info
+         where Ln_Id=p_Ln_Id and  Pay_Month=p_Pay_Month and Pay_Year=p_Pay_Year;
+     EXCEPTION
+       WHEN OTHERS THEN
+         p_errorcode:= SQLCODE;
+     END;
+  END Pkg_Loan_Info;
+ /

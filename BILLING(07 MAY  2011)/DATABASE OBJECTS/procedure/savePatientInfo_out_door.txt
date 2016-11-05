@@ -1,0 +1,168 @@
+create or replace procedure SavePatient_info_out_door(
+p_in_reg_no number,
+p_booth varchar2,---------------------1
+p_pat_name  varchar2,------------------2
+p_pat_type  varchar2,--department-----3
+p_sex varchar2,---------------4
+p_age  varchar2,--------------5
+p_religion varchar2,----------6
+
+p_addr1 varchar2,-------------7
+p_phone varchar2,-------------8
+p_u_id varchar2,--------------9
+p_tmp_dt date,-----------------10
+p_total_charge  number,-------------11
+p_disc  number,---------------12
+p_net_paid number,------------13
+p_indoor_out_door_flag integer  
+)
+as
+cursor c1 is
+
+select m_code , s_code,	---------selecting data from temp table
+	m_name,
+	s_name,
+	test_type,
+	charge 
+
+from temp_test;
+
+var_count number;
+var_temp number;
+
+var_st_dt date;
+var_ed_dt date;
+
+var_m_code    varchar2(20);
+var_s_code   varchar2(40);
+var_m_name   varchar2(50);
+var_s_name   varchar2(60);  
+var_test_type varchar2(20);
+var_charge     number(10,2);
+
+
+begin
+  ----opening cursor
+
+select st_dt,ed_dt into var_st_dt,var_ed_dt 
+from fiscal_year;
+
+insert into pat_info_main_out_door(
+in_reg_no,
+reg_no,
+booth,
+pat_name,
+sex,
+age,
+religion,
+addr1,
+phone,
+doc_dept,
+u_id ,
+tmp_dt,
+st_dt,
+ed_dt,
+dt
+)
+values(
+p_in_reg_no,
+pat_info_main_out_door_seq.nextval,
+p_booth,
+p_pat_name,
+p_sex,
+p_age,
+p_religion,
+p_addr1,
+p_phone,
+p_pat_type ,
+p_u_id ,
+p_tmp_dt,
+var_st_dt,
+var_ed_dt,
+sysdate
+);
+commit;
+
+open c1;--opening cursor
+
+
+select count(*) into var_count
+from temp_test;
+
+--exit when c1%notFOUND;  
+
+while var_count>0 loop
+fetch c1
+into
+	var_m_code,
+	var_s_code,
+	var_m_name,
+	var_s_name,
+	var_test_type,
+	var_charge;
+
+insert into pat_info_sub1_out_door(
+	in_reg_no,
+        reg_no,
+	m_code,
+	s_code,
+        m_name,
+        s_name,
+	test_charge,
+	test_type,
+	indoor_out_door_test_flag,
+        doc_dept,
+	st_dt,
+	ed_dt,
+	u_id,
+	dt
+)values(
+        p_in_reg_no,
+	pat_info_main_out_door_seq.currval,
+	var_m_code,
+	var_s_code,
+        var_m_name,
+	var_s_name,
+        var_charge,
+	var_test_type,
+	p_indoor_out_door_flag,
+        p_pat_type,
+	var_st_dt,
+	var_ed_dt,
+	p_u_id,
+	sysdate
+	);
+var_count:=var_count-1;
+end loop;
+
+
+	commit;
+
+insert into pat_info_sub3_out_door(
+        in_reg_no,
+        reg_no,
+        total_amt,
+	disc ,
+	net_paid  ,
+	u_id, 
+	st_dt ,
+	ed_dt,
+         dt   
+	--dt1 ,
+        --dt2 
+)values(
+ p_in_reg_no,
+pat_info_main_out_door_seq.currval,
+        p_total_charge,
+	p_disc ,
+	p_net_paid  ,
+	p_u_id, 
+	var_st_dt ,
+	var_ed_dt,
+	sysdate   
+	--start_date ,
+        --dt2 */
+);
+	
+commit;
+end SavePatient_info_out_door;

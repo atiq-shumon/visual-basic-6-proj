@@ -1,0 +1,10 @@
+Create or replace procedure Rpt_EmpJobStatus_Information(
+p_test_cursor in out Test_package.test_type)
+as 
+begin
+open p_test_cursor for
+SELECT JOBENDING_INFO.EMP_ID, JOBENDING_INFO.EMP_NAME,JOBENDING_INFO.DESIGNATION, 
+JOBENDING_INFO.JOBENDING_TYPE,JOBENDING_INFO.DEPARTMENT, 
+JOBENDING_INFO.JOBENDINGDATE, JOBENDING_INFO.DESCIPTION
+FROM JOBENDING_INFO;
+end Rpt_EmpJobStatus_Information;

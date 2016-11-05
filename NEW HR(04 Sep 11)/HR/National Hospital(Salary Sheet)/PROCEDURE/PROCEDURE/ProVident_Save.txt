@@ -1,0 +1,34 @@
+create or replace procedure ProVident_Save(
+P_EMP_ID varchar2,
+P_MONTH  varchar2,
+P_YEAR varchar2,
+P_EMPLOYER_CONTRIBUTION varchar2,
+P_EMPLOYEE_CONTRIBUTION varchar2,
+P_CREATED_BY varchar2,
+P_CREATED_DATE date
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from emp_pf
+where  Emp_ID=p_Emp_ID AND MONTH=P_MONTH and YEAR=P_YEAR;
+if var_temp>0 then
+update emp_pf
+set 
+	EMPLOYER_CONTRIBUTION =P_EMPLOYER_CONTRIBUTION,
+	EMPLOYEE_CONTRIBUTION=P_EMPLOYEE_CONTRIBUTION
+where  Emp_ID=p_Emp_ID AND MONTH=P_MONTH and YEAR=P_YEAR;
+else
+Insert into emp_pf values(
+	P_EMP_ID ,
+	P_MONTH,
+	P_YEAR ,
+	P_EMPLOYER_CONTRIBUTION ,
+	P_EMPLOYEE_CONTRIBUTION,
+	P_CREATED_BY,
+	P_CREATED_DATE,0,0,0,0);
+end if;
+commit;
+end  ProVident_Save;
+/

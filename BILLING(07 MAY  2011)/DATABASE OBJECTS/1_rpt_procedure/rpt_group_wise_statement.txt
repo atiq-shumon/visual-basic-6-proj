@@ -1,0 +1,381 @@
+
+create or replace procedure Rpt_group_wise_state
+ 	
+ 		(p_test_cursor in out test_package.test_type,
+	SELECT_FLAG INTEGER,
+        p_date  date,
+        p_date1 date,
+	p_date2 date)
+AS
+
+VAR_DATE  DATE;
+VAR_DATE1 date;
+VAR_DATE2 date;
+BEGIN
+IF SELECT_FLAG=1 THEN
+        dbms_output.put_line(p_date+1);	
+       delete from  head_wise_coll;
+
+       commit;      
+
+   ----------------------release group----------------------------------
+   
+       insert into head_wise_coll(Group_no,col_no,charge) 
+                 values(5,1,nvl((select sum(bed_sum) from indoor_pat_money 
+			 where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+			or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+      
+	insert into head_wise_coll(Group_no,col_no, charge) values(5,2,nvl((select NVL(sum(EXTRA_BED_CHARGE),0)  
+		       from indoor_pat_money  
+	    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	   ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+      insert into head_wise_coll(Group_no,col_no,charge) values
+                         (5,3,nvl( (select sum(delivery_charge) 
+                                             from indoor_pat_money  where 
+					(((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+					or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+----------------------------------------------
+      insert into head_wise_coll(Group_no,col_no,charge) 
+                     values(5,4,nvl( (select sum(total_operation_sum) from indoor_pat_money 
+                          where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+			   ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+			   or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+			   ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+     ----------------------cardiology care charge
+
+     insert into head_wise_coll(Group_no,col_no,charge) 
+                    values(5,5,nvl((select sum(CARDIOLOGY_CHARGE)  
+                           from indoor_pat_money 
+           where   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no,charge) 
+                    values(5,6,nvl((select sum(ANESTHESIA_CHARGE)   
+                          from indoor_pat_money 
+               where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no, charge) 
+                 values(5,7,nvl((select sum(service_charge)  
+                    from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+          ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+   insert into head_wise_coll(Group_no,col_no, charge)
+              values(5,8,nvl((select sum(NEBULISER_CHARGE)  
+                     from indoor_pat_money 
+     where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no, charge)
+                values(5,9,nvl((select sum(baby_care_charge)  
+                  from indoor_pat_money 
+     where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+     ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no,charge)
+                values(5,10,nvl((select sum(admission_charge)  
+		       from indoor_pat_money 
+	    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no,charge)
+             values(5,11,nvl((select sum(NEUNETAL_BED_CHARGE)  
+		       from indoor_pat_money  
+     where   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+   insert into head_wise_coll(Group_no,col_no, charge)
+		 values(5,12,nvl((select sum(INCUBATOR_CHARGE)  
+		       from indoor_pat_money  
+	    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+      insert into head_wise_coll(Group_no,col_no, charge) values(5,13,nvl((select sum(photo_therapy_charge)  
+       from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+	
+     insert into head_wise_coll(Group_no,col_no, charge) 
+	values(5,14,nvl((select sum(BLOOD_SUGAR_CHARGE)  
+    	   from indoor_pat_money  
+	 where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+       insert into head_wise_coll(Group_no,col_no, charge)
+                values(5,15,nvl((select sum(Exchange_transfusion_charge)  
+	            from indoor_pat_money  
+	 where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+ 
+    insert into head_wise_coll(Group_no,col_no,charge) 
+          values(5,16,nvl((select sum(miscelleneous_charge)  
+		       from indoor_pat_money  
+	    where (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	     ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+ 
+    insert into head_wise_coll(Group_no,col_no, charge) 
+	values(5,17,nvl((select -sum(discount)  
+	         from indoor_pat_money  
+    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no, charge)
+	 values(5,18,nvl((select -sum(advance)  
+	      from indoor_pat_money  
+	 where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+   
+
+
+
+
+
+                   -------------test group----------------------
+
+     
+
+
+   insert into head_wise_coll(Group_no,col_no,charge)
+           values(4,1,nvl((select  sum(test_charge)  from pat_info_sub1_out_door   where  
+            m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('01','02','03','04','05','06','10'))  
+            and in_reg_no!=0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		 ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+   insert into head_wise_coll(Group_no,col_no,charge)
+          values(4,2,nvl((select  sum(test_charge)  from pat_info_sub1_out_door   where
+              m_code  in(select distinct(m_code) from pat_info_sub1_out_door where m_code in('01','02','03','04','05','06','10'))  and   in_reg_no=0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		  or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		     ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+     insert into head_wise_coll(Group_no,col_no,charge) values(4,3,  --------ECG
+           nvl((select sum(test_charge) from pat_info_sub1_out_door where  
+           m_code  in ('07') and s_code in('0101','0102','0103','0104','0201','0202','0203','0204') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	   ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	  or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+    insert into head_wise_coll(Group_no,col_no,charge) values(4,4, ----------ETT
+           nvl((select sum(test_charge) from pat_info_sub1_out_door where  
+           	m_code  in ('07') and s_code in('0301','0302','0303','0304') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+     insert into head_wise_coll(Group_no,col_no,charge) values(4,5,  ---------Echo
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+	   m_code  in ('07') and s_code in('0401','0402','0403','0404','0501','0502','0503','0504') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+	  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	 	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+     
+    
+   insert into head_wise_coll(Group_no,col_no,charge) values(4,6, ------------Birht certificate
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+              m_code  in ('19') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+    insert into head_wise_coll(Group_no,col_no,charge) values(4,7, ------------Minor Operation certificate
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+               m_code  in ('18') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+     insert into head_wise_coll(Group_no,col_no,charge) values(4,8, ------------Immunizartion Operation certificate
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+	     m_code  in ('08') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+			or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+     insert into head_wise_coll(Group_no,col_no,charge) values(4,9, ------------Dental certificate
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+            m_code  in ('13') and (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+      insert into head_wise_coll(Group_no,col_no,charge) values(4,10, ------------EyE Operation certificate
+                 nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+                     m_code  in ('17') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+			or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+			,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+       insert into head_wise_coll(Group_no,col_no,charge) values(4,11, ------------Physiotherapy Operation certificate
+                nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+                 m_code  in ('11') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+   		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+       insert into head_wise_coll(Group_no,col_no,charge) values(4,12, ------------Dressing Operation certificate
+                 nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+		  m_code  in ('14') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+      insert into head_wise_coll(Group_no,col_no,charge) values(4,13, ------------AmbulanceOperation certificate
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+                m_code  in ('12') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+        insert into head_wise_coll(Group_no,col_no,charge) values(4,14, ------------Ultrasonogram certificate
+               nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+                 m_code  in ('15') and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+        insert into head_wise_coll(Group_no,col_no,charge) values(4,15,
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where    ---------indoor x ray
+                m_code  in ('09') and in_reg_no!=0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+        insert into head_wise_coll(Group_no,col_no,charge) values(4,16,
+             nvl((select sum(test_charge) from pat_info_sub1_out_door  where    ---------outdoor x ray
+	                m_code  in ('09') and in_reg_no=0 and  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+        insert into head_wise_coll(Group_no,col_no,charge) values(4,17,    -----Blood Transfusion
+           nvl((select sum(test_charge) from pat_info_sub1_out_door  where  
+               m_code  in ('16') and   (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+        insert into head_wise_coll(Group_no,col_no, charge) values(4,18,nvl((select -sum(disc)  
+	       from Pat_Info_Sub3_out_door 
+	    where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+		or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+
+           -------------advance group------------------
+
+
+
+    insert into head_wise_coll(Group_no,col_no,charge) 
+             values(1,1,nvl((select sum(advance)  
+                 from advance 
+      where  (((to_char(dt,'dd-mon-yyyy') =to_char(p_date
+         ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 8 and 23))
+	or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))),0));
+
+
+
+
+
+    --------------- others money group-----------------
+
+     insert into head_wise_coll(Group_no,col_no,charge) values(2,1, ------------Outdoor ticekt certificate
+           nvl((select sum(amount) from others_money  where  
+           serial_no=1 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+	,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+	or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+	,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+
+     insert into head_wise_coll(Group_no,col_no,charge) values(2,2, ------------EMMER ticekt certificate
+           nvl((select sum(amount) from others_money  where  
+             serial_no=2 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+              ,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+ 		or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+ 
+
+      insert into head_wise_coll(Group_no,col_no,charge) values(2,3, ------------Otehrs money   ticekt certificate
+           nvl((select sum(amount) from others_money  where  
+                serial_no=3 and  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+  	,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+		or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+		,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+
+             --------------------Diagnostic refund group------------------     
+
+	insert into head_wise_coll(Group_no,col_no, charge) values(3,1,nvl((select NVL(sum(amount),0)  
+	       from diag_refund 
+	where  (((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date
+						,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 8 and 23))
+					or ((to_char(rec_date,'dd-mon-yyyy') =to_char(p_date+1
+							,'dd-mon-yyyy') and to_number(to_char(rec_date,'hh24'))  between 0 and 7)))),0));
+	    open p_test_cursor for 
+		        select * from  head_wise_coll order by group_no,col_no ;    
+	END IF;
+
+
+
+
+
+IF SELECT_FLAG=2 THEN
+     null;
+END IF;
+end ;              

@@ -1,0 +1,20 @@
+
+========== add Delete query for deleting loanrefund from loaninformation_sub table on SALARY_PREPARATION_DELETE Procedure
+
+end if;
+select count(*) into var_temp1
+from LOANINFORMATION_sub
+where EMP_ID=P_EMP_ID and trim(to_char(LOANREFUNDEDDATE,'Month'))=P_PAY_MONTH 
+and to_char(LOANREFUNDEDDATE,'yyyy')=P_PAY_YEAR;
+if var_temp1>0 then
+Delete from LOANINFORMATION_sub where EMP_ID=P_EMP_ID 
+and trim(to_char(LOANREFUNDEDDATE,'Month'))=P_PAY_MONTH 
+and to_char(LOANREFUNDEDDATE,'yyyy')=P_PAY_YEAR;
+end if;
+
+
+
+
+==== Chack the Salary Preparation Scree here the PF loan has dues or not
+
+

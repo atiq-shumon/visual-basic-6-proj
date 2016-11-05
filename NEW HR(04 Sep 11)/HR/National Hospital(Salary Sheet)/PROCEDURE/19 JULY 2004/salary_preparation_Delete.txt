@@ -1,0 +1,18 @@
+create or replace procedure salary_preparation_Delete(
+P_EMP_ID varchar2,
+P_PAY_MONTH varchar2,
+P_PAY_YEAR varchar2
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from salary_preparation
+where EMP_ID=P_EMP_ID and P_PAY_MONTH=PAY_MONTH and P_PAY_YEAR=PAY_YEAR;
+if var_temp>0 then
+Delete from salary_preparation where EMP_ID=P_EMP_ID 
+and P_PAY_MONTH=PAY_MONTH and P_PAY_YEAR=PAY_YEAR;
+end if;
+commit;
+end  salary_preparation_Delete;
+

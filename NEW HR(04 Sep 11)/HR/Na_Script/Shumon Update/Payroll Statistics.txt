@@ -1,0 +1,12 @@
+create or replace procedure rpt_payroll_statistics(p_test_cursor in out test_package.test_type,
+p_mode varchar2,
+p_month varchar2,
+p_year varchar2
+)
+as 
+
+begin
+open p_test_cursor for
+  select DEPT_NM,designation,emp_class,count(emp_id) from salary_preparation where pay_month=p_month and pay_year=p_year
+    group by DEPT_NM,designation,emp_class  order by emp_class;
+end;

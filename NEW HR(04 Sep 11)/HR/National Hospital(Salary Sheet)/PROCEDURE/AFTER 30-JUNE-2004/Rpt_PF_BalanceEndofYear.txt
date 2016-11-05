@@ -1,0 +1,44 @@
+create or replace procedure Rpt_PF_BalanceEndofYear(p_test_cursor in out
+test_package.test_type,
+P_Emp_Id varchar2,
+P_Begin_Year varchar2,
+P_End_Year varchar2
+)
+as
+V_MinBeginYear varchar2(10);
+V_MaxBeginYear varchar2(10);
+V_MinEndYear varchar2(10);
+V_MaxEnd varchar2(10);
+
+begin
+
+Select min(BEGIN_YEAR) into V_MinBeginYear 
+	from Closing_PF_Balance where emp_id=P_Emp_Id;
+
+Select max(BEGIN_YEAR)into V_MaxBeginYear 
+	from Closing_PF_Balance where emp_id=P_Emp_Id;
+
+Select min(END_YEAR) into V_MinEndYear 
+	from Closing_PF_Balance where emp_id=P_Emp_Id;
+
+Select max(END_YEAR) into V_MaxEnd 
+	from Closing_PF_Balance where emp_id=P_Emp_Id;
+
+open p_test_cursor for
+
+	SELECT CLOSING_PF_BALANCE.EMP_ID,CLOSING_PF_BALANCE.BEGIN_YEAR, 
+	CLOSING_PF_BALANCE.END_YEAR,CLOSING_PF_BALANCE.EMP_CONTRUBUTION, 
+	CLOSING_PF_BALANCE.EMPLOYEER_CONTRIBUTION, 
+	CLOSING_PF_BALANCE.INTEREST_AMOUNT,CLOSING_PF_BALANCE.OPENING_AMOUNT, 
+	CLOSING_PF_BALANCE.CLOSEING_AMOUNT,EMP_INFO.EMP_NM, 
+	ST_DEPT.DEPT_NM, PAY_ROLL.ST_DESIG.DESIGNATION
+	FROM CLOSING_PF_BALANCE,EMP_INFO, 
+	EMP_JOB_INFO,ST_DEPT, PAY_ROLL.ST_DESIG
+	WHERE ((CLOSING_PF_BALANCE.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.EMP_ID=EMP_INFO.EMP_ID)
+	AND (EMP_JOB_INFO.DEPT=ST_DEPT.DEPT_CODE)
+	AND (EMP_JOB_INFO.DESIG=ST_DESIG.DESIG_CODE)
+	AND (CLOSING_PF_BALANCE.EMP_ID=P_Emp_Id)
+	and (CLOSING_PF_BALANCE.BEGIN_YEAR between V_MinBeginYear and V_MaxBeginYear) 
+	and (CLOSING_PF_BALANCE.END_YEAR between V_MinEndYear and V_MaxEnd));
+end Rpt_PF_BalanceEndofYear;

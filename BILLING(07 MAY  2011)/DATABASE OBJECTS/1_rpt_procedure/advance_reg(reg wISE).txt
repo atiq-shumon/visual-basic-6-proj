@@ -1,0 +1,17 @@
+create or replace procedure advance_reg_reGnowISE(p_test_cursor in out test_package.test_type,
+p_option number,p_date1 date, p_date2 date)
+as
+begin
+if p_option=1 then
+ open p_test_cursor for
+   SELECT a.In_reg_no,a.Receipt_no,
+(select pat_name from in_door_Pat_Info_Main
+where  in_reg_no=a.In_reg_no) as pat_name,
+a.advance,a.department,B.Admission_date,a.u_id,B.bed_no, B.bed_type,B.bed_type_nO
+FROM  advance a,Indoor_pat_bed_info B  WHERE
+ (A.IN_REG_NO=B.IN_REG_NO) AND B.SERIAL_NO=
+ (SELECT MAX(serial_no) FROM Indoor_pat_bed_info WHERE in_reg_no=B.in_reg_no) AND 
+B.IN_REG_NO IN(SELECT IN_REG_NO FROM BED_INFO WHERE OCCUPY_FLAG=1) ;
+END IF;
+
+END;

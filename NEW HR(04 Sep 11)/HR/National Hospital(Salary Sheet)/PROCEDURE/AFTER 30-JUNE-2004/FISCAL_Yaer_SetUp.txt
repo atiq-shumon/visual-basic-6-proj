@@ -1,0 +1,6 @@
+Create table fISCAL_Year_SetUp(
+Begin_Date Date not null,
+End_Date Date not null,
+Entry_Date date not null,
+Entry_By varchar2(10),
+Trace_Id number);

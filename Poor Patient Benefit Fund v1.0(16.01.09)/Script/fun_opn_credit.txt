@@ -1,0 +1,47 @@
+create or replace function op_credit(p_user_acc varchar2,p_st_dt date)
+ return number
+ as 
+   var_dr_amt number:=0;
+   var_cr_amt number:=0;
+   OPN_dr_amt number:=0;
+   OPN_cr_amt number:=0;
+  
+    opn_bl number:=0;
+
+ begin
+ 
+  select nvl(sum(dr_amt),0) into  OPN_dr_amt
+       from ledger
+  where (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and acc_code=p_user_acc AND UPPER(VOU_TYPE)=UPPER('OP');
+
+  
+  select nvl(sum(dr_amt),0) into var_dr_amt 
+       from ledger
+  where (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and acc_code=p_user_acc AND UPPER(VOU_TYPE)<>UPPER('OP');
+
+
+   
+
+
+
+
+   select nvl(sum(cr_amt),0) into OPN_cr_amt 
+       from ledger
+  where (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and acc_code=p_user_acc AND UPPER(VOU_TYPE)=UPPER('OP');
+  
+
+
+  select nvl(sum(cr_amt),0) into var_cr_amt 
+       from ledger
+  where (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy')) and acc_code=p_user_acc AND UPPER(VOU_TYPE)<>UPPER('OP');
+
+
+  
+  if (var_dr_amt+OPN_dr_amt)<=(OPN_cr_amt+var_cr_amt) then
+     opn_bl:= (OPN_cr_amt+var_cr_amt)-(var_dr_amt+OPN_dr_amt) ;
+  else
+       opn_bl:=0;
+  end if;
+
+  return(opn_bl);
+end;

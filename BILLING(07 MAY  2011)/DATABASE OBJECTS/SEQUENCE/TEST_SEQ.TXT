@@ -1,0 +1,67 @@
+--------------tablespace----------------
+
+CREATE TABLESPACE NATIONAL_bill_03 DATAFILE 'E:\NATIONAL_billing_03'
+SIZE 100M
+AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+
+--------------granting priveleges--------------------
+
+    CREATE USER billing IDENTIFIED BY billing
+    DEFAULT TABLESPACE NATIONAL_bill_03;
+
+------------connecting to user--------------
+
+GRANT CONNECT,RESOURCE,DBA TO billing;
+
+
+
+------------sequrnce--------------
+
+create sequence test_info_main_seq
+start with 1
+increment by 1
+nocycle;
+
+
+create sequence In_door_pat_info_main_seq
+start with 
+increment by 1
+nocycle;
+
+
+create sequence pat_info_main_out_door_seq
+start with 1
+increment by 1
+nocycle;
+
+
+create sequence test_info_sub_seq
+start with 1
+increment by 1
+nocycle;
+
+
+create sequence test_info_main_seq
+start with 1
+increment by 1
+nocycle;
+
+
+create sequence doctor_info_seq
+start with 1
+increment by 1
+nocycle;
+
+
+create sequence emp_info_seq
+start with 1
+increment by 1
+nocycle;
+
+
+create sequence pat_info_main_seq
+start with 1
+increment by 1
+nocycle;
+
+

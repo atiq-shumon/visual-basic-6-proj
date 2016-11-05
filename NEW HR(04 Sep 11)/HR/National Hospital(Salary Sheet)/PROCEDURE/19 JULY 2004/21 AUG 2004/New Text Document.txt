@@ -1,0 +1,18 @@
+create or replace procedure Rpt_ToWhomitMayConcern(p_test_cursor in out
+test_package.test_type,
+P_Emp_Id varchar2
+)
+as
+begin
+open p_test_cursor for
+select BASIC ,1 as grop from salary_preparation where emp_id=P_Emp_Id
+union all
+select H_RENT as BASIC,2 as grop from salary_preparation where emp_id=P_Emp_Id
+union all
+select MED as BASIC,2 as grop from salary_preparation where emp_id=P_Emp_Id
+union all
+select DA as BASIC,2 as grop from salary_preparation where emp_id=P_Emp_Id
+union all
+select PF_CONTRI_DEDUCTION as BASIC,2 as grop from salary_preparation where emp_id=P_Emp_Id
+order by grop;
+end Rpt_ToWhomitMayConcern;

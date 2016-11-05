@@ -1,0 +1,53 @@
+
+
+CREATE OR REPLACE  PROCEDURE RPT_GRA_CASHBOOK
+(p_test_cursor in out
+test_package.test_type,
+P_BEGIN_DATE DATE,
+P_END_DATE DATE
+)
+as
+begin
+open p_test_cursor for
+
+SELECT 
+DATE_CLOSING as RD,
+TRACK_ID as ID,
+' ' AS ST,
+'OPENGING BALANCE' AS DES,
+CLOSING_BALANCE AS CB,0 AS Ramount ,0 AS Pamount,
+' ' AS PT,
+' ' AS CN,
+' ' AS BN 
+FROM 
+GRA_OPENING_CLOSING 
+WHERE 
+TRACK_ID=(SELECT MAX(TRACK_ID) FROM GRA_OPENING_CLOSING)
+union
+select
+PAYMENT_RECE_DATE AS RD,
+GRA_RECEIVE_ID as ID,
+SOURCE_OF_GRATUITY AS ST,
+description des,
+0 AS CB,RECEIVED_AMOUNT AS Ramount,0 AS Pamount,
+PAYMENT_RECE_TYPE as PT,
+CHECK_NO as CN,
+BANK_NAME as BN
+from
+gratuity_receive
+union
+select
+PAYMENT_DATE AS RD,
+GRA_PAYMENT_ID as ID ,
+PURPOSE_OF_PAYMENT AS ST,
+description AS des,
+0 AS CB,0 AS Ramount,AMOUNT AS Pamount,
+PAYMENT_TYPE as PT,
+CHECK_NO as CN,
+BANK_NAME as BN
+from
+gratuity_payment;
+end RPT_GRA_CASHBOOK;
+/
+
+

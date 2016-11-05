@@ -1,0 +1,29 @@
+CREATE OR REPLACE PROCEDURE RPT_INCOME_STATEMENT (p_test_cursor in out test_package.test_type,p_date1 date,p_date2 date)
+AS
+begin
+open p_test_cursor for
+select distinct(l.acc_code),
+(select acc_name from acct where acc_code=l.acc_code),
+(select acc_name_beng from acct where acc_code=l.acc_code),
+(select sum(dr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and  (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))  group by l.acc_code) as  dr_amt ,
+(select sum(cr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and   (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) group by l.acc_code) as cr_amt,
+(select sum(dr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and  to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') < to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') group by l.acc_code) as  open_dr_amt ,
+(select sum(cr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and  to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') < to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy')  group by l.acc_code) as open_cr_amt,
+'1' as grp
+ from ledger  l where UPPER(l.VOU_TYPE)<>UPPER('OP') AND l.acc_code in (select
+ a.acc_code from acct a where   a.acc_code not in (select acc_head from acct) and (a.acc_code like('61%') or a.acc_code like ('91%')))
+and   (to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))  
+ union
+select distinct(l.acc_code),
+(select acc_name from acct where acc_code=l.acc_code),
+(select acc_name_beng from acct where acc_code=l.acc_code),
+(select sum(dr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and  (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) group by l.acc_code) as  dr_amt ,
+(select sum(cr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and   (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy')) group by l.acc_code) as cr_amt,
+(select sum(dr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') < to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') group by l.acc_code) as  open_dr_amt ,
+(select sum(cr_amt) from ledger where UPPER(ledger.VOU_TYPE)<>UPPER('OP') and l.acc_code=ledger.acc_code and  to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') < to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy')  group by l.acc_code) as open_cr_amt,
+'2' as grp
+ from ledger  l where UPPER(l.VOU_TYPE)<>UPPER('OP') AND l.acc_code in (select
+ a.acc_code from acct a where  a.acc_code  in (select acc_code from acct where acc_lbl in(2)) and (a.acc_code like('81%') or a.acc_code like ('92%')))
+ and   (to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))  ;
+
+end ;

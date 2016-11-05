@@ -1,0 +1,54 @@
+create or replace FUNCTION OpenBal_tb(P_MODE number,p_acc_code varchar2,p_st_dt date,P_ed_dt date)
+ 					RETURN number
+ 		AS
+					 Var_OpenBal number;
+					 temp number:=0;
+                                         temp1 number:=0;
+                                         temp2 number:=0; 
+			 BEGIN
+				    IF P_MODE=1 THEN ----opening dr
+						 select nvl(sum(DR_AMT),0) into temp  from ledger
+								 where to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                                                <=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                                                 and ACC_CODE =p_acc_code;
+						  var_OpenBal:=nvl(temp,0);
+			       		EnD IF;
+				   IF P_MODE=2 THEN -----opening cr 
+						 select nvl(sum(cr_AMT),0) into temp
+							  from ledger
+						 where to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')
+                                                <=to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                                                 and ACC_CODE =p_acc_code;
+						 var_OpenBal:=nvl(temp,0);
+	
+				    EnD IF;
+				  IF P_MODE=3 THEN ---tot dr
+				 	select nvl(sum(DR_AMT),0) into temp
+							 from ledger
+      
+                                 where  (to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>= 
+                                        to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+                                        and (to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=
+                                           to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+                                         and ACC_CODE=p_acc_code;
+
+                                	var_OpenBal:=nvl(temp,0);
+				   END IF;
+	
+				    IF P_MODE=4 THEN  ---tot cr
+					select nvl(sum(CR_AMT),0) into temp 
+							 from ledger
+      
+                                 where  (to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')>= 
+                                        to_date(to_char(p_st_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+                                        and (to_date(to_char(vou_date,'dd-mon-yyyy'),'dd-mon-yyyy')<=
+                                           to_date(to_char(P_ed_dt,'dd-mon-yyyy'),'dd-mon-yyyy'))
+                                         and ACC_CODE=p_acc_code;
+
+				   	var_OpenBal:=nvl(temp,0);
+				   END IF;
+	
+			             RETURN  nvl(var_OpenBal,0);
+			
+ 
+	 END;

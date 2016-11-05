@@ -1,0 +1,34 @@
+create or replace procedure Salary_Preparation_TableUpdate(
+P_EMP_ID varchar2,
+P_PAY_MONTH varchar2,
+P_PAY_YEAR varchar2
+
+)
+as
+var_temp number;
+Var_PFContribution number;
+begin
+/*
+Select PF_CONTRI_DEDUCTION into Var_PFContribution 
+from Salary_Preparation where EMP_ID=P_EMP_ID
+AND PAY_MONTH=P_PAY_MONTH AND PAY_YEAR=P_PAY_YEAR;
+*/
+select count(*) into var_temp
+from Salary_Preparation
+where PAY_MONTH=P_PAY_MONTH and Emp_ID=p_Emp_ID AND PAY_YEAR=P_PAY_YEAR;
+if var_temp>0 then
+update Salary_Preparation
+set 
+	SALARY_DISBURSE=1
+	where PAY_MONTH=P_PAY_MONTH and Emp_ID=p_Emp_ID AND PAY_YEAR=P_PAY_YEAR;
+/*
+Update emp_job_info
+
+Set 
+	PRE_BAL	=PRE_BAL+Var_PFContribution 
+	where Emp_ID=p_Emp_ID;
+*/
+end if;
+commit;
+end  Salary_Preparation_TableUpdate;
+/

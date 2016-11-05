@@ -1,0 +1,273 @@
+
+ Create or Replace PACKAGE Pkg_st_company AS
+   TYPE company_cur IS REF CURSOR;
+   
+
+PROCEDURE St_desig_IU(p_Desig_code IN varchar2,p_Designation IN
+ varchar2,P_Pool number,
+                        p_Desig_Level IN varchar2 ,p_Emp_Type  In
+ number,P_PW_Commission  In number
+                       );
+    PROCEDURE St_desig_GetX(
+                            p_Desig_Code IN Varchar2,
+                            p_cursor OUT company_cur,
+                         p_errorcode OUT NUMBER);
+    
+PROCEDURE St_JobType_GetX(p_JType_Code IN Varchar2,
+                            p_cursor OUT company_cur,
+                           p_errorcode OUT NUMBER );
+      PROCEDURE  St_JobType_IU(p_JType_Code in varchar2,p_JType_Nm in
+ varchar2,p_Description in varchar2);
+
+
+PROCEDURE St_Company_Info_IU(p_Co_Nm IN  varchar2,
+			p_Co_Type IN varchar2,
+			p_Address IN varchar2,
+			p_phone IN varchar2,
+			p_Fax IN varchar2,
+			p_E_mail IN varchar2,
+			p_Notes IN varchar2,
+			p_logo IN varchar2
+                       		);
+
+PROCEDURE St_Department_IU(p_Dept_code IN varchar2,
+			p_Dept_NM IN	 varchar2,
+			P_Description In varchar2);
+
+    
+PROCEDURE St_Department_GetX( p_Dept_code IN varchar2,
+				p_cursor OUT company_cur,
+				p_errorcode OUT NUMBER 
+                            	);
+
+
+
+PROCEDURE St_HouseRent_Allowance_IU(p_Slab_code IN varchar2,p_Basic_From IN
+            Number,p_Basic_To IN Number,p_Rate IN number,p_Minimum  In number
+                       );
+
+
+    PROCEDURE St_HouseRent_Allowance_GetX(
+                            p_Slab_Code IN Varchar2,
+                            p_cursor OUT company_cur,
+                         p_errorcode OUT NUMBER);
+
+
+
+
+end Pkg_st_company;
+
+/  
+
+Create or Replace Package Body Pkg_st_company  AS
+   PROCEDURE St_desig_IU
+   (p_Desig_code  varchar2,
+    p_Designation  varchar2,
+    p_Pool  number,
+    p_Desig_Level  varchar2,
+    p_Emp_Type number,
+    p_PW_Commission number
+    )
+    AS
+    L_Row_Num number:=0;
+   begin
+      select count (Desig_code) into L_Row_Num from St_Desig
+                    where Desig_code=p_Desig_code;
+            if L_Row_Num=0 then
+                    Insert into  St_Desig
+     values (p_Desig_code,p_Designation,p_Pool, p_Desig_Level,p_Emp_Type ,p_PW_Commission );
+            delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update St_Desig
+                   set Desig_code= p_Desig_code ,
+                   Designation =p_Designation  ,
+                   Pool=p_Pool,
+                   Desig_Level=p_Desig_Level  ,
+                   Emp_Type=p_Emp_Type,
+                   PW_Commission=p_PW_Commission
+       where Desig_code= p_Desig_code;
+                 delete from temp;
+      insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+     PROCEDURE  St_JobType_IU
+  (p_JType_Code  varchar2,
+  p_JType_Nm  varchar2,
+  p_Description  varchar2)
+  AS
+    L_Row_Num number:=0;
+   begin
+      select count (JType_code) into L_Row_Num from St_JBType
+                    where JType_code=p_JType_code;
+            if L_Row_Num=0 then
+                    Insert into  St_JBType
+     values (p_JType_Code ,p_JType_Nm ,p_Description  );
+            delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update  St_JBType
+                   set JType_Code=p_JType_Code ,
+                       JType_Nm=p_JType_Nm ,
+                       Description =p_Description
+                   where JType_Code=p_JType_Code;
+      delete from temp;
+      insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+   PROCEDURE St_JobType_GetX(p_JType_Code IN Varchar2,
+                             p_cursor OUT company_cur, p_errorcode OUT NUMBER )
+   IS
+  BEGIN
+      p_errorcode := 0;
+      OPEN p_cursor FOR
+        SELECT *
+        FROM St_JBType
+        WHERE  JType_Code=p_JType_Code;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+    PROCEDURE St_desig_GetX(
+                             p_Desig_Code IN Varchar2,
+                             p_cursor OUT company_cur,
+                          p_errorcode OUT NUMBER)
+   IS
+  BEGIN
+      p_errorcode := 0;
+      OPEN p_cursor FOR
+        SELECT *
+        FROM St_desig
+        WHERE Desig_Code=p_Desig_Code;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+PROCEDURE  St_Department_IU
+    ( p_Dept_code  varchar2,
+      p_Dept_NM  varchar2,
+      P_Description varchar2
+    )
+     AS
+    L_Row_Num number:=0;
+       begin
+       select count (Dept_code) into L_Row_Num from St_Dept
+                     where Dept_code=p_Dept_code;
+       if L_Row_Num=0 then
+                     Insert into  St_Dept
+                     values (p_Dept_code,p_Dept_NM,p_Description );
+             delete from temp;
+             insert into temp values('Data inserted successfully');
+      else
+             update St_Dept
+             set Dept_code= p_Dept_code ,
+                 Dept_NM=p_Dept_NM,
+                 Description=p_Description
+               where Dept_code= p_Dept_code;
+                  delete from temp;
+       insert into temp values('Data updated successfully');
+            end if;
+     Commit;
+    END;
+	PROCEDURE St_Department_GetX(p_Dept_Code IN Varchar2,
+                              p_cursor OUT company_cur, 
+				p_errorcode OUT NUMBER )
+    IS
+   BEGIN
+       p_errorcode := 0;
+       OPEN p_cursor FOR
+         SELECT *
+         FROM St_Dept
+         WHERE  Dept_Code=p_Dept_Code;
+     EXCEPTION
+       WHEN OTHERS THEN
+         p_errorcode:= SQLCODE;
+     END;
+PROCEDURE St_Company_Info_IU(p_Co_Nm  varchar2,
+p_Co_Type  varchar2,
+p_Address  varchar2,
+	p_phone  varchar2,
+	p_Fax  varchar2,
+	p_E_mail  varchar2,
+	p_Notes  varchar2,
+	p_logo  varchar2
+                       )
+AS
+    L_Row_Num number:=0;
+       begin
+       select count (Co_Nm ) into L_Row_Num from St_Company_Info;
+       if L_Row_Num=0 then
+                     Insert into   St_Company_Info
+                     values (p_Co_Nm  ,p_Co_Type ,p_Address  ,p_phone  ,
+                               p_Fax  ,p_E_mail  ,p_Notes  ,p_logo   );
+             delete from temp;
+             insert into temp values('Data inserted successfully');
+      else
+             update  St_Company_Info
+             set Co_Nm=p_Co_Nm  ,
+		Co_Type=p_Co_Type ,
+		Address=p_Address  ,
+		phone=p_phone  ,
+		Fax=p_Fax  ,
+		E_mail=p_E_mail  ,
+		Notes=p_Notes  ,
+		logo=p_logo;
+	 delete from temp;
+       insert into temp values('Data updated successfully');
+            end if;
+     Commit;
+    END;
+PROCEDURE St_HouseRent_Allowance_IU
+   (p_Slab_code  varchar2,
+    p_Basic_From Number,
+    p_Basic_To  Number,
+    p_Rate  number,
+    p_Minimum   number
+    )
+    AS
+    L_Row_Num number:=0;
+   begin
+      select count (Slab_code) into L_Row_Num from St_HouseRent_Allowance
+                    where Slab_code=p_Slab_code;
+            if L_Row_Num=0 then
+                    Insert into  St_HouseRent_Allowance
+     values (p_Slab_code  ,
+             p_Basic_From ,
+             p_Basic_To  ,
+             p_Rate  ,
+             p_Minimum  );
+             delete from temp;
+            insert into temp values('Data inserted successfully');
+     else
+                   update St_HouseRent_Allowance
+                   set Slab_code= p_Slab_code ,
+                   Basic_From =p_Basic_From  ,
+                   Basic_To =p_Basic_To,
+                   Rate=p_Rate ,
+                   Minimum=p_Minimum
+       where Slab_code= p_Slab_code;
+                 delete from temp;
+      insert into temp values('Data updated successfully');
+           end if;
+    Commit;
+   END;
+     PROCEDURE St_HouseRent_Allowance_GetX(p_Slab_Code IN Varchar2,
+                             p_cursor OUT company_cur, p_errorcode OUT NUMBER )
+             IS
+             BEGIN
+               p_errorcode := 0;
+               OPEN p_cursor FOR
+               SELECT *
+               FROM St_HouseRent_Allowance
+               WHERE  Slab_Code=p_Slab_Code;
+    EXCEPTION
+      WHEN OTHERS THEN
+        p_errorcode:= SQLCODE;
+    END;
+
+
+
+ END Pkg_st_company;
+/

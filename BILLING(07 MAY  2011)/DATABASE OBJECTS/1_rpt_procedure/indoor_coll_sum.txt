@@ -1,0 +1,1031 @@
+
+
+
+create or replace procedure Rpt_indoor_coll_sum
+(p_test_cursor in out test_package.test_type,
+p_dt1 in  date,
+p_dt2 in  date,
+p_flag integer,
+p_index integer,
+p_text varchar2
+)
+as
+DISCOUNT_INDOOR NUMBER;
+DISCOUNT_OUTDOOR NUMBER;
+DISCOUNT_TOTAL NUMBER;
+begin
+   if p_flag=0 then --- means not date specific
+       if p_index=1  then
+                 IF UPPER(P_TEXT)=UPPER('MEDICINE-1') OR UPPER(P_TEXT)=UPPER('MEDICINE-2')  OR UPPER(P_TEXT)=UPPER('MEDICINE-3')  THEN
+
+                       
+                  select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                    	select NVL(sum(DISC),0)/3 into DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER('MEDICINE') 
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)));
+          
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+    
+                    
+                     open p_test_cursor for
+                       select 1 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                   union
+			select 1 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 AS DISCOUNT
+                              from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                 union
+			select 1 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                   union
+			select 1 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 AS DISCOUNT
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                    union
+			select 1 as grp_title ,5 AS serial,'Blood Sugar Charge' as col_name,sum(a.BLOOD_SUGAR_CHARGE ) as col_value,0 AS DISCOUNT      from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                        union
+			select 1 as grp_title ,6 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value,0 AS DISCOUNT
+                       from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+             union
+			select 1 as grp_title ,7 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value,0 AS DISCOUNT
+                      from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         
+               union
+			select 1 as grp_title ,8 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0)/3 AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER('MEDICINE') and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+	    union
+			select 1 as grp_title ,9 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                     
+                   
+                     
+             
+			 union
+			select 1 as grp_title ,10 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+
+           ELSIF UPPER(P_TEXT)=UPPER('SURGERY-1') OR UPPER(P_TEXT)=UPPER('SURGERY-2') OR UPPER(P_TEXT)=UPPER('SURGERY-3')   THEN
+                
+                   select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                    	select NVL(sum(DISC),0)/3 into DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER('SURGERY') 
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)));
+          
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+
+                     open p_test_cursor for
+                       select 2 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 AS DISCOUNT
+                         from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 2 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 AS DISCOUNT
+                              from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                  union
+			select 2 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 AS DISCOUNT
+                            from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         union
+			select 2 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+      union
+			select 2 as grp_title ,5 AS serial,'Operation Charge' as col_name,sum(a.OPERATION_SUM ) as col_value,0 AS DISCOUNT
+                      from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+        union
+			select 2 as grp_title ,6 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+    union
+			select 2 as grp_title ,7 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+	    union
+			select 2 as grp_title ,8 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0)/3 AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER('SURGERY') and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+	    union
+			select 2 as grp_title ,9 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                     
+                   
+                     
+             
+			 union
+			select 2 as grp_title ,10 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+
+
+           ELSIF  UPPER(P_TEXT)=UPPER('ENT') OR UPPER(P_TEXT)=UPPER('Skin VD') OR UPPER(P_TEXT)=UPPER('Ortho.')  THEN
+                
+                   select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                    	select NVL(sum(DISC),0) into DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) 
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)));
+          
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+
+                     open p_test_cursor for
+                       select 2 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 AS DISCOUNT
+                         from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 2 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 AS DISCOUNT
+                              from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+                  union
+			select 2 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 AS DISCOUNT
+                            from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         union
+			select 2 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+      union
+			select 2 as grp_title ,5 AS serial,'Operation Charge' as col_name,sum(a.OPERATION_SUM ) as col_value,0 AS DISCOUNT
+                      from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+        union
+			select 2 as grp_title ,6 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+    union
+			select 2 as grp_title ,7 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value,0 AS DISCOUNT
+                           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+	    union
+			select 2 as grp_title ,8 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+	    union
+			select 2 as grp_title ,9 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                     
+                   
+                     
+             
+			 union
+			select 2 as grp_title ,10 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+        ELSIF UPPER(P_TEXT)=UPPER('GYNAE-1') OR UPPER(P_TEXT)=UPPER('GYNAE-2') OR UPPER(P_TEXT)=UPPER('GYNAE-3')  THEN
+                  
+              select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                    	select NVL(sum(DISC),0)/3 into DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER('GYNAE') 
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)));
+          
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+
+         
+                     open p_test_cursor for
+                       select 3 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 AS DISCOUNT
+				    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 3 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 AS DISCOUNT
+                            from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+
+             union
+			select 3 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 AS DISCOUNT
+                        from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 3 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 AS DISCOUNT
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+       union
+			select 3 as grp_title ,5 AS serial,'Operation Charge' as col_name,sum(a.OPERATION_SUM ) as col_value,0 AS DISCOUNT
+                        from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 3 as grp_title ,6 AS serial,'Delivery Charge' as col_name,sum(a.DELIVERY_CHARGE) as col_value,0 AS DISCOUNT
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+      union
+			select 3 as grp_title ,7 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value,0 AS DISCOUNT
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         union
+			select 3 as grp_title ,8 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value,0 AS DISCOUNT
+                      from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+
+        union
+			select 3 as grp_title ,9 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0)/3 AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER('GYNAE') and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+
+    union
+			select 3 as grp_title ,10 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                
+			 union
+			select 3 as grp_title ,11 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+ 
+
+     ELSIF UPPER(P_TEXT)=UPPER('card.')   THEN
+
+                   select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                     select sum(disc) INTO DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('07'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))) ;
+
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+
+                     open p_test_cursor for
+                       select 4 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 AS DISCOUNT
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+           union
+			select 4 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 AS DISCOUNT
+               from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+           union
+			select 4 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 AS DISCOUNT
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+       union
+			select 4 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 AS DISCOUNT
+                         from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+       union
+			select 4 as grp_title ,5 AS serial,'C.C.U Charge' as col_name,sum(a.CARDIOLOGY_CHARGE ) as col_value,0 AS DISCOUNT
+                      from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+
+/*
+            union
+			select 4 as grp_title ,6 AS serial,'E.T.T  Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS DISCOUNT from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('07')) and  TO_NUMBER(s_code) in(TO_NUMBER('0301'),TO_NUMBER('0302'),TO_NUMBER('0303'),TO_NUMBER('0304'))  and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+             union
+			select 4 as grp_title ,7 AS serial,'E.C.G  Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS DISCOUNT from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('07')) and TO_NUMBER(s_code) in(TO_NUMBER('0101'),TO_NUMBER('0102'),TO_NUMBER('0103'),TO_NUMBER('0104'),TO_NUMBER('0201'),TO_NUMBER('0202'),TO_NUMBER('0203'),TO_NUMBER('0204'))  and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+              union
+			select 4 as grp_title ,8 AS serial,'Echo Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS DISCOUNT from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('07')) and TO_NUMBER(s_code) in(TO_NUMBER('0401'),TO_NUMBER('0402'),TO_NUMBER('0403'),TO_NUMBER('0404'),TO_NUMBER('0501'),TO_NUMBER('0502'),TO_NUMBER('0503'),TO_NUMBER('0504'))  and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+
+*/
+                  union
+			select 4 as grp_title ,6 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value,0 AS DISCOUNT
+                  from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+        union
+			select 4 as grp_title ,7 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value,0 AS DISCOUNT
+                   from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+
+           union
+			select 4 as grp_title ,8 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+	    union
+			select 4 as grp_title ,9 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                     
+                   
+                     
+             
+			 union
+			select 4 as grp_title ,10 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+
+
+
+            ELSIF UPPER(P_TEXT)=UPPER('ophth.')   THEN
+
+                select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                    	select NVL(sum(DISC),0) into DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(P_TEXT) 
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)));
+          
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+
+                     open p_test_cursor for
+                       select 5 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 AS DISCOUNT
+                      from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 5 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 AS DISCOUNT
+                   from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+             union
+			select 5 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 AS DISCOUNT
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+        union
+			select 5 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 AS DISCOUNT
+                from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 5 as grp_title ,5 AS serial,'Operation Charge' as col_name,sum(a.OPERATION_SUM ) as col_value,0 AS DISCOUNT
+           from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+
+
+/*
+          union
+             		select 5 as grp_title ,6 AS serial,'Eye Exam. Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS DISCOUNT from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('17'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+*/
+
+
+              union
+			select 5 as grp_title ,6 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value,0 AS DISCOUNT
+                  from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         union
+			select 5 as grp_title ,7 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value ,0 AS DISCOUNT
+                 from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+       	 union
+			select 5 as grp_title ,8 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+
+    union
+			select 5 as grp_title ,9 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                
+			 union
+			select 5 as grp_title ,10 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+         ELSIF UPPER(P_TEXT)=UPPER('Paediatric')   THEN
+                 
+                  select sum(a.DISCOUNT)  INTO DISCOUNT_INDOOR
+                    from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+
+
+                    	select NVL(sum(DISC),0) into DISCOUNT_OUTDOOR from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(P_TEXT) 
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)));
+          
+                    DISCOUNT_TOTAL:=DISCOUNT_INDOOR+DISCOUNT_OUTDOOR;
+
+                     open p_test_cursor for
+                       select 6 as grp_title , 1 as  serial ,'Admission Charge' as col_name,sum(a.ADMISSION_CHARGE) as col_value,0 as discount
+                        from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 6 as grp_title ,2 AS serial,'Bed Charge' as col_name,sum(a.Bed_sum) as col_value,0 as discount
+                          from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+            union
+			select 6 as grp_title ,3 AS serial,'Extra Bed Charge' as col_name,sum(a.EXTRA_BED_CHARGE) as col_value,0 as discount
+                        from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+           union
+			select 6 as grp_title ,4 AS serial,'Service Charge' as col_name,sum(a.SERVICE_CHARGE ) as col_value,0 as discount
+                     from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+            union
+			select 6 as grp_title ,5 AS serial,'Baby Care Charge' as col_name,sum(a.BABY_CARE_CHARGE) as col_value,0 as discount
+                from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         union
+			select 6 as grp_title ,6 AS serial,'Neunetal Bed Charge' as col_name,sum(a.NEUNETAL_BED_CHARGE) as col_value,0 as discount
+                     from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+         union
+			select 6 as grp_title ,7 AS serial,'Exchance Transfusion Charge' as col_name,sum(a.EXCHANGE_TRANSFUSION_CHARGE) as col_value,0 as discount
+                      from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+       union
+			select 6 as grp_title ,8 AS serial,'Photo Therapy Charge' as col_name,sum(a.PHOTO_THERAPY_CHARGE) as col_value,0 as discount
+                          from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+          union
+			select 6 as grp_title ,9 AS serial,'Incubator Charge' as col_name,sum(a.INCUBATOR_CHARGE) as col_value,0 as discount
+                    from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+             union
+			select 6 as grp_title ,10 AS serial,'Medicine Charge' as col_name,sum(a.MEDICINE_CHARGE) as col_value ,0 as discount
+                   from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+           union
+			select 6 as grp_title ,11 AS serial,' Blood Sugar Charge ' as col_name,sum(a.blood_sugar_charge ) as col_value,0 as discount
+                        from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+
+
+            union
+			select 6 as grp_title ,12 AS serial,' Miscelleneous Charge ' as col_name,sum(a.MISCELLENEOUS_CHARGE ) as col_value,0 as discount
+                        from  indoor_pat_DEPT_INFO a
+                          where  upper(A.doc_dept)=UPPER(p_text) AND A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)))
+    union
+			select 6 as grp_title ,13 AS serial,'OUTDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no=0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+
+    union
+			select 6 as grp_title ,14 AS serial,'INDOOR Examination Charge' as col_name, NVL(sum(total_amt),0) AS col_value ,0 AS DISCOUNT from pat_info_sub3_out_door
+                                      where upper(doc_dept)=UPPER(p_text) and in_reg_no<>0
+                             and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                
+			 union
+			select 6 as grp_title ,15 AS serial,'  ' as col_name,0 as col_value,DISCOUNT_TOTAL  AS DISCOUNT
+                    from  DUAL;
+
+     ELSIF UPPER(P_TEXT)=UPPER('Radiology')   THEN
+                     open p_test_cursor for
+                       select 7 as grp_title ,1 AS serial,'Ultrasonography Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 as discount from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('15'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                   union
+			 select 7 as grp_title ,2 AS serial,'X-ray(indoor) Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 as discount from pat_info_sub1_out_door  where
+					                m_code  in (TO_NUMBER('09')) and in_reg_no!=0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                  union
+			 select 7 as grp_title ,3 AS serial,'X-ray(Outdoor) Charge' as col_name, NVL(sum(test_charge),0) AS col_value,0 as discount  from pat_info_sub1_out_door  where
+					                TO_NUMBER(m_code)  in (TO_NUMBER('09')) and in_reg_no=0 and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                  union
+                      select 7 as grp_title ,4 AS serial,'' as col_name,0  AS col_value,sum(disc) as discount from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('09'),TO_NUMBER('15'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))) ;
+             ELSIF UPPER(P_TEXT)=UPPER('Anaes.logy')   THEN
+                open p_test_cursor for
+                   select 8 as grp_title ,1 AS serial,' Anaesthesia Charge ' as col_name,sum(a.ANESTHESIA_CHARGE) as col_value,0 as discount
+                  from  indoor_pat_DEPT_INFO a
+                          where   A.RELEASE_FLAG=1
+                         and (((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))   between 8 and 23)) or (to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(a.dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(a.dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(a.dt,'hh24'))  between 0 and 7)));
+     ELSIF UPPER(P_TEXT)=UPPER('Immunization')   THEN
+                     open p_test_cursor for
+                       select 9 as grp_title ,1 AS serial,'Immunization Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 as discount from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('08'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+    union
+                      select 9 as grp_title ,2 AS serial,'' as col_name,0  AS col_value,sum(disc) as discount from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('08'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))) );
+         ELSIF UPPER(P_TEXT)=UPPER('Dental')   THEN
+                     open p_test_cursor for
+                       select 10 as grp_title ,1 AS serial,'Dental Charge' as col_name, NVL(sum(test_charge),0) AS col_value, 0 as discount  from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('13'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+    union
+                      select 10 as grp_title ,2 AS serial,'' as col_name,0  AS col_value,sum(disc) as discount from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('13'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))));
+   ELSIF UPPER(P_TEXT)=UPPER('Dressing')   THEN
+                     open p_test_cursor for
+                       select 11 as grp_title ,1 AS serial,'Dressing Charge' as col_name, NVL(sum(test_charge),0) AS col_value,0 as discount  from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('14'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+    union
+                      select 11 as grp_title ,2 AS serial,'' as col_name,0  AS col_value,sum(disc) as discount from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('14'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))));
+        ELSIF UPPER(P_TEXT)=UPPER('Physiotherapy')   THEN
+                     open p_test_cursor for
+                       select 12 as grp_title ,1 AS serial,'Physiotherapy Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 as discount from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('11'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+         union
+                      select 12 as grp_title ,2 AS serial,'' as col_name,0  AS col_value,sum(disc) as discount from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('11'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))));
+   ELSIF UPPER(P_TEXT)=UPPER('Pathology')   THEN
+                     open p_test_cursor for
+                       select 13 as grp_title ,1 AS serial,'Pathology(Indoor)  Charge ' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS discount from pat_info_sub1_out_door  where
+					                 m_code  in(TO_NUMBER('01'),TO_NUMBER('02'),TO_NUMBER('03'),TO_NUMBER('04'),TO_NUMBER('05'),TO_NUMBER('06'),TO_NUMBER('10'))
+                                     and in_reg_no!=0  and
+(((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                   union
+                         select 13 as grp_title ,2 AS serial,'Pathology(Outdoor)  Charge ' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS discount  from pat_info_sub1_out_door  where
+					                 m_code  in(TO_NUMBER('01'),TO_NUMBER('02'),TO_NUMBER('03'),TO_NUMBER('04'),TO_NUMBER('05'),TO_NUMBER('06'),TO_NUMBER('10'))
+                                     and in_reg_no=0  and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                 union
+                      select 13 as grp_title ,3 AS serial,'Blood Transfusion Charge' as col_name, NVL(sum(test_charge),0) AS col_value ,0 AS discount from pat_info_sub1_out_door  where
+					                 TO_NUMBER(m_code)  in (TO_NUMBER('16'))   and (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+            union
+                      select 13 as grp_title ,4 AS serial,' ' as col_name,0  AS col_value,sum(disc) as discount from pat_info_sub3_out_door
+                       where reg_no in (select distinct(reg_no)
+                                                from pat_info_sub1_out_door  where m_code  in(TO_NUMBER('01'),TO_NUMBER('02'),TO_NUMBER('03'),TO_NUMBER('04'),TO_NUMBER('05'),TO_NUMBER('06'),TO_NUMBER('10'))
+                        AND (((to_char(dt,'dd-mon-yyyy') =to_char(p_dt1
+                      ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')> to_date(to_char(p_dt1,'dd-mon-yyyy'),'dd-mon-yyyy')
+                       and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(p_dt2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_dt2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7))));
+  end if;
+          end if;
+   end if;
+end ;

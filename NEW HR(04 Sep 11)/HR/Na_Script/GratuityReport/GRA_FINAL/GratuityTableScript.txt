@@ -1,0 +1,160 @@
+
+
+--TABLE NO: 01
+--TABLE NAME: GRATUITY_RECEIVE
+--==============================================--
+
+
+DROP TABLE GRATUITY_RECEIVE CASCADE CONSTRAINT;
+
+CREATE TABLE GRATUITY_RECEIVE(
+	GRA_RECEIVE_ID                               	NUMBER			NOT NULL,
+	SOURCE_OF_GRATUITY                           	VARCHAR2(15) 	        NULL,
+	DESCRIPTION                            		VARCHAR2(250)		NULL,
+	PAYMENT_RECE_DATE                           	DATE			NULL,
+	RECEIVED_AMOUNT                           	NUMBER(10,2)		NULL,
+	PAYMENT_RECE_TYPE                             	VARCHAR2(5)	        NULL,
+	CHECK_NO                       			VARCHAR2(50)		NULL,
+	ACCOUNT_NO                            		VARCHAR2(100)		NULL,
+	BANK_CODE                               	VARCHAR2(15)		NULL,
+	VOUCHER_NO                               	VARCHAR2(50)		NULL,
+	ACCOUNT_TYPE                               	VARCHAR2(15)		NULL,
+	CONSTRAINT PK_GRA_RECE PRIMARY KEY(GRA_RECEIVE_ID));
+
+--INSERT INTO GRATUITY_RECEIVE VALUES(1,'001','FROM HOSPITAL','01-JUN-2006',20000,'CHACK','CK-001','AC-001','001','V-001','001')
+
+
+--TABLE NO: 02
+--TABLE NAME: GRATUITY_PAYMENT
+--==============================================--
+
+
+DROP TABLE GRATUITY_PAYMENT CASCADE CONSTRAINT;
+
+CREATE TABLE GRATUITY_PAYMENT(
+	GRA_PAYMENT_ID                               	NUMBER			NOT NULL,
+	PURPOSE_OF_PAYMENT                           	VARCHAR2(15) 	        NULL,
+	DESCRIPTION                            		VARCHAR2(250)		NULL,
+	PAYMENT_DATE                           		DATE			NULL,
+	AMOUNT                           		NUMBER(10,2)		NULL,
+	PAYMENT_TYPE                             	VARCHAR2(5)	        NULL,
+	CHECK_NO                       			VARCHAR2(50)		NULL,
+	ACCOUNT_NO                            		VARCHAR2(100)		NULL,
+	BANK_CODE                               	VARCHAR2(15)		NULL,
+	VOUCHER_NO                               	VARCHAR2(50)		NULL,
+	ACCOUNT_TYPE                               	VARCHAR2(15)		NULL,
+	CONSTRAINT PK_GRA_PAYMENT PRIMARY KEY(GRA_PAYMENT_ID));
+
+
+--INSERT INTO GRATUITY_PAYMENT VALUES(1,'001','TO EMPLOYEE','01-JUN-2006',20000,'CHACK','CK-001','AC-001','001','V-001','001')
+
+--TABLE NO: 03
+--TABLE NAME: GRA_CAPITAL_FUND
+--==============================================--
+
+DROP TABLE GRA_CAPITAL_FUND CASCADE CONSTRAINT;
+CREATE TABLE GRA_CAPITAL_FUND(
+	TRACK_ID       		                        NUMBER(5)		NOT NULL,
+	ACCOUNT_TYPE                           		VARCHAR2(15) 	        NULL,
+	ACCOUNT_NO                           		VARCHAR2(100) 	        NULL,
+	BANK_CODE                           		VARCHAR2(15) 	        NULL,
+	AMOUNT                           		NUMBER(12,2) 	        NULL,
+	CONSTRAINT PK_GRA_CAPITAL_FUND PRIMARY KEY(TRACK_ID));
+			--data--
+--INSERT INTO GRA_CAPITAL_FUND VALUES(1,'001','AC-001','001',40000);
+
+
+
+
+
+--TABLE NO: 04
+--TABLE NAME: L_SOURCE_OF_FUND
+--==============================================--
+
+DROP TABLE L_SOURCE_OF_FUND CASCADE CONSTRAINT;
+CREATE TABLE L_SOURCE_OF_FUND(
+	SOURCE_ID                               	VARCHAR2(10)		NOT NULL,
+	SOURCE_NAME                           		VARCHAR2(100) 	        NULL,
+	CONSTRAINT PK_SOU_OF_FUND PRIMARY KEY(SOURCE_ID));
+
+			--data--
+INSERT INTO L_SOURCE_OF_FUND VALUES('001','Hospital Fund');
+INSERT INTO L_SOURCE_OF_FUND VALUES('002','FDR Interest');
+INSERT INTO L_SOURCE_OF_FUND VALUES('003','Bank Interest');
+INSERT INTO L_SOURCE_OF_FUND VALUES('004','PSP Interest');
+INSERT INTO L_SOURCE_OF_FUND VALUES('005','Others');
+
+
+
+--TABLE NO: 05
+--TABLE NAME: L_GRA_PAYMENT_PURPOSE
+--==============================================--
+
+DROP TABLE L_GRA_PAYMENT_PURPOSE CASCADE CONSTRAINT;
+
+CREATE TABLE L_GRA_PAYMENT_PURPOSE(
+	PURPOSE_ID                               	VARCHAR2(10)		NOT NULL,
+	PURPOSE_NAME                           		VARCHAR2(100) 	        NULL,
+	CONSTRAINT PK_PURPOSE_PAYMENT PRIMARY KEY(PURPOSE_ID));
+			--data--
+INSERT INTO L_GRA_PAYMENT_PURPOSE VALUES('001','Final Setlement');
+INSERT INTO L_GRA_PAYMENT_PURPOSE VALUES('002','Audit Fee');
+INSERT INTO L_GRA_PAYMENT_PURPOSE VALUES('003','Others');
+
+
+
+
+
+--TABLE NO: 06
+--TABLE NAME: L_BANK
+--==============================================--
+			
+DROP TABLE L_BANK CASCADE CONSTRAINT;
+
+CREATE TABLE L_BANK(
+	BANK_ID                               	VARCHAR2(10)		NOT NULL,
+	BANK_NAME                           	VARCHAR2(150) 	        NULL,
+	CONSTRAINT PK_L_BANK PRIMARY KEY(BANK_ID));
+			--DATA---
+INSERT INTO L_BANK VALUES('001','Pubali Bank');
+INSERT INTO L_BANK VALUES('002','Sonali Bank');
+
+
+
+--TABLE NO: 07
+--TABLE NAME: L_ACCOUNT_TYPE 
+--==============================================--		
+DROP TABLE L_ACCOUNT_TYPE CASCADE CONSTRAINT;
+
+CREATE TABLE L_ACCOUNT_TYPE(
+	TYPE_ID                               	VARCHAR2(10)		NOT NULL,
+	TYPE_NAME                           	VARCHAR2(100) 	        NULL,
+	CONSTRAINT PK_L_ACCOUNT_TYPE PRIMARY KEY(TYPE_ID));
+
+		--data--
+INSERT INTO L_ACCOUNT_TYPE VALUES('001','FDR');
+INSERT INTO L_ACCOUNT_TYPE VALUES('002','Savings');
+INSERT INTO L_ACCOUNT_TYPE VALUES('003','PSP');
+
+
+
+
+--TABLE NO: 08
+--TABLE NAME: GRA_OPENING_CLOSING
+--==============================================--
+			
+DROP TABLE GRA_OPENING_CLOSING CASCADE CONSTRAINT;
+CREATE TABLE GRA_OPENING_CLOSING(
+	TRACK_ID       		                        NUMBER(5)		NOT NULL,
+	DATE_CLOSING                           		DATE 	        	NULL,
+	OPENING_BALANCE                           	NUMBER(12,2) 	        NULL,
+	CURRENT_YEAR_RECEIVE                           	NUMBER(12,2) 	        NULL,
+	CURRENT_YEAR_PAYMENT                           	NUMBER(12,2) 	        NULL,
+	CLOSING_BALANCE                           	NUMBER(12,2) 	        NULL,
+	CONSTRAINT PK_GRA_OPENING_CLOSING PRIMARY KEY(TRACK_ID));
+			--data--
+INSERT INTO GRA_OPENING_CLOSING VALUES(1,'01-JUL-2005',100000,50000,10000,140000);
+
+
+
+

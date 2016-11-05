@@ -1,0 +1,42 @@
+select o.emp_id emp_id,
+(select emp_nm from salary_preparation p where p.emp_id=o.emp_id and rowid=(select max(rowid) from salary_preparation where emp_id=p.emp_id)) emp_nm,
+(select designation from salary_preparation p where p.emp_id=o.emp_id and rowid=(select max(rowid) from salary_preparation where emp_id=p.emp_id)) designation,
+sum(pf_contri_deduction) employee ,sum(pf_contri_deduction) employeer,sum(pf_contri_deduction)*2 total from salary_preparation  o
+where to_date(to_char(o.create_date,'dd-mon-yyyy'),'dd-mon-yyyy') between to_date('01-jul-2009','dd-mon-yyyy') and to_date('30-jun-2010','dd-mon-yyyy')
+group by o.emp_id
+having sum(pf_contri_deduction) >0
+
+
+
+
+
+
+
+
+
+select O.emp_id ID,
+(select emp_nm from salary_preparation p where p.emp_id=o.emp_id and rowid=(select max(rowid) from salary_preparation where emp_id=p.emp_id)) emp_nm,
+(select designation from salary_preparation p where p.emp_id=o.emp_id and rowid=(select max(rowid) from salary_preparation where emp_id=p.emp_id)) designation,
+sum(January) Jan,sum(February) Feb,sum(March) Mar,sum(April) Apr,sum(May) May,sum(June) Jun,Sum(July) Jul,sum(August) Aug,Sum(September) Sep,sum(October) Oct,sum(November) Nov,sum(December) Dec
+from (
+select emp_id emp_id,
+decode(pay_month,'January',pf_contri_deduction) January,
+decode(pay_month,'February',pf_contri_deduction) February,
+decode(pay_month,'March',pf_contri_deduction) March,
+decode(pay_month,'April',pf_contri_deduction) April,
+decode(pay_month,'May',pf_contri_deduction) May,
+decode(pay_month,'June',pf_contri_deduction) June,
+decode(pay_month,'July' ,pf_contri_deduction) July,
+decode(pay_month,'August',pf_contri_deduction) August,
+decode(pay_month,'September',pf_contri_deduction) September,
+decode(pay_month,'October',pf_contri_deduction) October,
+decode(pay_month,'November',pf_contri_deduction) November,
+decode(pay_month,'December',pf_contri_deduction) December
+from salary_preparation 
+where to_date(to_char(create_date,'dd-mon-yyyy'),'dd-mon-yyyy') between to_date('01-jul-2009','dd-mon-yyyy') and to_date('30-jun-2010','dd-mon-yyyy')
+and pf_contri_deduction >0) o
+group by emp_id
+
+
+
+

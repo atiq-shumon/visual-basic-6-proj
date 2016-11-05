@@ -1,0 +1,4 @@
+create or replace package Test_package
+as type test_type is  ref cursor;
+
+end Test_package;

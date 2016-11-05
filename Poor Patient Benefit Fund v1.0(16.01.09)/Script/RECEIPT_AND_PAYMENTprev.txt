@@ -1,0 +1,182 @@
+create table receipt_payment(
+  acc_code  varchar2(15),
+  acc_title varchar2(150),
+  opn_dr    number(10,2) ,
+  opn_cr    number(10,2),
+  this_dr   number(10,2),
+  this_cr   number(10,2),
+   line_level       integer,
+  FieldGroup  integer,
+  TitleSerial  integer)
+
+
+/*
+
+--------------title serial is for ascending or descending order
+--------------line leve is to ensure levelling i.e. Receipts is level 1
+                                                    Opening Balance is level 2
+                                                    closing balance is level 2
+                                                    cash in hand advance is level 3
+                                                    and all title are in level 4
+                                                    
+
+
+
+
+*/
+
+create or replace procedure rpt_receipt_payment
+
+(p_test_cursor in out 	test_package.test_type,p_date1 date,p_date2 date)
+        as
+     cursor opn_mycursor(date1 date,date2 date,p_acc_code varchar2) is
+       select a.acc_code,op_debit(a.acc_code,date1) ,
+	op_credit(a.acc_code,date1) 
+		from ledger a,acct b  where a.acc_code=b.acc_code         
+         and  a.acc_code not in (select acc_head  from acct) and a.acc_code like concat(p_acc_code,'%') group by  a.acc_code ;
+
+     cursor income_cursor(date1 date,date2 date) is
+     select distinct(l.acc_code),
+          0 , 
+     (select sum(cr_amt) from ledger where  (UPPER(ledger.VOU_TYPE)<>UPPER('OP') and UPPER(ledger.VOU_TYPE)<>UPPER('JV')) and (l.acc_code=ledger.acc_code) and   (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(date2,'dd-mon-yyyy'),'dd-mon-yyyy')) group by l.acc_code) 
+
+         from ledger  l where l.cr_amt>l.dr_amt and (l.acc_code not like '2103%' and l.acc_code not like '2102%') and 
+  (UPPER(l.VOU_TYPE)<>UPPER('OP') and UPPER(l.VOU_TYPE)<>UPPER('JV')) AND  l.acc_code in (select
+    a.acc_code from acct a where   a.acc_lbl=1)
+   and   (to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(date2,'dd-mon-yyyy'),'dd-mon-yyyy'))  ;
+
+       
+
+
+   cursor expense_cursor(date1 date,date2 date) is
+      select distinct(l.acc_code),
+        (select sum(dr_amt) from ledger where  (UPPER(ledger.VOU_TYPE)<>UPPER('OP') and UPPER(ledger.VOU_TYPE)<>UPPER('JV')) and (l.acc_code=ledger.acc_code) and   (to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(ledger.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(date2,'dd-mon-yyyy'),'dd-mon-yyyy')) group by l.acc_code) 
+,0
+
+         from ledger  l where  l.dr_amt>l.cr_amt and (l.acc_code not like '2103%' and l.acc_code not like '2102%')  and 
+  (UPPER(l.VOU_TYPE)<>UPPER('OP') and UPPER(l.VOU_TYPE)<>UPPER('JV')) AND l.acc_code in (select
+    a.acc_code from acct a where a.acc_lbl=2)
+   and   (to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') >=to_date(to_char(date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(l.vou_date,'dd-mon-yyyy'),'dd-mon-yyyy') <=to_date(to_char(date2,'dd-mon-yyyy'),'dd-mon-yyyy'))  ;
+
+
+  cursor closing_cursor(var_acc_code varchar2,date1 date,date2 date) is
+     select a.acc_code,
+        clo_debit(a.acc_code,date1,date2)
+   from ledger a,acct b  where a.acc_code=b.acc_code         
+           and a.acc_code not in (select acc_head  from acct) and a.acc_code like concat(var_acc_code,'%') group by  a.acc_code ;
+
+
+
+       var_acc_code varchar2(15);
+       var_opn_dr  number;
+       var_opn_cr  number;
+       var_total  number; 
+   begin
+     delete from   receipt_payment;
+     commit;
+     insert into receipt_payment values('','Receipts:-',0,0,0,0,1,0,1);
+     insert into receipt_payment values('','Opening Balance',0,0,0,0,2,0,2);
+     insert into receipt_payment values('','Cash In hand(Advance)',0,0,0,0,3,0,3); 
+    --opening of Cash in hand
+     open opn_mycursor(p_date1,p_date2,'2103');
+     fetch opn_mycursor into var_acc_code,var_opn_dr,var_opn_cr;
+     loop
+        exit when opn_mycursor%notfound;
+        insert into  receipt_payment values(var_acc_code,
+               (select acc_name from acct where acc_code=var_acc_code),
+               var_opn_dr,var_opn_cr,0,0,4,1,4);
+        fetch opn_mycursor into var_acc_code,var_opn_dr,var_opn_cr;
+     end loop;
+     close opn_mycursor;
+     commit;
+   ----total of cash in hand
+     select sum(opn_dr)-sum(opn_cr) into var_total 
+                 from receipt_payment;
+     insert into receipt_payment values('','Total',0,0,var_total,0,3,0,5);
+     insert into receipt_payment values('','Cash at Bank',0,0,0,0,3,0,6); 
+      --opening of Cash at Bank
+     open opn_mycursor(p_date1,p_date2,'2102');
+     fetch opn_mycursor into var_acc_code,var_opn_dr,var_opn_cr;
+     loop
+        exit when opn_mycursor%notfound;
+        insert into  receipt_payment values(var_acc_code,
+               (select acc_name from acct where acc_code=var_acc_code),
+               var_opn_dr,var_opn_cr,0,0,4,2,7);
+        fetch opn_mycursor into var_acc_code,var_opn_dr,var_opn_cr;
+     end loop;
+     close opn_mycursor;
+     ----total of cash at bank
+     select sum(opn_dr)-sum(opn_cr) into var_total 
+                 from receipt_payment
+     where line_level=4 and fieldGroup=2;
+     insert into receipt_payment values('','Total',0,0,var_total ,0,3,0,8);
+    
+   
+  -----------all Income
+     open income_cursor(p_date1,p_date2);
+     fetch income_cursor into var_acc_code,var_opn_dr,var_opn_cr;
+     loop
+        exit when income_cursor%notfound;
+        insert into  receipt_payment values(var_acc_code,
+               (select acc_name from acct where acc_code=var_acc_code),
+               0,0,var_opn_cr,0,4,4,12);
+        fetch income_cursor into var_acc_code,var_opn_dr,var_opn_cr;
+     end loop;
+     close income_cursor;
+   insert into receipt_payment values('','Payments:-',0,0,0,0,1,0,13);
+    -----------all Payments or expenses
+     open expense_cursor(p_date1,p_date2);
+     fetch expense_cursor into var_acc_code,var_opn_dr,var_opn_cr;
+     loop
+        exit when expense_cursor%notfound;
+        insert into  receipt_payment values(var_acc_code,
+               (select acc_name from acct where acc_code=var_acc_code),
+               0,0,0,var_opn_dr,4,5,14);
+        fetch expense_cursor into var_acc_code,var_opn_dr,var_opn_cr;
+     end loop;
+     close expense_cursor;
+     insert into receipt_payment values('','Closing Balance',0,0,0,0,2,0,15);
+     insert into receipt_payment values('','Cash In hand(Advance)',0,0,0,0,3,0,16); 
+     -----------Closing Cash in hand
+     open closing_cursor('2103',p_date1,p_date2);
+     fetch closing_cursor into var_acc_code,var_total;
+     loop
+        exit when closing_cursor%notfound;
+        insert into  receipt_payment values(var_acc_code,
+               (select acc_name from acct where acc_code=var_acc_code),
+               var_total,0,0,0,4,6,17);
+        fetch closing_cursor into var_acc_code,var_total;
+     end loop;
+     close closing_cursor;
+
+     insert into receipt_payment values('','Total',0,0,0
+                         ,(select sum(opn_dr)
+           from receipt_payment where line_level=4 and fieldGroup=6 and titleSerial=17)
+    ,3,0,18);
+
+
+    insert into receipt_payment values('','Cash at Bank',0,0,0,0,3,0,18); 
+    -----------Closing Cash at Bank
+     open closing_cursor('2102',p_date1,p_date2);
+     fetch closing_cursor into var_acc_code,var_total;
+     loop
+        exit when closing_cursor%notfound;
+        insert into  receipt_payment values(var_acc_code,
+               (select acc_name from acct where acc_code=var_acc_code),
+               var_total,0,0,0,4,7,19);
+        fetch closing_cursor into var_acc_code,var_total;
+     end loop;
+     close closing_cursor;
+
+  insert into receipt_payment values('','Total',0,0,0
+                         ,(select sum(opn_dr)
+           from receipt_payment where line_level=4 and fieldGroup=7 and titleSerial=19)
+    ,3,0,20);
+
+
+
+
+     open p_test_cursor for
+           select * from receipt_payment order by TitleSerial;
+end;
+

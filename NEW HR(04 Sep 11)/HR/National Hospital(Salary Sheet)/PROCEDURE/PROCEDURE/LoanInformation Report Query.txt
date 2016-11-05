@@ -1,0 +1,5 @@
+select m.LOANISSUEDATE,m.issuedamount,m.noofinstallment,
+m.slabinstallmentamount,b.LOANREFUNDEDDATE,
+b.NOOFINTALLMENTPAID,b.CURRENTBALANCE 
+from loaninformation_main m ,loaninformation_sub b
+where m.EMP_ID=b.EMP_ID

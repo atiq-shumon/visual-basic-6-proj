@@ -1,0 +1,60 @@
+Create or replace procedure Rpt_Overtime_Preparation(
+p_test_cursor in out Test_package.test_type,
+P_EmpID varchar2,
+P_PAYDATE Date)
+as 
+begin
+If P_EmpID is null then
+open p_test_cursor for
+	SELECT 
+	overtime_preparation.EMP_ID,
+	overtime_preparation.PAYDATE,
+	overtime_preparation.YEARFORPAYMENT, 
+	overtime_preparation.MONTHFORPAYMENT,
+	overtime_preparation.OVERTIMEHOURPERDAY,
+	overtime_preparation.AMOUNT,
+	overtime_preparation.OTHERSAMOUNT,
+	overtime_preparation.REVSTAMP,
+	overtime_preparation.DEDUCTION,
+	overtime_preparation.REMARKS,
+	overtime_preparation.NETPAYABLE,
+	overtime_preparation.NOOFDAYS,
+	emp_info.EMP_NM,
+	emp_job_info.SCALE_CODE,
+	(select DESIGNATION from st_desig where st_desig.desig_code=emp_job_info.desig) as designation,
+	(select dept_nm from st_dept where st_dept.dept_code=emp_job_info.dept) as department
+	From overtime_preparation,emp_info,emp_job_info
+	Where (overtime_preparation.EMP_ID = emp_info.EMP_ID) 
+	AND (overtime_preparation.EMP_ID=emp_job_info.EMP_ID)
+	AND (overtime_preparation.PAYDATE=P_PAYDATE);
+
+ELSE
+	open p_test_cursor for
+	SELECT 
+	overtime_preparation.EMP_ID,
+	overtime_preparation.PAYDATE,
+	overtime_preparation.YEARFORPAYMENT, 
+	overtime_preparation.MONTHFORPAYMENT,
+	overtime_preparation.OVERTIMEHOURPERDAY,
+	overtime_preparation.AMOUNT,
+	overtime_preparation.OTHERSAMOUNT,
+	overtime_preparation.REVSTAMP,
+	overtime_preparation.DEDUCTION,
+	overtime_preparation.REMARKS,
+	overtime_preparation.NETPAYABLE,
+	overtime_preparation.NOOFDAYS,
+	emp_info.EMP_NM,
+	emp_job_info.SCALE_CODE,
+	(select DESIGNATION from st_desig where st_desig.desig_code=emp_job_info.desig) as designation,
+	(select dept_nm from st_dept where st_dept.dept_code=emp_job_info.dept) as department
+	From overtime_preparation,emp_info,emp_job_info
+	Where (overtime_preparation.EMP_ID = emp_info.EMP_ID) 
+	AND (overtime_preparation.EMP_ID=emp_job_info.EMP_ID)
+	AND (overtime_preparation.PAYDATE=P_PAYDATE)
+	AND (overtime_preparation.EMP_ID=P_EmpID);
+
+end if ;
+end Rpt_Overtime_Preparation;
+
+
+

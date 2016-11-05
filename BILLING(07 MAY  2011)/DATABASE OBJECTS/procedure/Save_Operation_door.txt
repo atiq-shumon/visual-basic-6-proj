@@ -1,0 +1,44 @@
+create or replace procedure Save_Operation_indoor(
+p_in_reg_no number,
+p_opr_code varchar2,
+p_Operaion_name varchar2,
+p_Operation_type varchar2,
+p_Operation_CHARGE number,
+p_u_id varchar2,
+p_booth varchar2,
+p_annay_charge number)
+as
+
+temp number;
+var_flag integer;
+begin
+select count(in_reg_no) into temp
+from Indoor_pat_Operation_info
+where in_reg_no=p_in_reg_no;
+insert into indoor_pat_Operation_info(
+		in_reg_no ,
+                opr_code,
+ 		Opr_name,
+ 		Opr_type,
+ 		Opr_CHARGE,
+                annay_charge,
+ 		U_ID,
+ 		DT,
+ 		opr_DATE,
+		 Opr_success_FLAG,
+ 		booth)
+values(
+		p_in_reg_no,
+                p_opr_code,
+		p_Operaion_name,
+ 		p_Operation_type,
+ 		p_Operation_CHARGE,
+                p_annay_charge,
+ 		p_U_ID,
+ 		sysdate,
+ 		sysdate,
+		 0,
+ 		p_booth);
+
+commit;
+end Save_Operation_indoor;

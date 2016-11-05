@@ -1,0 +1,30 @@
+
+select  sysdate  as voucher_date ,' ' as voucher_no,' ' as particular_code,
+'Opening Balance  ' as  particular_name ,'Opening Balance' as voucher_narr, '  '  AS account_code,
+' ' as  user_acc,
+' '  as account_name,
+ Sum(nvl(debit_amt,0)) -Sum(nvl(credit_amt,0)) as debit_amt,0 as credit_amt, sum(debit_amt)-SUM(credit_amt) as tot_bal  
+ ,1 as main_grp, '  ' AS CHEQUE_NO
+from   ledger where
+voucher_date<:pdate1  and
+account_code in(select account_code from account where user_acc= :p_acc)  
+union all 
+select  voucher_date ,(voucher_type||'-'||voucher_no) as voucher_no,particular_code,
+(select account_name from account a where a.account_code=ledger.particular_code and ledger.account_code<>ledger.particular_code)  as particular_name ,voucher_narr,account_code,
+(select user_acc from account where account.account_code=ledger.particular_code and ledger.account_code<>ledger.particular_code)  as user_acc,
+(select account_name from account where account.account_code=ledger.account_code) as account_name,
+debit_amt,credit_amt,(debit_amt-credit_amt) as tot_bal,2 as main_grp,CHEQUE_NO
+from ledger where
+(voucher_date >= :pdate1  and voucher_date<= :pdate2 ) and
+account_code  in (select account_code from account where user_acc=:p_acc)  and ledger.account_code<>ledger.particular_code
+
+union all
+select voucher_date,(voucher_type||'-'||voucher_no) as voucher_no,particular_code,(select account_name from account where 
+account_code=ledger.account_code) as particular_name,voucher_narr,account_code,
+(select user_acc from account where account.account_code=ledger.account_code) as user_acc,(select account_name from account
+where account.account_code=ledger.account_code ) as account_name, credit_amt ,debit_amt,(debit_amt-credit_amt) as tot_bal,3 as main_grp,CHEQUE_NO
+from ledger where 
+(voucher_date >= :pdate1 and voucher_date <= :pdate2) and particular_code =(select account_code from account where user_acc=:p_acc)  and 
+ account_code not in (select account_head from account) and 
+ledger.account_code
+<>ledger.particular_code

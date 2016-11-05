@@ -1,0 +1,16 @@
+create or replace procedure Leave_Application_Delete(
+P_EMP_ID varchar2,
+P_DATE_OF_APPLIED date)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from Leave_Application
+where EMP_ID=P_EMP_ID and DATE_OF_APPLIED=P_DATE_OF_APPLIED;
+if var_temp>0 then
+Delete from Leave_Application where EMP_ID=P_EMP_ID 
+and DATE_OF_APPLIED=P_DATE_OF_APPLIED;
+end if;
+commit;
+end  Leave_Application_Delete;
+/

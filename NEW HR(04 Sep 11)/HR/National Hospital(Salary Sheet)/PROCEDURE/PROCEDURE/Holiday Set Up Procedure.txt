@@ -1,0 +1,34 @@
+create or replace procedure Holiday_setup_save(
+
+p_HOLIDAY_NAME varchar2,
+p_TYPE number,
+p_From_Dt date,
+p_To_Dt date,
+p_YEAR_TO_SH varchar2,
+p_TRACK_ID varchar2)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from st_holiday
+where TRACK_ID=p_TRACK_ID;
+if var_temp>0 then
+update st_holiday
+set 
+	TYPE=p_TYPE ,
+	From_Dt=p_From_Dt,
+	To_Dt=p_To_Dt,
+	YEAR_TO_SH =p_YEAR_TO_SH 
+where  TRACK_ID=p_TRACK_ID;
+else
+insert into st_holiday values(
+	p_HOLIDAY_NAME,
+	p_TYPE ,
+	p_From_Dt,
+	p_To_Dt,
+	p_YEAR_TO_SH,
+	TracK_Id_For_St_holiday.nextval);
+end if;
+commit;
+end  Holiday_setup_save;
+/

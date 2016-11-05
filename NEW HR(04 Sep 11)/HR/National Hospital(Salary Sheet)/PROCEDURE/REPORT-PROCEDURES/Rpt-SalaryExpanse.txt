@@ -1,0 +1,14 @@
+Create or replace procedure Rpt_EmpInfo_ExpendedSalary(
+p_test_cursor in out Test_package.test_type)
+as 
+begin
+open p_test_cursor for
+SELECT a.EMP_ID,a.PAY_MONTH,a.PAY_YEAR,a.BASIC,a.H_RENT,a.MED, 
+    a.CONV,a.TFN,a.DA,a.R_STAMP,a.LN_AMOUNT,a.ADV_AMOUNT,a.ARREAR,a.TELEPHONE, 
+    a.PF_DEDUCTION,a.OTHERS_ALLOWANCE,a.R_STAMP, 
+    a.OTHERS_DEDUCTION,a.PAY_STAT,a.ADV_ID
+FROM SALARY a ;
+end Rpt_EmpInfo_ExpendedSalary;
+
+
+

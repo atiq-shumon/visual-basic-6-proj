@@ -1,0 +1,58 @@
+ SELECT NVL(sum(M.CARDIOLOGY_CHARGE),0)
+		       from indoor_pat_money M
+		   where    (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('09-NOV-2007','DD-MON-YYYY'),
+	'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('09-NOV-2007','DD-MON-YYYY')+1
+	,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+
+
+
+
+SELECT  NVL(sum(M.TOTAL_OPERATION_SUM),0)
+		       from indoor_pat_money M
+		   where    (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY'),
+	'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY')+1
+	,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+
+
+
+SELECT  NVL(sum(M.BED_SUM),0)
+		       from INDOOR_PAT_DEPT_INFO M
+		   where    (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY'),
+	'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY')+1
+	,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+         and m.release_flag=1
+
+
+SELECT  DOC_DEPT,NVL(sum(M.DELIVERY_CHARGE),0)
+		       from INDOOR_PAT_DEPT_INFO M
+		   where    (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY'),
+	'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY')+1
+	,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+GROUP BY ROLLUP(DOC_DEPT)
+
+
+SELECT  in_REG_NO,DELIVERY_CHARGE
+		       from INDOOR_PAT_DEPT_INFO M
+		   where    (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY'),
+	'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY')+1
+	,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+AND DOC_DEPT='Medicine-3' and delivery_charge=2000
+
+
+
+
+
+
+
+SELECT  NVL(sum(M.OPERATION_SUM),0)
+		       from INDOOR_PAT_DEPT_INFO M
+		   where    (((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY'),
+	'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 8 and 23))
+	Or ((to_char(M.dt,'dd-mon-yyyy') =to_char(TO_DATE('21-NOV-2007','DD-MON-YYYY')+1
+	,'dd-mon-yyyy') and to_number(to_char(M.dt,'hh24'))  between 0 and 7)))
+

@@ -1,0 +1,174 @@
+Public Function Get_Code(SString As String) As String
+    Get_Code = Trim(Mid(Trim(SString), InStr(Trim(SString), "~") + 1))
+End Function
+
+Public Function Get_Description(SString As String) As String
+    'Get_Description = Trim(Mid(Trim(SString), 1, InStr(Trim(SString), "~") + 1) - 1)
+    Get_Description = Trim(Mid(Trim(SString), 1, InStr(Trim(SString), "~") - 1))
+End Function
+
+
+create or replace function GetOpnBalance(
+  p_stock_or_value number,
+  p_item_code varchar2,
+  s_date date
+)
+return number
+as 
+var_purQty  number;
+var_purRetQty  number;
+var_IssueQty  number;
+var_issueRetQty number;
+var_adjustQty  number;
+Balance   number;
+ begin
+   if p_stock_or_value=1 then
+   select nvl(sum(a.purqty),0) into var_purQty 
+      from purchasesub a,purchasemain b
+   where a.purid=b.purid and to_number(a.Itemid) =to_number(p_item_code)
+        and to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+
+   select nvl(sum(a.ReturnQty),0) into var_purRetQty 
+      from PurchaseReturnSub a,PurchaseReturnmain b
+   where a.PurReturnId =b.PurReturnId and to_number(a.ItemCode) =to_number(p_item_code)
+         and to_date(to_char(b.PurReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+select nvl(sum(a.Qty),0) into var_IssueQty
+      from Issuesub a, IssueMain b
+   where a.IssueId =b.IssueId and to_number(a.ItemCode) =to_number(p_item_code)
+     and to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+
+
+select nvl(sum(a.Qty),0) into var_issueRetQty
+      from IssueReturnSub a, IssueReturnMain b
+   where a.ReturnId =b.ReturnId and to_number(a.ItemCode) =to_number(p_item_code)
+   and to_date(to_char(b.ReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+ 
+
+select nvl(sum(a.AdjQty),0) into var_adjustQty
+      from AdjustmentSub a, AdjustmentMain b
+   where a.AdjustmentId =b.AdjustmentId and to_number(a.ItemCode) =to_number(p_item_code)
+   and to_date(to_char(b.AdjustmentDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+elsif p_stock_or_value=2 then
+   select nvl(sum(a.purqty*a.urate),0) into var_purQty 
+      from purchasesub a,purchasemain b
+   where a.purid=b.purid and to_number(a.Itemid) =to_number(p_item_code)
+        and to_date(to_char(b.purdate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+
+   select nvl(sum(a.ReturnQty*a.urate),0) into var_purRetQty 
+      from PurchaseReturnSub a,PurchaseReturnmain b
+   where a.PurReturnId =b.PurReturnId and to_number(a.ItemCode) =to_number(p_item_code)
+         and to_date(to_char(b.PurReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+select nvl(sum(a.Qty*a.urate),0) into var_IssueQty
+      from Issuesub a, IssueMain b
+   where a.IssueId =b.IssueId and to_number(a.ItemCode) =to_number(p_item_code)
+     and to_date(to_char(b.IssueDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+
+
+
+select nvl(sum(a.Qty*a.urate),0) into var_issueRetQty
+      from IssueReturnSub a, IssueReturnMain b
+   where a.ReturnId =b.ReturnId and to_number(a.ItemCode) =to_number(p_item_code)
+   and to_date(to_char(b.ReturnDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+ 
+
+select nvl(sum(a.AdjQty*a.urate),0) into var_adjustQty
+      from AdjustmentSub a, AdjustmentMain b
+   where a.AdjustmentId =b.AdjustmentId and to_number(a.ItemCode) =to_number(p_item_code)
+   and to_date(to_char(b.AdjustmentDate,'dd-mon-yyyy'),'dd-mon-yyyy')
+         <to_date(to_char(s_date,'dd-mon-yyyy'),'dd-mon-yyyy');
+ 
+end if;
+   Balance:=(var_purQty+var_issueRetQty)-(var_purRetQty+var_IssueQty+var_adjustQty);
+   return Balance ;
+ 
+end;
+
+
+
+
+
+
+
+
+
+create or replace function Particulars(
+  p_mode integer,
+  num varchar2
+)
+return varchar2
+as 
+ particular varchar2(200);
+ var_temp  varchar2(100);
+
+ begin
+    
+    if  p_mode=1 then  ----purchase main
+            select  PurType into particular from PurchaseMain where PurId=num;
+            if particular='T' then
+               particular:='Tender';
+            elsif particular='L' then
+                particular:='Local';
+            elsif particular='D' then
+                particular:='Donation';
+            elsif particular='O' then
+                particular:='Opening Entry';
+            end if;
+    end if; 
+ 
+
+    if p_mode=2 then ------Issue Main
+            select  IssueType into var_temp from IssueMain where IssueId=num;
+            select type_name into particular 
+              from item_issue_type 
+           where to_number(type_code)=to_number(var_temp);
+            
+    end if; 
+
+   if p_mode=3 then ------Purchase Return Main
+            select  PurReturnType into particular from PurchaseReturnMain where PurReturnId=num;
+            if particular='T' then
+               particular:='Tender';
+            elsif particular='L' then
+                particular:='Local';
+            elsif particular='D' then
+                particular:='Donation';
+            end if;
+            
+    end if; 
+
+  if p_mode=4 then ------Issue Return Main
+            select  ReturnType into var_temp from IssueReturnMain where ReturnId=num;
+            select type_name into particular 
+              from item_issue_type 
+           where to_number(type_code)=to_number(var_temp);
+            
+    end if;   
+
+ if p_mode=5 then ------Adjustment Main
+            select  AdjustmentType into particular from AdjustmentMain where AdjustmentId=num;
+            if particular='C' then
+               particular:='Condemn';
+            elsif particular='E' then
+                particular:='Expired';
+            end if;
+            
+    end if;
+       
+
+return particular;
+end;

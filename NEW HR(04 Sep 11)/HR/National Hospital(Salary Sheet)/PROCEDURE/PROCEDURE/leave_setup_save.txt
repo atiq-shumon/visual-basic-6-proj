@@ -1,0 +1,31 @@
+create or replace procedure leave_setup_save(
+p_leave_code varchar2,
+p_days number,
+p_carry_arrear_days number,
+p_carry_max_days number,
+p_leave_name varchar)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from st_leave
+where leave_code=p_leave_code;
+if var_temp>0 then
+update st_leave
+set 
+	days=p_days,
+	carry_arrear_days=p_carry_arrear_days,
+	carry_max_days=p_carry_max_days,
+	leave_name=p_leave_name 
+where  leave_code=p_leave_code;
+else
+insert into st_leave values(
+	p_leave_code ,
+	p_days,
+	p_carry_arrear_days,
+	p_carry_max_days ,
+	p_leave_name );
+end if;
+commit;
+end  leave_setup_save;
+/

@@ -1,0 +1,40 @@
+ create or replace procedure saveacct(
+-----p_acc_code in varchar2,
+p_acc_head IN   varchar2,
+p_user_acc IN   varchar2,
+p_acc_name IN   varchar2,
+p_acc_name_beng IN   varchar2,
+p_acc_budg IN   NUMBER,
+p_dep_rate IN  NUMBER,
+p_dep_acc IN  NUMBER,
+p_u_id IN   varchar2,
+p_salvage_value number)
+AS
+var_acc_code varchar2(100);
+var_acc_group intEGER;
+var_acc_lbl  INTEGER;
+temp  number;
+temp1  number;
+temp2  number;
+begin
+select acc_group into var_acc_group  from acct where acc_code=p_acc_head;
+select  nvl(acc_lbl,0)+1  into var_acc_lbl  from acct where acc_code=p_acc_head;
+var_acc_code:=SystemAccCode(p_acc_head,var_acc_lbl);
+select count(*) into temp  from acct where acc_code=var_acc_code;
+if temp=0 then
+ select count(*) into temp1 from acct where user_acc=p_user_acc;
+ if temp1>0 then  goto Duplicate_code;
+                    end if;
+-----------select count(*) into temp2  from acct where acc_name=p_acc_name;
+-----------if temp2>0 then  goto Duplicate_name;
+ -----------                      end if;
+ INSERT INTO  acct(acc_code,user_acc, acc_name,acc_name_beng ,acc_budg,dep_acc, dep_rate,acc_group, acc_lbl, acc_head, u_id,track_id,dt,salvage_value)
+               VALUES(var_acc_code,p_user_acc,p_acc_name,p_acc_name_beng,p_acc_budg,p_dep_acc,p_dep_rate,var_acc_group,var_acc_lbl,p_acc_head,p_u_id,(select max(track_id)+1 from acct),sysdate,p_salvage_value);
+  dbms_output.put_line('Insert successfully');
+end if;
+<<Duplicate_code>>
+ DBMS_OUTPUT.PUT_LINE('Duplicate code not allowed');
+<<Duplicate_name>>
+ DBMS_OUTPUT.PUT_LINE('Duplicate name not allowed');
+COMMIT;
+END;

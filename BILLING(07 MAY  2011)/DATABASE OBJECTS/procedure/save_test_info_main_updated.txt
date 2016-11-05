@@ -1,0 +1,61 @@
+create or replace procedure Save_Test_info_main(
+p_m_code varchar2,
+p_m_name varchar2,
+p_u_id varchar2,
+p_s_code varchar2,
+p_s_name varchar2,
+p_type varchar2,
+p_charge number,
+p_s_code_sub_code  varchar2)
+as
+temp number;
+temp1 number;
+var_m_code varchar2(10);
+var_st_year  date;
+var_ed_year date;
+begin
+
+select count(*) into temp
+from  test_info_sub
+where m_code=p_m_code and s_code=p_s_code 
+and s_code_sub_code=p_s_code_sub_code ;
+
+select count(*) into temp1
+from  test_info_main
+where m_code=p_m_code  ;
+--var_m_code:=p_m_code;
+select st_dt,ed_dt into var_st_year,var_ed_year from
+fiscal_year;
+if temp>0 and temp1>0 then
+update test_info_sub
+set
+s_name=p_s_name,
+type=p_type,
+u_id=p_u_id,
+dt=sysdate,
+st_year=var_st_year,
+ed_year=var_ed_year,
+charge=p_charge
+--s_code_sub_code=p_s_code_sub_code  
+where m_code=p_m_code and s_code=p_s_code ;
+else
+if temp1>0 then
+ update test_info_main
+ set m_code=p_m_code,
+     m_name=p_m_name,
+     u_id=p_u_id,
+     dt=sysdate
+   where m_code=p_m_code;
+else
+insert into test_info_main values(p_m_code,p_m_name,p_u_id,
+sysdate,test_info_main_seq.nextval);
+end if;
+insert into test_info_sub(s_code,s_name,m_code,
+type,u_id,dt,unique_id,st_year,ed_year,charge,s_code_sub_code )
+values(p_s_code,p_s_name,p_m_code,
+p_type,p_u_id,sysdate,test_info_sub_seq.nextval,
+var_st_year,var_ed_year,p_charge,p_s_code_sub_code );
+end if;
+commit;
+end save_test_info_main;
+/

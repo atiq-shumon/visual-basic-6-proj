@@ -1,0 +1,42 @@
+create or replace function opn_bal_cheque
+(p_user_acc varchar2,p_st_dt date,p_ed_dt date )
+ return number
+ as 
+   opn_bl NUMBER:=0;
+   var_DEPOSIT_amt number:=0;
+   var_pay_amt number:=0;
+    TOTAL_OPN number:=0;
+ begin
+  select nvl(sum(dr_amt),0) into opn_bl  -------OPENING
+       from ledger
+  where UPPER(vou_TYPE)=UPPER('OP') and acc_code=p_user_acc;
+  select nvl(sum(Bill_amt),0) into var_DEPOSIT_amt
+       from CHEQUE_REG
+  where to_date(to_char(Issue_DATE,'dd-mm-yyyy'),'dd-mm-yyyy')<to_date(to_char(p_st_dt,'dd-mm-yyyy'),'dd-mm-yyyy')
+             and rec_pay_sts=0 and  CHK_CANCEL=0 and BANK_code=p_user_acc;
+ select nvl(sum(Bill_amt),0) into var_pay_amt
+       from CHEQUE_REG
+  where to_date(to_char(Issue_DATE,'dd-mm-yyyy'),'dd-mm-yyyy')<to_date(to_char(p_st_dt,'dd-mm-yyyy'),'dd-mm-yyyy')
+             and rec_pay_sts=2 and  CHK_CANCEL=0 and BANK_code=p_user_acc;
+  TOTAL_OPN:=(opn_bl+var_DEPOSIT_amt)-var_pay_amt;
+  RETURN(TOTAL_OPN);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

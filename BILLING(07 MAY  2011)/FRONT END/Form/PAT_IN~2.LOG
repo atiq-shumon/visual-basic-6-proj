@@ -1,0 +1,18 @@
+Line 332: Class MSComCtl2.DTPicker of control DT_TM was not a loaded control class.
+Line 348: Class MSComCtl2.DTPicker of control Dt was not a loaded control class.
+Line 340: The property name _ExtentX in DT_TM is invalid.
+Line 341: The property name _ExtentY in DT_TM is invalid.
+Line 342: The property name _Version in DT_TM is invalid.
+Line 343: The property name CustomFormat in DT_TM is invalid.
+Line 344: The property name Format in DT_TM is invalid.
+Line 345: The property name UpDown in DT_TM is invalid.
+Line 346: The property name CurrentDate in DT_TM is invalid.
+Line 355: The property name _ExtentX in Dt is invalid.
+Line 356: The property name _ExtentY in Dt is invalid.
+Line 357: The property name _Version in Dt is invalid.
+Line 358: The property name CalendarBackColor in Dt is invalid.
+Line 359: The property name CalendarForeColor in Dt is invalid.
+Line 360: The property name CalendarTitleBackColor in Dt is invalid.
+Line 361: The property name CalendarTitleForeColor in Dt is invalid.
+Line 362: The property name Format in Dt is invalid.
+Line 363: The property name CurrentDate in Dt is invalid.

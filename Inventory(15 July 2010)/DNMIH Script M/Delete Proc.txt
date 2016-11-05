@@ -1,0 +1,14 @@
+
+--DELETE FROM item_unit_info;
+--DELETE FROM item_group_info;
+DELETE FROM PurchaseSub;
+DELETE FROM PurchaseMain;
+DELETE FROM IssueSub;
+DELETE FROM IssueMain;
+DELETE FROM IssueReturnSub;
+DELETE FROM IssueReturnMain;
+DELETE FROM PurchaseReturnSub;
+DELETE FROM PurchaseReturnMain;
+DELETE FROM AdjustmentSub;
+DELETE FROM AdjustmentMain;
+Commit;

@@ -1,0 +1,52 @@
+------------------------PREVIOUS---------------------
+
+
+create or replace procedure rptvou_all (p_test_cursor in out test_package.test_type,p_mode number,P_VOU_NO NUMBER,p_vou_type varchar2,DATE1 DATE ,DATE2 DATE)
+
+AS
+begin
+ if p_mode=1 then  ---------------all
+open p_test_cursor for
+select to_number(vou_no) as vou_no,vou_type,vou_date, vou_narr ,acc_code,vou_chq,
+ (select acc_name from acct where acct.acc_code=vou.acc_code) as acc_name,
+ (select user_acc from acct where acct.acc_code=vou.acc_code) as user_acc,
+ dr_amt,cr_amt,track_id,(select comp_name from comp_setup) as comp_name,
+   (select comp_addr from comp_setup) as comp_addr,check_date
+ from vou  where vou_type=p_vou_type
+ 
+        order by vou_no ,track_id;
+ elsif p_mode=2 then  -----------date wise
+open p_test_cursor for
+select to_number(vou_no) as vou_no,vou_type,vou_date, vou_narr ,acc_code,vou_chq,
+ (select acc_name from acct where acct.acc_code=vou.acc_code) as acc_name,
+ (select user_acc from acct where acct.acc_code=vou.acc_code) as user_acc,
+ dr_amt,cr_amt,track_id,(select comp_name from comp_setup) as comp_name,
+   (select comp_addr from comp_setup) as comp_addr,check_date
+ from vou  where vou_type=p_vou_type AND VOU_NO=P_VOU_NO
+ 
+        order by vou_no ,track_id;
+elsif p_mode=3 then ------------------vou no wise
+open p_test_cursor for
+select to_number(vou_no) as vou_no,vou_type,vou_date, vou_narr ,acc_code,vou_chq,
+ (select acc_name from acct where acct.acc_code=vou.acc_code) as acc_name,
+ (select user_acc from acct where acct.acc_code=vou.acc_code) as user_acc,
+ dr_amt,cr_amt,track_id,(select comp_name from comp_setup) as comp_name,
+   (select comp_addr from comp_setup) as comp_addr,check_date
+ from vou  where vou_type=p_vou_type AND (VOU_DATE>=DATE1 AND VOU_DATE<DATE2+2)
+ 
+        order by vou_no ,track_id;
+
+elsif p_mode=4 then ------------------unposted voucher
+open p_test_cursor for
+select to_number(vou_no) as vou_no,vou_type,vou_date, vou_narr ,acc_code,vou_chq,
+ (select acc_name from acct where acct.acc_code=vou.acc_code) as acc_name,
+ (select user_acc from acct where acct.acc_code=vou.acc_code) as user_acc,
+ dr_amt,cr_amt,track_id,(select comp_name from comp_setup) as comp_name,
+   (select comp_addr from comp_setup) as comp_addr,check_date
+ from vou  where vou_type=p_vou_type AND (VOU_DATE>=DATE1 AND VOU_DATE<DATE2+2) and  POST_STATE=0
+ 
+        order by vou_no ,track_id;
+
+end if;  
+
+end RptVou_all;

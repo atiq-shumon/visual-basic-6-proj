@@ -1,0 +1,16 @@
+create or replace procedure Fiscal_Yr_setup_Delete(
+P_BEGIN_DATE date,
+P_END_DATE date
+)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from fISCAL_Year_SetUp
+where BEGIN_DATE=P_BEGIN_DATE and END_DATE=P_END_DATE;
+if var_temp>0 then
+	Delete from fISCAL_Year_SetUp where BEGIN_DATE=P_BEGIN_DATE and END_DATE=P_END_DATE;
+end if;
+commit;
+end  Fiscal_Yr_setup_Delete;
+/

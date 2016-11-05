@@ -1,0 +1,2322 @@
+
+create or replace procedure Save_department_transfer(
+       P_MODE  INTEGER,
+       p_in_reg_no number,
+       P_YRCODE VARCHAR2,
+       p_bed_sum number,
+       p_operation_sum number,
+       p_miscelleneous_charge number,
+       p_extra_bed_charge number,
+       p_anEsthesia_charge number,
+       p_delivery_charge number,
+       p_baby_care_charge number,
+       p_neunetal_bed_charge number,
+       p_Exchange_transfusion_charge number,
+       p_photo_therapy_charge number,
+       p_blood_sugar_charge number,
+       p_medicine_charge number,
+       p_ccu_charge number,
+       p_nebuliser_charge number,
+       p_incubator_charge number,
+       p_discount number,
+       p_net_total_charge number,
+       P_TRANSFER_DATE DATE,  
+       p_u_id varchar2,
+       p_booth_no varchar2,
+       P_ADMISSION_DATE DATE,
+       P_DOC_DEPT Varchar2,
+       P_DEPT_SERIAL_NO INTEGER,
+       P_PATIENT_BED_SERIAL INTEGER,
+       P_ADVANCE NUMBER
+    )
+as
+   var_serial_no number;   
+   VAR_MAX_REC_NO NUMBER;
+begin
+    
+   
+    UPDATE INDOOR_PAT_DEPT_INFO 
+       SET TRANSFER_FLAG=1,
+           RELLEASE_TRANSFER_DATE=P_TRANSFER_DATE,
+           bed_sum= p_bed_sum,
+           operation_sum=p_operation_sum,
+           miscelleneous_charge=p_miscelleneous_charge, 
+           extra_bed_charge=p_extra_bed_charge,
+           anEsthesia_charge=p_anEsthesia_charge,
+           delivery_charge=p_delivery_charge,
+           baby_care_charge=p_baby_care_charge ,
+           neunetal_bed_charge=p_neunetal_bed_charge,
+           Exchange_transfusion_charge=p_Exchange_transfusion_charge,
+           photo_therapy_charge=p_photo_therapy_charge,
+           blood_sugar_charge=p_blood_sugar_charge,
+           medicine_charge=p_medicine_charge,
+           cardiology_charge=p_ccu_charge,
+           nebuliser_charge=p_nebuliser_charge,
+           incubator_charge=p_incubator_charge,
+           discount=p_discount,
+           net_total_charge=p_net_total_charge
+         
+    WHERE IN_REG_NO=p_in_reg_no AND
+          YRCODE   =P_YRCODE    AND 
+          to_number(SERIAL_NO)=to_number(P_DEPT_SERIAL_NO); 
+
+ 
+  INSERT INTO INDOOR_PAT_DEPT_INFO (
+                IN_REG_NO,YRCODE,DOC_DEPT,DOCTOR_ID,TRANSFER_FLAG,
+             RELEASE_FLAG,
+             ADMISSION_CANCEL_FLAG,ADMISSION_DATE,RELLEASE_TRANSFER_DATE,
+             admission_charge , bed_sum ,operation_sum,
+             service_charge,miscelleneous_charge ,
+	           extra_bed_charge ,anesthesia_charge ,delivery_charge ,
+	           baby_care_charge ,neunetal_bed_charge ,Exchange_transfusion_charge ,
+	           photo_therapy_charge,Blood_sugar_charge ,medicine_charge ,cardiology_charge ,
+      	     nebuliser_charge ,incubator_charge ,discount , net_total_charge,u_id,booth_no ,dt ,SERIAL_NO 
+
+
+          ) VALUES(
+             p_in_reg_no,
+             P_YRCODE,p_doc_dept,0,1,0,0,P_TRANSFER_DATE,P_TRANSFER_DATE,
+             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+             p_u_id,p_booth_no,SYSDATE,to_number(P_DEPT_SERIAL_NO)+1);  
+
+
+
+
+  IF P_MODE=1 THEN --FOR ONLY DEPT TRANSFER
+
+
+/* CREATE A NEW ROW AND UPDATE IT */
+
+
+    UPDATE Indoor_pat_bed_info
+          SET ED_DT= P_TRANSFER_DATE
+     WHERE IN_REG_NO=P_IN_REG_NO AND YRCODE=P_YRCODE  
+     AND SERIAL_NO=P_PATIENT_BED_SERIAL;
+ 
+    
+    insert into Indoor_pat_bed_info 
+        SELECT * FROM  Indoor_pat_bed_info WHERE 
+         IN_REG_NO=P_IN_REG_NO AND YRCODE=P_YRCODE  
+     AND SERIAL_NO=P_PATIENT_BED_SERIAL;
+
+
+        
+   UPDATE Indoor_pat_bed_info
+          SET SERIAL_NO=P_PATIENT_BED_SERIAL+1,
+              DOC_DEPT=p_doc_dept,
+              dt=sysdate,
+              DEPT_SERIAL=to_number(P_DEPT_SERIAL_NO)+1,
+              admission_date=P_TRANSFER_DATE
+    WHERE IN_REG_NO=P_IN_REG_NO AND YRCODE=P_YRCODE
+         AND ROWID=(SELECT MAX(ROWID) FROM  Indoor_pat_bed_info
+         WHERE IN_REG_NO=P_IN_REG_NO AND YRCODE=P_YRCODE) ;
+
+  
+ END IF;              
+/* END OF  NEW ROW AND UPDATE IT */
+
+
+      select max(rec_no)+1 INTO  VAR_MAX_REC_NO 
+	     from  receipt_no_counter;
+					     
+					     
+     insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+     commit;
+
+     insert into   advance values(
+		p_in_reg_no,
+	        VAR_MAX_REC_NO,    
+		P_advance,
+		P_doc_dept,
+		'0', 
+		p_u_id,
+		p_booth_NO,
+	sysdate,P_YRCODE,P_PATIENT_BED_SERIAL+1,'D'); 
+
+     COMMIT;
+         
+ end Save_department_transfer;
+                  
+
+
+
+
+----------------procedure save_fled_indoor-----------
+
+create or replace procedure save_fled_indoor(
+	p_in_reg_no number,
+        P_YRCODE VARCHAR2, 
+       	P_operation_sum number,
+	p_bed_sum number,
+        p_extra_bed_charge number,
+	p_baby_care_charge number,
+	p_neunetal_bed_charge number,
+	p_Ex_transfusion_charge number,
+	p_photo_therapy_charge number,
+	p_blood_sugar_charge number,
+	p_medicine_charge number,
+	P_miscelleneous_charge number,
+	p_delivery_charge number,
+	p_ccu_charge number,
+	p_anasethesia_charge number,
+	p_nebuliser_charge number,
+	p_incubator_charge number,
+        P_NET_TOTAL_CHARGE NUMBER,
+        P_DISCOUNT NUMBER,
+        P_FLED_DATE DATE ,        
+        p_u_id varchar2,
+	p_booth_no varchar2,
+        P_DEPT_SERIAL NUMBER
+	
+     )
+     As
+	
+     begin
+
+	UPDATE INDOOR_PAT_DEPT_INFO 
+         SET RELLEASE_TRANSFER_DATE=P_FLED_DATE,
+           bed_sum= p_bed_sum,
+           operation_sum=P_operation_sum,
+           miscelleneous_charge=p_miscelleneous_charge, 
+           extra_bed_charge=p_extra_bed_charge,
+           anesthesia_charge=p_anasethesia_charge ,
+           delivery_charge=p_delivery_charge,
+           baby_care_charge=p_baby_care_charge ,
+           neunetal_bed_charge=p_neunetal_bed_charge,
+           Exchange_transfusion_charge=p_Ex_transfusion_charge,
+           photo_therapy_charge=p_photo_therapy_charge,
+           blood_sugar_charge=p_blood_sugar_charge,
+           medicine_charge=p_medicine_charge,
+           cardiology_charge=p_ccu_charge,
+           nebuliser_charge=p_nebuliser_charge,
+           incubator_charge=p_incubator_charge,
+           discount=p_discount,
+          
+           /* ONLY CHARGES ARE CALCULATED HERE FOR "NET_TOTAL_CHARGE "
+             DISCOUNT IS NOT ADDED OR DEDUCTED HERE
+            */
+            
+           net_total_charge=p_Net_total_charge
+         
+    WHERE IN_REG_NO=p_in_reg_no AND
+          YRCODE   =P_YRCODE    AND 
+          to_number(SERIAL_NO)=TO_NUMBER(P_DEPT_SERIAL); 
+
+
+			  commit;
+
+		  update bed_info
+		       set occupy_flag='0'
+		  where in_reg_no=p_in_reg_no AND YRCODE=P_YRCODE;
+
+
+		 update in_door_Pat_Info_Main
+		       set release_flag=2
+		 where in_reg_no=p_in_reg_no AND YRCODE=P_YRCODE;
+
+
+
+		 update indoor_pat_bed_info
+		       set ed_dt=P_FLED_DATE
+		 where in_reg_no=p_in_reg_no AND YRCODE=P_YRCODE 
+		 and serial_no=(select max(serial_no) from indoor_pat_bed_info
+		 Where in_reg_no=p_in_reg_no AND YRCODE=P_YRCODE);
+
+		 commit;
+           
+      end save_fled_indoor;
+
+
+
+
+
+
+
+
+
+create or replace procedure Indoor_EDIT_Patient_info
+	
+	(
+			 
+			 p_pat_name   varchar2,
+			 p_guard_name   varchar2,
+			 p_addr1  varchar2,
+			 p_age    varchar2,
+                         P_Y_M_D varchar2,
+			 p_sex   varchar2,
+			 p_religion  varchar2,
+			 p_check_name integer,
+			 P_IN_REG_NO VARCHAR2,
+			 P_YRCODE VARCHAR2
+)
+		as
+			
+	begin
+	UPDATE  in_door_Pat_Info_Main
+	     SET  pat_name=p_pat_name,
+ 	          pat_guard_name=p_guard_name,
+	          sex=P_sex,
+                  Y_M_D=P_Y_M_D,
+	          age=P_age,
+	          Religion=P_Religion,
+	          addr1=p_addr1  ,
+	         check_name=P_CHECK_NAME
+      WHERE UPPER(IN_REG_NO)=UPPER(P_IN_REG_NO) AND UPPER(YRCODE)=UPPER(P_YRCODE); 
+    
+      UPDATE  PAT_SEARCH_OLTP 
+              SET  pat_name=p_pat_name,
+ 	           addr=p_addr1  
+      WHERE UPPER(IN_REG_NO)=UPPER(P_IN_REG_NO) AND UPPER(YRCODE)=UPPER(P_YRCODE);   
+          
+              COMMIT;
+END;----------END OF PROCEDURE 			;
+
+
+
+
+
+
+create or replace procedure save_bed_transfer(
+ p_mode  integer,
+ p_in_reg_no number,
+ p_serial_no number,
+ p_u_id varchar2,
+ p_booth varchar2,
+ p_advance number,
+ P_YRCODE VARCHAR2,
+ P_BED_TYPE VARCHAR2,
+ P_BED_TYPE_NO VARCHAR2,
+ P_BED_NO  VARCHAR2,
+ P_BED_DEPT VARCHAR2, 
+ P_ext_flag_for_print INTEGER,
+ P_DOC_DEPT VARCHAR2,
+ P_ADMISSION_DATE DATE,
+ P_ADMISSION_CHARGE NUMBER,
+ P_BED_CHARGE NUMBER,
+ P_SERVICE_CHARGE NUMBER,
+ p_EXTRA_BED_FLAG NUMBER,
+ p_dept_serial integer,
+ p_CUR_BED_SERIAL_NO INTEGER
+ )
+as
+  
+                 var_end_date DATE;
+  	 	 VAR_MAX_REC_NO NUMBER;
+ begin
+
+         update Indoor_pat_bed_info
+	      set  migration_flag='1'
+         where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+		
+	 update Indoor_pat_bed_info
+	          set ed_dt= sysdate
+	where IN_REG_NO=P_IN_REG_NO AND UPPER(YRCODE)=UPPER(P_YRCODE) AND 
+          serial_no=p_CUR_BED_SERIAL_NO ;
+             
+      
+                    
+        IF P_MODE=1 THEN ---ONLY BED TRANSFER
+                    
+      	    insert into Indoor_pat_bed_info values(           
+                p_in_reg_no ,
+		P_BED_NO,
+		P_BED_TYPE,
+		P_BED_TYPE_NO,  
+		P_ADMISSION_CHARGE ,
+		P_BED_CHARGE,
+		1,---occupy_flag
+		p_U_ID,
+		sysdate, 
+                SYSDATE,
+		0 ,  -------extra bed_flag
+		1 ,----------migration flag
+		0 , ----pat_id
+		sysdate,
+		p_CUR_BED_SERIAL_NO+1,
+                P_ext_flag_for_print,P_service_charge,P_YRCODE,P_doc_dept,p_dept_serial); 
+              
+               UPDATE PAT_SEARCH_OLTP
+                 SET BED_TYPE=P_BED_TYPE,
+  		     CAB_WARD_NO=P_BED_TYPE_NO,
+		     BED_NO=P_BED_NO
+               where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(p_YRCODE) ; 
+   
+	END IF;	
+
+         IF P_MODE=0 THEN --- BED  AND  DEPT TRANSFER
+
+          /* 
+             FIRST INSERT VALUES INTO BED AND NEXT TRANSFER DEPT
+             USING MODE =0
+             FOR DETAILS SEE ALSO "Save_department_transfer"
+              
+         */
+
+                    
+      	    insert into Indoor_pat_bed_info values(           
+                p_in_reg_no ,
+		P_BED_NO,
+		P_BED_TYPE,
+		P_BED_TYPE_NO,  
+		P_ADMISSION_CHARGE ,
+		P_BED_CHARGE,
+		1,---occupy_flag
+		p_U_ID,
+                SYSDATE,
+		sysdate,
+		0 ,  -------extra bed_flag
+		1 ,----------migration flag
+		0 , ----pat_id
+                SYSDATE,
+		p_CUR_BED_SERIAL_NO+1,
+                P_ext_flag_for_print,P_service_charge,P_YRCODE,P_doc_dept,p_dept_serial+1);    
+
+               UPDATE PAT_SEARCH_OLTP
+                 SET BED_TYPE=P_BED_TYPE,
+  		     CAB_WARD_NO=P_BED_TYPE_NO,
+		     BED_NO=P_BED_NO
+               where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(p_YRCODE) ; 
+   
+	END IF;						
+					
+
+
+                update bed_info ------blank previous bed
+		    set occupy_flag='0'
+		where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(p_YRCODE) ;  
+
+             
+                 update bed_info
+		         set occupy_flag='1',
+		         TEMP_SERIAL_NO=(select max(TEMP_SERIAL_NO)+1 from bed_info where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(p_YRCODE)),
+		         IN_REG_NO= p_IN_REG_NO,
+                         YRCODE=P_YRCODE
+  			 where serial_no=p_serial_no;
+
+
+							
+                  if P_EXTRA_BED_FLAG=1  then
+				select distinct(end_date) into var_end_date 
+					  from 	Indoor_pat_Extra_bed_info
+				where (in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE)) and serial_no=
+				(select max(serial_no) from 	Indoor_pat_Extra_bed_info
+				where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE));
+
+			if var_end_date is null then
+                                update Indoor_pat_Extra_bed_info
+				set end_date=sysdate
+  	  		   where (in_reg_no=p_in_reg_no  AND UPPER(YRCODE)=UPPER(P_YRCODE)) and serial_no=(select max(serial_no) from 
+                      	      Indoor_pat_Extra_bed_info
+			      where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE));
+        		end if;
+		end if;
+					
+                    if p_mode =1 then---ONLY BED TRANSFER
+			 select max(rec_no)+1 INTO  VAR_MAX_REC_NO 
+			     from  receipt_no_counter;
+					     
+			    
+			insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+                               commit;
+	           	 insert into   advance values(
+				 	p_in_reg_no,
+					VAR_MAX_REC_NO, 
+		   		        p_advance,
+					P_doc_dept,
+					'0',---bed_type not necessary
+					p_u_id,
+				        p_booth,
+				        sysdate,P_YRCODE,p_CUR_BED_SERIAL_NO+1,'B'); 
+                 end if;
+           		                 
+            						commit;
+	end ;
+
+
+
+
+
+create or replace procedure save_othersmoney(
+    p_name varchar2,
+    p_address varchar2, 	
+    p_description varchar2,
+    p_u_id varchar2,
+    p_booth varchar2,
+    p_amount number,	
+    p_serial_no number)
+as
+begin
+    
+ insert into receipt_no_counter(rec_no) values((select max(rec_no)+1 from  receipt_no_counter));
+                                                         commit;	
+insert into others_money values(
+       (select max(rec_no) from  receipt_no_counter),---------pat_info_main_out_door_seq.nextval,
+       p_name,
+       p_address,
+      p_description,
+      p_amount,
+      p_u_id ,
+      p_booth,
+      'ndpt',
+      p_serial_no,
+      sysdate);
+commit;
+end;
+
+create or replace procedure save_diag_refund( 	
+    p_desc varchar2,
+    p_Recpt varchar2,
+     p_amount number,
+    p_u_id varchar2,
+    p_booth varchar2,	
+    p_serial_no number)
+as
+begin
+    
+ insert into receipt_no_counter(rec_no) values
+		((select max(rec_no)+1 from  receipt_no_counter));
+                                                         commit;
+                                                             commit;	
+insert into diag_refund values(
+       (select max(rec_no) from  receipt_no_counter),---------pat_info_main_out_door_seq.nextval,
+       p_desc,
+       p_Recpt,
+      p_amount,
+      p_u_id ,
+      p_booth,
+      'ndpt',
+      p_serial_no,
+      sysdate);
+commit;
+end;
+
+
+
+
+
+
+
+
+----admission--cancellation-----------------
+create or replace procedure adm_cancellation
+	(
+         p_in_reg_no number,
+         p_u_id varchar2,
+	 p_booth varchar2,
+	 P_YRCODE VARCHAR2,
+         P_PREV_ADVANCE NUMBER,
+         p_doc_dept varchar2
+
+	)
+as
+	
+	VAR_MAX_REC_NO NUMBER;
+begin
+	
+
+	
+	select max(rec_no)+1 INTO VAR_MAX_REC_NO
+	      from  receipt_no_counter ;
+	insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+        commit;	
+
+        
+	insert into advance values(
+				p_in_reg_no,
+				VAR_MAX_REC_NO,
+				-P_PREV_ADVANCE, p_doc_dept,
+			       'b',p_u_id,p_booth,
+				sysdate,P_YRCODE,1,'C');
+                 
+                
+		update bed_info
+          	      set occupy_flag='0'
+		where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+                
+   
+                /*  '1 normal release,
+                    '2 fled 
+                    '3 fled and then release 
+                    ,4 ADMISSION CANCELLATION
+                */
+
+                update in_door_Pat_Info_Main
+		    set  cancellation_flag=1,
+                         release_flag=4,
+        	         RELEASE_DATE=SYSDATE
+		where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+
+
+		
+  		UPDATE INDOOR_PAT_DEPT_INFO
+		      SET ADMISSION_CANCEL_FLAG=1
+		where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);  
+
+               UPDATE INDOOR_PAT_BED_INFO
+		      SET ED_DT=SYSDATE
+		where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+          
+              DELETE FROM PAT_SEARCH_OLTP WHERE in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+             
+
+	 commit;
+    end;
+
+--------------save advance---------------------
+
+create or replace procedure save_advance(
+	p_in_reg_no number,
+	p_u_id varchar2,
+	p_booth varchar2,
+ 	p_advance  number,
+        P_YRCODE VARCHAR2,
+        P_DOC_DEPT VARCHAR2,
+        P_CUR_BED_SERIAL_NO INTEGER
+        
+)
+as
+    VAR_MAX_REC_NO NUMBER;
+        
+begin
+          
+  select max(rec_no)+1 INTO  VAR_MAX_REC_NO
+         from  receipt_no_counter;        
+  insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+  commit;	
+   insert into advance values(
+               p_in_reg_no,VAR_MAX_REC_NO, 
+               p_advance, P_DOC_DEPT,
+               0,p_u_id,p_booth,sysdate,P_YRCODE,
+               P_CUR_BED_SERIAL_NO,'R');
+
+   commit;
+end;
+------------save_working_schedule---------------------
+
+create or replace procedure save_working_schedule(
+p_user_id varchar2,
+p_shift_name varchar2,
+p_dt date)
+as
+var_serial_no integer;
+var_shift_check integer;
+begin 
+select count(user_id) into var_serial_no
+from working_schedule
+where user_id=p_user_id;
+var_serial_no:=var_serial_no+1;
+select count(user_id) into var_shift_check from working_schedule
+where user_id=p_user_id and shift_name=p_shift_name
+and dt=p_dt;
+if var_shift_check>0 then
+update working_schedule
+set shift_name=p_shift_name
+where user_id=p_user_id and dt=p_dt;
+else
+insert into working_schedule values(p_user_id,p_shift_name,
+p_dt,var_serial_no);
+end if;
+commit;
+end;
+-------------------------DELETE WORKING SCHEDULE----------------------
+create or replace procedure DELETE_working_schedule(
+p_user_id varchar2,
+p_shift_name varchar2,
+p_dt date)
+as
+var_serial_no integer;
+var_shift_check integer;
+begin 
+select count(user_id) into var_shift_check from working_schedule
+where user_id=p_user_id and shift_name=p_shift_name
+and dt=p_dt;
+if var_shift_check>0 then
+DELETE FROM WORKING_SCHEDULE 
+where user_id=p_user_id and dt=p_dt AND shift_name=p_shift_name;
+end if;
+commit;
+end;
+
+
+
+
+
+------------------shift_validation-------------------------------
+
+create or replace procedure shift_validation(p_u_id in varchar2)
+as
+var_shift_name varchar2(20);
+var_user_type varchar2(20);
+var_shift_name1 varchar2(20);
+var_systime_hr number(20);
+var_systime_mi number(20);
+var_systime_sec number(20);
+var_sysdate_end number(20);
+var_shift_start_hr number(20);
+var_shift_start_mi number(20);
+var_shift_start_sec number(20);
+var_shift_end_hr number(20);
+var_shift_end_mi number(20);
+var_shift_end_sec number(20);
+var_count integer;
+validation integer:=0;
+cursor c1 is 
+	select shift_name   from working_schedule where user_id=p_u_id and upper(to_char(dt,'dd-mon-yyyy'))=upper(to_char(sysdate,'dd-mon-yyyy'));
+cursor c2 is
+	select shift_name    from working_schedule where user_id=p_u_id and upper(to_char(dt,'dd-mon-yyyy'))=upper(to_char(sysdate-1,'dd-mon-yyyy')) ;
+begin
+open c1;
+open c2;
+delete from user_validation;
+commit;
+select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+into 	var_shift_start_hr,
+	   var_shift_end_hr,
+		var_shift_start_mi,
+	             var_shift_end_mi,
+			var_shift_start_sec,
+				var_shift_end_sec   
+	      from shift_setup
+where upper(shift_name)=upper('night');
+select to_number(to_char(sysdate,'HH24')),to_number(to_char(sysdate,'mi')),to_number(to_char(sysdate,'ss')) into  var_systime_hr, 
+ var_systime_mi, var_systime_sec
+from dual;
+-----dbms_output.put_line(var_shift_name);
+loop
+  if var_systime_hr between 0 and var_shift_end_hr then
+     exit when c2%notfound;
+     fetch c2 into  var_shift_name;
+      dbms_output.put_line(var_shift_name);
+  else
+     exit when c1%notfound;
+    fetch c1 into  var_shift_name;
+end if;
+/*
+-----dbms_output.put_line('Cursor');
+fetch c1 into var_shift_name;
+    dbms_output.put_line(var_shift_name);
+if c1%notfound then 
+      if c2%notfound then
+	exit;
+      end if;
+   end if;
+----exit when c1%notfound;
+*/
+dbms_output.put_line(var_shift_name);
+select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+into 	var_shift_start_hr,
+	var_shift_end_hr,
+	var_shift_start_mi,
+	var_shift_end_mi,
+	var_shift_start_sec,
+	var_shift_end_sec   
+from shift_setup
+where upper(shift_name)=upper('night');
+dbms_output.put_line('Before night'||var_shift_end_hr);
+dbms_output.put_line('Before night'||var_shift_name1);
+/*
+if var_systime_hr between 0 and var_shift_end_hr then
+		fetch c2 into var_shift_name1; 
+       dbms_output.put_line('Before night'||var_shift_name1);
+  if upper(var_shift_name1)=upper('night') then  
+         var_shift_name:=var_shift_name1;
+  dbms_output.put_line('Cursor_dual-11'||var_shift_name1);
+end if;
+end if;
+*/
+if c1%found or c2%found then
+select to_number(to_char(shift_start_time,'HH24')),to_number(to_char(shift_end_time,'HH24')),to_number(to_char(shift_start_time,'mi')),to_number(to_char(shift_end_time,'mi')),
+to_number(to_char(shift_start_time,'ss')),to_number(to_char(shift_end_time,'ss'))
+into 	var_shift_start_hr,
+	var_shift_end_hr,
+	var_shift_start_mi,
+	var_shift_end_mi,
+	var_shift_start_sec,
+	var_shift_end_sec   
+from shift_setup
+where shift_name=var_shift_name;
+end if;
+select to_number(to_char(sysdate,'HH24')),to_number(to_char(sysdate,'mi')),to_number(to_char(sysdate,'ss')) into  var_systime_hr, 
+ var_systime_mi, var_systime_sec
+from dual;
+----dbms_output.put_line('Cursor_dual');
+----if var_shift_start_hr=0 then
+----	   var_shift_start_hr:=24;
+----end if;
+----if var_shift_end_hr=0 then
+----	   var_shift_end_hr:=24;
+----end if;
+-----     dbms_output.put_line('Cursor_dual-'||var_shift_start_hr);
+------     dbms_output.put_line('Cursor_dual-'||var_shift_end_hr);
+if var_shift_start_hr<var_shift_end_hr then
+	if var_systime_hr<var_shift_start_hr then --before
+	          validation:=0;
+	elsif var_systime_hr=var_shift_start_hr  and var_systime_mi<var_shift_start_mi  then
+                     dbms_output.put_line('Cursor_dual--mm0');
+	           validation:=0;
+	elsif var_systime_hr=var_shift_start_hr  and var_systime_mi=var_shift_start_mi and var_systime_sec<var_shift_start_sec then
+          dbms_output.put_line('Cursor_dual--mm=');
+	            validation:=0;
+	elsif var_systime_hr>var_shift_end_hr then
+	             validation:=0;
+	elsif  var_systime_hr=var_shift_end_hr and var_systime_mi>var_shift_end_mi then
+	            validation:=0;
+------  dbms_output.put_line('Cursor_dual--mm0');
+	elsif var_systime_hr=var_shift_end_hr and var_systime_mi=var_shift_end_mi and var_systime_sec>var_shift_end_sec then
+	  validation:=0;
+          dbms_output.put_line('Cursor_dual--ss0');
+	else
+	validation:=1;
+-----       dbms_output.put_line('Cursor_dual--1');
+        exit ;  
+end if;
+end if;
+if var_shift_start_hr>var_shift_end_hr then
+if var_systime_hr<var_shift_start_hr and var_systime_hr>var_shift_start_hr  then --before
+	          validation:=0;
+	elsif var_systime_hr=var_shift_start_hr  and var_systime_mi<var_shift_start_mi  then
+	           validation:=0;
+	elsif var_systime_hr=var_shift_start_hr  and var_systime_mi=var_shift_start_mi and var_systime_sec<var_shift_start_sec then
+	            validation:=0;
+	elsif var_systime_hr>var_shift_end_hr and var_systime_hr<var_shift_start_hr  then
+	             validation:=0;
+	elsif  var_systime_hr=var_shift_end_hr and var_systime_mi>var_shift_end_mi then
+	            validation:=0;
+            dbms_output.put_line('Cursor_dual--mm0>');
+	elsif var_systime_hr=var_shift_end_hr and var_systime_mi=var_shift_end_mi and var_systime_sec>var_shift_end_sec then
+	  validation:=0;
+	else
+	validation:=1;
+        exit ;  
+end if;
+end if;
+end loop;
+select user_type into var_user_type from security where user_id=p_u_id;
+if upper(var_user_type)=upper('admin') then
+     validation:=1;
+end if;
+insert into user_validation values(validation);
+commit;
+close c1;
+close c2;
+end;
+
+
+
+
+
+-----------delete temp security------------------
+create or replace procedure delete_temp_security(
+p_user_id varchar2,
+p_serial_no number)
+as
+begin
+delete from temp_security
+where user_id=p_user_id and serial_no=p_serial_no;
+end;
+
+-----------save temp security------------------
+create or replace procedure save_temp_security(
+p_user_id varchar2,
+p_user_name varchar2)
+as
+begin
+delete from temp_security;
+insert into temp_security valuse(
+p_user_id,p_user_name);
+end;
+
+-----------delete_security------------------
+create or replace procedure delete_security(
+p_user_id varchar2
+)
+as
+var_temp  integer;
+begin
+select count(user_id) into var_temp from security
+where user_id=p_user_id;
+
+if var_temp>0 then
+delete from security
+where user_id=p_user_id;
+end if;
+commit;
+end ;
+
+-----------save security------------------
+create or replace procedure save_security(
+p_user_id varchar2,
+p_user_name varchar2,
+p_user_password varchar2,
+p_user_conf_password varchar2,
+p_user_type varchar2,
+p_shift_name varchar2)
+as
+var_temp  integer;
+begin
+select count(user_id) into var_temp from security
+where user_id=p_user_id;
+
+if var_temp>0 then
+update security
+set user_name=p_user_name ,
+	user_type=p_user_type ,
+	user_password=p_user_password, 
+	user_conf_password=p_user_conf_password,
+	shift_name=p_shift_name
+where user_id=p_user_id;
+else insert into security values(
+	p_user_id,
+	p_user_name,
+	p_user_type,
+	p_user_password,
+	p_user_conf_password,
+	sysdate,
+	p_shift_name);
+end if;
+commit;
+end ;
+------------------------------------------change--password-----------------------------------
+create or replace procedure  change_password(
+	p_user_id varchar2,
+	p_user_pre_password varchar2,
+	p_user_password  varchar2,
+	p_user_conf_password  varchar2
+)
+as
+var_temp  integer;
+begin
+select count(user_id) into var_temp from security
+where user_id=p_user_id 
+and user_password=p_user_pre_password; 
+if var_temp>0 then
+update security
+set 
+user_password=p_user_password, 
+user_conf_password=p_user_conf_password
+where user_id=p_user_id and  user_password=p_user_pre_password;
+end if;
+commit;
+end ;
+
+
+
+
+
+
+
+----------procedure-
+-------------------save_shift_setup----------------------------
+create or replace procedure save_shift_setup(
+	p_shift_name varchar2,
+	p_start_time date,
+	p_end_time date,
+	p_effective_date date,
+	p_u_id varchar2)
+as
+temp varchar2(30);
+begin
+select count(p_shift_name) into temp
+	from Shift_setup
+where shift_name=p_shift_name;
+if temp>0 then
+update Shift_setup
+set shift_start_time=p_start_time ,
+	shift_End_time=p_end_time ,
+	effective_date=p_effective_date,
+	u_id=p_u_id
+where shift_name=p_shift_name;
+else
+insert into Shift_setup values(p_shift_name,p_start_time,p_end_time,p_effective_date,
+p_u_id,sysdate);
+end if;
+commit;
+end;
+
+
+
+
+
+----------procedure---Indoor_SavePatient_info
+create or replace procedure Indoor_SavePatient_info
+	 
+	(
+			 p_bed_type  varchar2,
+			 p_Type_no  varchar2,
+			 p_bed_no   varchar2,
+			 p_pat_name   varchar2,
+			 p_guard_name   varchar2,
+			 p_addr1  varchar2,
+			 p_age    varchar2,
+                         P_y_D_m   VARCHAR2,
+			 p_sex   varchar2,
+			 p_religion  varchar2,
+			 p_phone  varchar2,
+			 p_advance  number,
+			 p_doc_dept  varchar2,
+			 p_u_id   varchar2,
+			 p_booth  varchar2,
+			 p_extra_bed_flag integer,
+			 p_serial_no  number,
+		         p_check_name integer,
+                         P_YRCODE VARCHAR2,
+                         P_ADMISSION_CHARGE NUMBER,
+                         P_BED_CHARGE NUMBER,
+                         P_SERVICE_CHARGE NUMBER,
+                         p_ext_flag_for_print INTEGER
+                       
+                         
+)
+as
+			
+			var_bed_charge number:=0;
+			var_st_dt date;
+			var_ed_dt date;
+			VAR_MAX_REG_NO NUMBER:=0;
+                        VAR_MAX_REC_NO NUMBER:=0;
+
+
+	begin
+		
+		     
+           select NVL(max(in_reg_no),0)+1 INTO VAR_MAX_REG_NO
+                from  in_door_Pat_Info_Main
+            WHERE UPPER(YRCODE)=UPPER(P_YRCODE); 
+
+
+
+       insert into in_door_Pat_Info_Main(
+   				  in_reg_no ,
+				  pat_name  ,
+			          pat_guard_name ,
+				  sex ,
+				  age,
+                                  Y_M_D ,
+				  Religion,
+				  addr1,
+				  phone,
+				  doc_dept,
+				  release_flag,
+				  dt,
+				  booth,
+				  admission_date,
+				  u_id,
+				  check_name,
+                                  BED_EXTRA_FLAG_PRINT,
+				  cancellation_flag,YRCODE)
+			values(
+				VAR_MAX_REG_NO,
+				p_pat_name  ,
+				p_guard_name ,
+				p_sex   ,
+				p_age   ,
+                                P_y_D_m,
+				p_Religion  ,
+				p_addr1  ,
+				p_phone  ,
+				p_doc_dept,
+				0,		----Release Flag
+				sysdate ,
+				p_booth  ,
+				sysdate,
+				p_u_id ,
+				p_check_name,	
+				P_ext_flag_for_print,
+				0,P_YRCODE);  -------cancellation flag 
+		    commit;
+		    
+		    
+		    select NVL(max(rec_no),0)+1 INTO VAR_MAX_REC_NO
+		       from  receipt_no_counter;
+		    
+ 	    insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+            commit;
+     
+     	    insert into advance(in_reg_no,receipt_no, advance,u_id,
+				        booth,dt,department,YRCODE,BED_SERIAL_NO,
+                                       RECEIPT_INDICATOR)
+				values(
+                                        VAR_MAX_REG_NO,  
+					VAR_MAX_REC_NO,
+					p_advance,
+					p_u_id,
+					p_booth,
+					sysdate,p_doc_dept,
+                                        P_YRCODE,1,'A');
+				commit;
+---if
+			update bed_info
+				set occupy_flag='1',
+   				IN_REG_NO= VAR_MAX_REG_NO,
+                                YRCODE=P_YRCODE,    
+   				TEMP_SERIAL_NO=1
+			     where serial_no=p_serial_no;
+			commit;
+
+
+				
+     insert into Indoor_pat_bed_info(
+                        in_reg_no,
+   	                BED_NO,
+		        BED_TYPE,
+ 		        Bed_type_no ,
+ 		        Admission_charge ,
+ 		        BED_CHARGE,
+		        OCCUPY_FLAG,
+ 		        U_ID,
+		        DT,
+ 		        Admission_date ,
+		        extra_bed_flag ,
+ 		        migration_flag ,
+ 		        ed_dt,
+		        serial_no,ext_flag_for_print,
+		        service_charge,YRCODE,DOC_DEPT,DEPT_SERIAL)
+			
+                    values(
+			 VAR_MAX_REG_NO,              -----------In_door_pat_info_main_seq.currval,
+ 			 p_BED_NO  ,
+ 			 p_BED_TYPE,
+			 p_type_no ,
+ 			 P_ADMISSION_CHARGE ,
+			 P_BED_CHARGE,
+			 '1',
+ 			 p_u_id,
+                         SYSDATE,
+ 			 sysdate ,
+ 			 0 ,  ---extra bed flag
+ 			 0 ,--migration flag
+			 var_ed_dt,
+			 1, --serial no
+                         p_ext_flag_for_print,
+			P_SERVICE_CHARGE,
+                        P_YRCODE,P_DOC_DEPT,1
+				);
+
+       INSERT INTO INDOOR_PAT_DEPT_INFO (
+                IN_REG_NO,YRCODE,DOC_DEPT,DOCTOR_ID,TRANSFER_FLAG,
+             RELEASE_FLAG,
+             ADMISSION_CANCEL_FLAG,ADMISSION_DATE,RELLEASE_TRANSFER_DATE,
+             admission_charge , bed_sum ,operation_sum,
+             service_charge,miscelleneous_charge ,
+	           extra_bed_charge ,anesthesia_charge ,delivery_charge ,
+	           baby_care_charge ,neunetal_bed_charge ,Exchange_transfusion_charge ,
+	           photo_therapy_charge,Blood_sugar_charge ,medicine_charge ,cardiology_charge ,
+      	     nebuliser_charge ,incubator_charge ,discount , net_total_charge , u_id  ,
+	           booth_no ,dt  ,SERIAL_NO 
+          ) VALUES(
+             VAR_MAX_REG_NO,
+             P_YRCODE,p_doc_dept,0,0,0,0,SYSDATE,NULL,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+             p_u_id,p_booth,SYSDATE,1);
+
+       INSERT INTO PAT_SEARCH_OLTP VALUES(VAR_MAX_REG_NO,p_pat_name,p_addr1,p_BED_TYPE,p_type_no,p_BED_NO,SYSDATE,P_YRCODE);
+    
+	commit;
+	end Indoor_SavePatient_info;
+
+
+-------------------procedure Save_Operation_info------
+
+create or replace procedure Save_Operation_info(
+   p_opr_code varchar2 ,
+   p_opr_name varchar2 ,
+   p_opr_type varchar2,
+   p_opr_department varchar2 ,
+   p_opr_bed  varchar2 , ---case
+   p_opr_charge number,
+   p_Annay_charge number, 
+   p_service_charge number,
+   p_effective_date date, 
+   p_u_id varchar2
+   )
+as
+	var_temp  number;
+	var_st_dt date;
+	var_ed_dt date;
+begin
+	select count(*) into var_temp 
+		from Operation_info 
+	   where opr_code=p_opr_code;
+
+select st_dt,ed_dt into var_st_dt,var_ed_dt
+from fiscal_year;
+
+if var_temp>0 then
+	update Operation_info
+set   
+  opr_name=p_opr_name ,
+   opr_type=p_opr_type , 
+   opr_department=p_opr_department,
+   opr_bed=p_opr_bed,  
+  opr_charge=p_opr_charge , 
+   Annay_charge =p_Annay_charge,
+   service_charge=p_service_charge,
+   effective_date=p_effective_date, 
+   u_id=p_u_id
+where opr_code=p_opr_code;
+else
+ insert into  Operation_info values(p_opr_code,p_opr_name,p_opr_type,
+p_opr_department,p_opr_bed,
+p_opr_charge,p_annay_charge,p_service_charge,p_effective_date,
+1,p_u_id,sysdate,
+var_st_dt,var_ed_dt);
+END IF;
+commit;
+end  Save_Operation_info;
+
+--------------SaveEmp_info----------------
+
+
+
+----------------procedure SaveDoctor_info--------------
+
+ create or replace procedure SaveDoctor_info(
+ p_refer_code  varchar2 ,
+ p_addr  varchar2 ,
+ p_phone   varchar2,
+ p_fax varchar2,
+ p_email  varchar2,
+ p_birth_date date,
+ p_marriage_status varchar2,
+ p_u_id varchar2,
+ p_doc_dept varchar2,
+ p_temp_date  date,
+ p_degree varchar2,
+ p_f_name varchar2,
+ p_m_name varchar2,
+ p_l_name varchar2,
+ p_position integer )
+ as
+ temp number;
+ begin
+ /*select to_number(max(refer_code)) into temp from doctor_info;*/
+
+ select count(*) into temp from doctor_info where  refer_code=p_refer_code;
+ if  temp>0 then
+ update doctor_info
+ set
+ addr=p_addr,
+ phone=p_phone  ,
+ fax=p_fax,
+ email=p_email,
+ birth_date=p_birth_date,
+ marriage_status=p_marriage_status ,
+ u_id=p_u_id,
+ dt=sysdate,
+ doc_dept=p_doc_dept,
+ temp_date=sysdate,
+ degree=p_degree,
+ f_name=p_f_name ,
+ m_name=p_m_name ,
+ l_name=p_l_name,
+ position=p_position
+ where to_number(refer_code)=to_number(p_refer_code);
+ else
+ insert into doctor_info(
+ REFER_CODE,
+ addr,
+ phone  ,
+ fax,
+ email,
+ birth_date,
+ marriage_status ,
+ u_id,
+ DT,
+ doc_dept,
+ TEMP_DATE,
+ degree,
+ f_name ,
+ m_name ,
+ l_name,
+position)
+ values(
+ doctor_info_seq.nextval,
+ p_addr,
+ p_phone  ,
+ p_fax,
+ p_email,
+ p_birth_date,
+ p_marriage_status ,
+ p_u_id,
+ sysdate,
+ p_doc_dept,
+ sysdate,
+ p_degree,
+ p_f_name ,
+ p_m_name ,
+ p_l_name,
+p_position);
+ end if;
+ commit;
+ end SaveDoctor_info;
+
+---------------------------SaveBed_info
+create or replace procedure SaveBed_info(
+	p_Bed_no  varchar2 ,
+	p_Bed_type  varchar2,
+	p_BED_CHARGE     NUMBER,
+	p_BED_GROUP      number,---admission charge
+	p_OCCUPY_FLAG   VARCHAR2,
+	p_u_id varchar2,
+	p_temp_date date,
+	p_in_reg_no       NUMBER,
+	p_seat_capacity number,
+	P_BED_EXT_COL varchar2,---for  bed type no
+	p_service_charge number,
+	p_DOC_DEPARTMENT varchar2)
+    as
+	temp number;
+	temp_st_dt date;
+	temp_ed_dt date;
+	var_bed_count number(5);
+ 
+	var_serial_no number(10);
+
+	begin
+		select count(bed_no) into var_bed_count
+			from bed_info;
+
+         if  var_bed_count=0 then
+		     var_serial_no:=1;
+	  else
+		select max(serial_no)+1 into var_serial_no
+			from bed_info;
+	 end if; 
+	var_serial_no:=var_serial_no+1;
+	commit;
+	select count(*) into temp from bed_info
+		where upper(bed_type)=upper(p_bed_type) and bed_ext_col=p_bed_ext_col  
+		and bed_no=p_bed_no and upper(DOC_DEPARTMENT)=upper(p_DOC_DEPARTMENT);
+	---select st_dt,ed_dt into temp_st_dt,temp_ed_dt
+	----from fiscal_year;
+		if temp>0 then
+		update bed_info
+		set
+			Bed_no=p_Bed_no,
+			Bed_type=p_Bed_type,
+			BED_CHARGE=p_BED_CHARGE,
+			BED_GROUP=p_BED_GROUP,		
+OCCUPY_FLAG='0',
+u_id=p_u_id,
+dt=sysdate,
+temp_date=p_temp_date,
+in_reg_no=p_in_reg_no,
+st_dt=temp_st_dt,
+ed_dt=temp_ed_dt,
+seat_capacity=p_seat_capacity,
+BED_EXT_COL=P_BED_EXT_COL,
+service_charge=p_service_charge,
+DOC_DEPARTMENT=p_DOC_DEPARTMENT
+ where bed_type=p_bed_type and bed_ext_col=p_bed_ext_col  
+and bed_no=p_bed_no and DOC_DEPARTMENT=p_DOC_DEPARTMENT;
+else
+insert into Bed_info( 
+Bed_no,
+Bed_type,
+BED_CHARGE,
+BED_GROUP,
+OCCUPY_FLAG,
+u_id,
+dt,
+temp_date,
+in_reg_no,
+st_dt,
+ed_dt,
+seat_capacity,
+BED_EXT_COL,
+service_charge,
+DOC_DEPARTMENT,
+serial_no)
+values(p_Bed_no,
+p_Bed_type,
+p_BED_CHARGE,
+p_BED_GROUP,
+0,
+p_u_id,
+sysdate,
+p_temp_date,
+p_in_reg_no,
+temp_st_dt,
+temp_ed_dt,
+p_seat_capacity,
+P_BED_EXT_COL,
+p_service_charge,
+p_DOC_DEPARTMENT,
+var_serial_no);
+end if;
+commit;
+end SaveBed_info;
+
+--------Save_Test_info_main------------------
+
+create or replace procedure Save_Test_info_main(
+p_m_code varchar2,
+p_m_name varchar2,
+p_u_id varchar2,
+p_s_code varchar2,
+p_s_name varchar2,
+p_type varchar2,
+p_charge number,
+p_s_code_sub_code  varchar2,
+p_service_charge number)
+as
+temp number;
+temp1 number;
+var_m_code varchar2(10);
+var_st_year  date;
+var_ed_year date;
+begin
+select count(*) into temp
+from  test_info_sub
+where TO_CHAR(m_code)=TO_CHAR(p_m_code) and TO_CHAR(s_code)=TO_CHAR(p_s_code) 
+and s_code_sub_code=p_s_code_sub_code ;
+select count(*) into temp1
+from  test_info_main
+where TO_NUMBER(m_code)=TO_NUMBER(p_m_code)  ;
+--var_m_code:=p_m_code;
+/*
+select st_dt,ed_dt into var_st_year,var_ed_year from
+fiscal_year;
+*/
+if temp>0 and temp1>0 then
+update test_info_sub
+set
+s_name=p_s_name,
+type=p_type,
+u_id=p_u_id,
+dt=sysdate,
+st_year=var_st_year,
+ed_year=var_ed_year,
+charge=p_charge,
+service_charge=p_service_charge
+--s_code_sub_code=p_s_code_sub_code  
+where TO_NUMBER(m_code)=TO_NUMBER(p_m_code) and TO_NUMBER(s_code)=TO_NUMBER(p_s_code) 
+and s_code_sub_code=p_s_code_sub_code ;
+else
+if temp1>0 then
+ update test_info_main
+ set m_code=p_m_code,
+     m_name=p_m_name,
+     u_id=p_u_id,
+     dt=sysdate
+   where TO_NUMBER(m_code)=TO_NUMBER(p_m_code);
+else
+insert into test_info_main values(p_m_code,p_m_name,p_u_id,
+sysdate,test_info_main_seq.nextval);
+end if;
+insert into test_info_sub(s_code,s_name,m_code,
+type,u_id,dt,unique_id,st_year,ed_year,charge,s_code_sub_code,service_charge )
+values(p_s_code,p_s_name,p_m_code,
+p_type,p_u_id,sysdate,test_info_sub_seq.nextval,
+var_st_year,var_ed_year,p_charge,p_s_code_sub_code,p_service_charge );
+end if;
+commit;
+end save_test_info_main;
+--------------Save_Operation_indoor-----------------
+
+create or replace procedure Save_Operation_indoor(
+			p_in_reg_no number,
+			p_opr_code varchar2,---SERIAL no
+			p_Operaion_name varchar2,
+			p_Operation_type varchar2,
+			p_Operation_CHARGE number,
+			p_u_id varchar2,
+			p_booth varchar2,
+			p_annay_charge number)
+as
+
+temp number;
+var_flag integer;
+begin
+		select count(in_reg_no) into temp
+			from Indoor_pat_Operation_info
+		where in_reg_no=(
+		select distinct(in_reg_no) from Indoor_pat_Operation_info where in_reg_no=p_in_reg_no);
+IF TEMP>0 or TEMP=0  THEN
+insert into indoor_pat_Operation_info(
+		in_reg_no ,
+                opr_code,
+ 		Opr_name,
+ 		Opr_type,
+ 		Opr_CHARGE,
+                annay_charge,
+ 		U_ID,
+ 		DT,
+ 		opr_DATE,
+		 Opr_success_FLAG,
+ 		booth)
+values(
+		p_in_reg_no,
+                (SELECT COUNT(OPR_CODE)+1 FROM indoor_pat_Operation_info 
+                WHERE IN_REG_NO=P_IN_REG_NO) ,
+		p_Operaion_name,
+ 		p_Operation_type,
+ 		p_Operation_CHARGE,
+                p_annay_charge,
+ 		p_U_ID,
+ 		sysdate,
+ 		sysdate,
+		 0,
+ 		p_booth);
+
+
+  END IF;
+commit;
+end Save_Operation_indoor;
+-----------------------------------nebulizer charge
+
+create or replace procedure Save_Nebulizer_indoor(
+			p_in_reg_no number,
+			p_neb_name varchar2,
+			p_neb_CHARGE number,
+			p_u_id varchar2,
+			p_booth varchar2,
+                        p_dt date)
+as
+
+temp number;
+var_flag integer;
+begin
+		select count(in_reg_no) into temp
+			from in_door_Pat_Info_Main
+		where in_reg_no=p_in_reg_no;
+IF TEMP>0 THEN
+insert into indoor_pat_nebuliser_info(
+		 in_reg_no,
+                serial_no,
+	   name ,
+	    nebuliser_charge ,
+	   neb_date , 
+	   nebulser_flag ,
+	   u_id   ,
+	   booth ,
+	   dt) 
+values(
+		p_in_reg_no,
+                (SELECT COUNT(serial_no)+1 FROM indoor_pat_nebuliser_info
+                WHERE IN_REG_NO=P_IN_REG_NO) ,
+		p_neb_name ,
+ 		p_neb_CHARGE,
+                p_dt,
+                0,
+         	p_U_ID,
+                p_booth,
+ 		sysdate
+ 		);
+
+
+  END IF;
+commit;
+end ;
+
+
+
+
+----------------------CCU BED CHARGE_INFO
+
+
+create or replace procedure Save_ccu_Bed_info_indoor(
+		p_in_reg_no number,
+		p_bed_charge number,
+		p_u_id varchar2,
+		p_st_ed_date date,
+		p_booth varchar2)
+as
+
+temp number;
+temp1 number;
+
+var_flag integer;
+begin
+select count(start_date),count(end_date)
+ into temp,temp1
+from Indoor_pat_ccu_bed_info
+where in_reg_no=p_in_reg_no;
+
+
+
+if temp1=temp then
+insert into Indoor_pat_ccu_bed_info(
+		in_reg_no,
+		bed_charge,
+		u_id,
+		dt,
+		Start_date,
+		booth)
+values(
+		p_in_reg_no,
+		p_bed_charge,
+		p_u_id,
+		sysdate,
+		sysdate,
+		p_booth);
+
+       
+else
+    
+   update Indoor_pat_ccu_bed_info
+       set 
+          u_id=p_u_id,
+          dt=sysdate,          
+          end_date=sysdate
+       where in_reg_no=p_in_reg_no;
+             
+
+end if;
+commit;
+end Save_ccu_Bed_info_indoor;
+
+
+
+
+----------------procedure Save_extra_Bed_info_indoor
+
+
+create or replace procedure Save_extra_Bed_info_indoor(
+		p_in_reg_no number,
+		p_bed_charge number,
+		p_u_id varchar2,
+		p_st_ed_date date,
+		p_booth varchar2,
+                P_YRCODE VARCHAR2 )
+as
+temp number;
+temp1 number;
+var_flag integer;
+begin
+select count(start_date),count(end_date)
+ into temp,temp1
+from Indoor_pat_Extra_bed_info
+where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+if temp1=temp then
+insert into Indoor_pat_Extra_bed_info(
+		in_reg_no,
+		bed_charge,
+		u_id,
+		dt,
+		Start_date,
+		booth,
+		serial_no,YRCODE)
+values(
+		p_in_reg_no,
+		p_bed_charge,
+		p_u_id,
+		sysdate,
+		sysdate,
+		p_booth,
+                (select count(serial_no)+1 from Indoor_pat_Extra_bed_info
+		where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE)),P_YRCODE);
+else
+   update Indoor_pat_Extra_bed_info
+       set 
+          u_id=p_u_id,
+          dt=sysdate,          
+          end_date=sysdate
+       where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+end if;
+update  indoor_pat_bed_info
+  set EXTRA_BED_FLAG=1
+where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+commit;
+end Save_extra_Bed_info_indoor;
+/
+
+
+
+
+
+
+----------------procedure save_calculation_indoor-----------
+
+create or replace procedure save_calculation_indoor(
+        P_MODE INTEGER,
+	p_in_reg_no number,
+	p_bed_sum number,
+	p_admission_charge number,
+	p_service_charge number,
+	p_extra_bed_charge number,
+	p_total_operation_sum number,
+	p_anasethesia_charge number,
+	p_delivery_charge number,
+	p_baby_care_charge number,
+	p_neunetal_bed_charge number,
+	p_Exchange_transfusion_charge number,
+	p_photo_therapy_charge number,
+	p_blood_sugar_charge number,
+	p_incubator_charge number,
+	p_ccu_charge number,
+	p_nebuliser_charge number,
+	p_miscelleneous_charge number,
+	p_medicine_charge number,
+	P_ADVANCE NUMBER,
+	p_discount number,
+	p_poor_staff_flag number,
+	p_txt_staff varchar2,
+	p_total number,
+	p_NET_total_CHARGE number,
+	P_total_DUE number,
+	p_u_id varchar2,
+	p_booth_no varchar2,
+	P_YRCODE VARCHAR2,
+        
+        P_DEPT_SERIAL INTEGER,
+        p_D_bed_sum number,
+	p_D_extra_bed_charge number,
+	p_D_total_operation_sum number,
+	p_D_anasethesia_charge number,
+	p_D_delivery_charge number,
+	p_D_baby_care_charge number,
+	p_D_neunetal_bed_charge number,
+	p_D_Ex_transfusion_charge number,
+	p_D_photo_therapy_charge number,
+	p_D_blood_sugar_charge number,
+	p_D_incubator_charge number,
+	p_D_ccu_charge number,
+	p_D_nebuliser_charge number,
+	p_D_miscelleneous_charge number,
+	p_D_medicine_charge number,
+	P_D_ADVANCE NUMBER,
+	p_D_discount number,
+        p_D_net_total_charge NUMBER,
+        FLED_INDICATOR NUMBER
+	
+   )
+as
+
+    VAR_MAX_RECEIPT_NO NUMBER;
+    fled_validation number;
+    VAR_RELEASE_FLAG NUMBER;
+begin
+
+    select max(rec_no)+1 INTO VAR_MAX_RECEIPT_NO
+        from  receipt_no_counter;
+
+
+    insert into receipt_no_counter(rec_no) 
+       values(VAR_MAX_RECEIPT_NO);
+    commit;
+    
+    IF P_MODE=0 THEN  ---SINGLE DEPT ONLY
+       UPDATE INDOOR_PAT_DEPT_INFO 
+         SET 
+           RELEASE_FLAG=1,  
+           RELLEASE_TRANSFER_DATE=SYSDATE,
+           bed_sum= p_bed_sum,
+           ADMISSION_CHARGE=P_ADMISSION_CHARGE,
+           SERVICE_CHARGE=P_SERVICE_CHARGE,
+           operation_sum=p_TOTAL_operation_sum,
+           miscelleneous_charge=p_miscelleneous_charge, 
+           extra_bed_charge=p_extra_bed_charge,
+           anesthesia_charge=p_anasethesia_charge ,
+           delivery_charge=p_delivery_charge,
+           baby_care_charge=p_baby_care_charge ,
+           neunetal_bed_charge=p_neunetal_bed_charge,
+           Exchange_transfusion_charge=p_Exchange_transfusion_charge,
+           photo_therapy_charge=p_photo_therapy_charge,
+           blood_sugar_charge=p_blood_sugar_charge,
+           medicine_charge=p_medicine_charge,
+           cardiology_charge=p_ccu_charge,
+           nebuliser_charge=p_nebuliser_charge,
+           incubator_charge=p_incubator_charge,
+           discount=p_discount,
+           net_total_charge=p_net_total_charge,
+           DT=SYSDATE
+    WHERE IN_REG_NO=p_in_reg_no AND
+          YRCODE   =P_YRCODE   ; 
+    
+
+
+    
+    ELSIF P_MODE=1 THEN ---FOR DEPT TRANSFER
+       UPDATE INDOOR_PAT_DEPT_INFO 
+         SET RELLEASE_TRANSFER_DATE=SYSDATE,
+           bed_sum= p_D_bed_sum,
+           operation_sum=p_D_TOTAL_operation_sum,
+           miscelleneous_charge=p_D_miscelleneous_charge, 
+           extra_bed_charge=p_D_extra_bed_charge,
+           anesthesia_charge=p_D_anasethesia_charge ,
+           delivery_charge=p_D_delivery_charge,
+           baby_care_charge=p_D_baby_care_charge ,
+           neunetal_bed_charge=p_D_neunetal_bed_charge,
+           Exchange_transfusion_charge=p_D_Ex_transfusion_charge,
+           photo_therapy_charge=p_D_photo_therapy_charge,
+           blood_sugar_charge=p_D_blood_sugar_charge,
+           medicine_charge=p_D_medicine_charge,
+           cardiology_charge=p_D_ccu_charge,
+           nebuliser_charge=p_D_nebuliser_charge,
+           incubator_charge=p_D_incubator_charge,
+           discount=p_D_discount,
+
+
+           /* ONLY CHARGES ARE CALCULATED HERE FOR "NET_TOTAL_CHARGE "
+             DISCOUNT IS NOT ADDED OR DEDUCTED HERE
+            */
+            
+           net_total_charge=p_D_net_total_charge
+         
+    WHERE IN_REG_NO=p_in_reg_no AND
+          YRCODE   =P_YRCODE    AND 
+          to_number(SERIAL_NO)=TO_NUMBER(P_DEPT_SERIAL); 
+
+        UPDATE INDOOR_PAT_DEPT_INFO 
+            SET RELEASE_FLAG=1,
+                DT=SYSDATE
+        where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+     
+       UPDATE INDOOR_PAT_DEPT_INFO 
+           SET ADMISSION_CHARGE=P_ADMISSION_CHARGE,
+          
+             SERVICE_CHARGE=P_SERVICE_CHARGE,
+               NET_TOTAL_CHARGE=NET_TOTAL_CHARGE+P_ADMISSION_CHARGE+P_SERVICE_CHARGE       
+        where in_reg_no=p_in_reg_no         AND
+              UPPER(YRCODE)=UPPER(P_YRCODE)   AND 
+              to_number(SERIAL_NO)=1; 
+   
+  
+    END IF;
+
+
+
+    insert into indoor_pat_money values(
+				p_in_reg_no,
+				VAR_MAX_RECEIPT_NO,
+				P_advance,
+				0,
+				p_total_operation_sum,
+				P_admission_charge,
+				p_bed_sum,
+				p_discount,
+				p_total,
+				p_miscelleneous_charge,
+				p_net_total_charge,--TOTAL MINUS ADVANCE
+				p_extra_bed_charge,
+				p_anasethesia_charge,
+				p_delivery_charge,
+				0,
+				0,
+				p_service_charge,
+				p_baby_care_charge,
+				p_neunetal_bed_charge,
+				p_Exchange_transfusion_charge,
+				p_photo_therapy_charge,
+				p_blood_sugar_charge,
+				p_medicine_charge,
+				p_ccu_charge,
+                                P_total_DUE, --TOTAL MINUS DISCOUNT
+				p_u_id,
+				p_booth_no,
+				sysdate,
+				p_poor_staff_flag,
+				p_nebuliser_charge,
+				p_txt_staff,
+				p_incubator_charge,P_YRCODE);
+		commit;
+
+        update bed_info
+  	    set occupy_flag='0'
+	where in_reg_no=p_in_reg_no AND YRCODE=P_YRCODE;
+
+
+        
+        if  FLED_INDICATOR=1 then
+           update in_door_Pat_Info_Main
+		set release_flag=3,
+                    RELEASE_DATE=SYSDATE 
+	   where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+
+       else 
+           update in_door_Pat_Info_Main
+  	       set release_flag=1,
+                   RELEASE_DATE=SYSDATE 
+	  where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+
+
+          update indoor_pat_bed_info
+		set ed_dt=sysdate
+          where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE) and serial_no=(select max(serial_no) from  
+              indoor_pat_bed_info where in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE));
+
+       end if;
+         
+       DELETE FROM PAT_SEARCH_OLTP WHERE in_reg_no=p_in_reg_no AND UPPER(YRCODE)=UPPER(P_YRCODE);
+
+	commit;
+end save_calculation_indoor;
+/
+
+
+
+-----------------------procedure  save_temp_tab
+
+create or replace procedure save_DELETE_temp_tab
+     (P_MODE INTEGER,p_m_code varchar2,P_s_code varchar2,P_BOOTH VARCHAR2)
+as
+	varcharge number;
+	vartesttype varchar2(20);
+	var_m_name varchar2(50);
+	var_s_name varchar2(70);
+	temp number;
+	var_s_charge number;
+  begin
+     IF P_MODE=1 THEN ---SAVE
+
+	select count(*) into temp
+		from temp_test
+	where TO_NUMBER(m_code)=TO_NUMBER(p_m_code) and
+	       TO_NUMBER(s_code)=TO_NUMBER(p_s_code)  AND TO_NUMBER(BOOTH)=TO_NUMBER(P_BOOTH);
+
+	if temp=0 then
+		select charge,type,s_name,service_charge
+		into varcharge,vartesttype,var_s_name,var_s_charge
+                         from test_info_sub
+		where TO_NUMBER(m_code)=TO_NUMBER(p_m_code) and
+	              TO_NUMBER(s_code)=TO_NUMBER(p_s_code);
+
+		select m_name into var_m_name
+			from test_info_main
+		where TO_NUMBER(m_code)=TO_NUMBER(p_m_code);
+
+	insert into temp_test(
+				m_code,	
+				s_code ,
+				m_name, 
+				s_name ,
+				test_type ,
+				charge,
+				service_charge,
+                                BOOTH  
+				)
+			values(
+				p_m_code,
+				p_s_code,
+				var_m_name,
+				var_s_name,
+				vartesttype,
+				varcharge,
+				var_s_charge,
+                                P_BOOTH
+				);
+		end if;
+         END IF;---END OF P_MODE=1
+    IF P_MODE=2 THEN ---DELETE
+       delete from temp_test
+		where TO_NUMBER(m_code)=TO_NUMBER(p_m_code) and 
+			TO_NUMBER(s_code)=TO_NUMBER(p_s_code) 
+                        AND TO_NUMBER(BOOTH)=TO_NUMBER(P_BOOTH);
+	
+          
+    END IF;--END OF P_MODE=2 
+
+
+    IF P_MODE=3 THEN ---DELETE ALL OF THE BOOTH
+       delete from temp_test
+		where TO_NUMBER(BOOTH)=TO_NUMBER(P_BOOTH);
+    END IF;--END OF P_MODE=3
+         
+   
+    COMMIT;
+ 
+ end save_DELETE_temp_tab;
+
+-------temp_test1
+create or replace procedure 
+	save_temp_tab1(p_m_code varchar2,
+p_s_code varchar2)
+as
+varcharge number;
+vartesttype varchar2(20);
+var_m_name varchar2(50);
+var_s_name varchar2(70);
+temp number;
+var_s_charge number;
+begin
+select count(*) into temp
+from temp_test1
+where m_code=p_m_code and
+s_code=p_s_code;
+if temp>0 then
+insert into msg_table
+values('Data already exists');
+else
+delete from msg_table;
+select charge,type,s_name,service_charge
+into varcharge, 
+vartesttype,  
+var_s_name,
+var_s_charge
+from test_info_sub
+where m_code=p_m_code and
+s_code=p_s_code;
+
+select m_name into
+var_m_name
+from test_info_main
+where m_code=p_m_code;
+
+insert into temp_test1(
+m_code,
+s_code ,
+m_name, 
+s_name ,
+test_type ,
+charge,
+service_charge  
+)
+values(
+p_m_code,
+p_s_code,
+var_m_name,
+var_s_name,
+vartesttype,
+varcharge,
+var_s_charge
+);
+end if;
+ end save_temp_tab1;
+
+
+
+
+
+
+-------------procedure delete_temp_calculation_indoor----------
+
+create or replace procedure delete_temp_calculation_indoor
+as
+begin
+delete from temp_calculation_indoor;
+commit;
+end delete_temp_calculation_indoor;
+
+
+---------------delete_upd_temp_tab
+
+create or replace procedure 
+delete_upd_temp_tab(p_m_code varchar2,
+p_s_code varchar2)
+
+as
+begin
+delete from temp_test
+where m_code=p_m_code and 
+s_code=p_s_code;
+COMMIT;
+end delete_upd_temp_tab;
+
+
+------------------delete_Test_info_main---------------
+create or replace procedure delete_Test_info_main(
+p_m_code varchar2,
+p_s_code varchar2)
+as
+temp number;
+temp1 number;
+var_m_code varchar2(10);
+var_st_year  date;
+var_ed_year date;
+begin
+
+select count(*) into temp
+from test_info_main
+where m_code=p_m_code;
+
+select count(*) into temp1
+from test_info_sub
+where m_code=p_m_code;
+if temp1>0
+then
+--delete from test_info_main
+--where m_code=p_m_code;
+delete from test_info_sub
+where m_code=p_m_code and s_code=p_s_code;
+--else
+--delete from test_info_sub
+--where m_code=p_m_code and s_code=p_s_code;
+end if;
+commit;
+end  delete_Test_info_main;
+
+
+
+
+
+-------------delete_temp_test--------------
+create or replace procedure 
+delete_temp_test
+as
+begin
+delete from temp_test;
+commit;
+end delete_temp_test;
+
+
+-------------delete_bed_info--------------------
+create or replace procedure delete_bed_info(
+p_bed_no varchar2)
+as
+temp number;
+
+var_m_code varchar2(10);
+begin
+
+/*select count(*) into temp
+from test_info_main
+where m_code=p_m_code;*/
+
+
+delete from bed_info
+where bed_no=p_bed_no;
+
+
+commit;
+end  delete_bed_info;
+
+-----------------
+
+-------------SavePatient_info_out_door-----------------
+
+create or replace procedure SavePatient_info_out_door(
+	p_in_reg_no number,
+	p_booth varchar2,
+	p_pat_name  varchar2,
+	P_DOC_DEPT VARCHAR2,
+	P_DOCTOR_ID VARCHAR2,
+        p_sex varchar2,
+	p_age  varchar2,
+        P_religion varchar2,
+	p_addr1 varchar2,
+	P_u_id varchar2,
+	p_total_charge  number,
+	p_disc  number,
+	p_net_paid number,
+	p_indoor_out_door_flag integer,
+	p_staff_poor_pat_disc_flag integer,
+	p_staff_id varchar2,
+	P_YRCODE VARCHAR2,
+	P_Y_M_D VARCHAR2,
+        p_receipt_no out number
+	)
+as
+			
+var_m_code    varchar2(20);
+var_s_code   varchar2(40);
+var_charge     number(10,2);
+var_s_charge     number(10,2);
+VAR_MAX_REC_NO NUMBER;
+
+begin
+ 
+ 
+     select max(rec_no)+1 INTO VAR_MAX_REC_NO
+           from  receipt_no_counter;
+
+	 insert into receipt_no_counter(rec_no) values(VAR_MAX_REC_NO);
+	  commit;
+
+    
+	insert into pat_info_main_out_door(
+		in_reg_no,
+		reg_no,
+		booth,
+		pat_name,
+		sex,
+		age,
+		religion,
+		addr1,
+		phone,
+		doc_dept,
+		u_id ,
+		Dt,
+	        Y_M_D,
+	        DOCTOR_ID,
+	        YRCODE
+		)
+	values(
+		p_in_reg_no,
+		VAR_MAX_REC_NO,
+		p_booth,
+		p_pat_name,
+		p_sex,
+		p_age,
+		p_religion,
+		p_addr1,
+		NULL,
+		P_DOC_DEPT ,
+		p_u_id ,
+		Sysdate,
+	        P_Y_M_D,
+	        P_DOCTOR_ID,
+	        P_YRCODE
+		);
+       
+
+      insert into pat_info_main_out_door_oltp(
+		in_reg_no,
+		reg_no,
+		booth,
+		pat_name,
+		sex,
+		age,
+		religion,
+		addr1,
+		phone,
+		doc_dept,
+		u_id ,
+		Dt,
+	        Y_M_D,
+	        DOCTOR_ID,
+	        YRCODE
+		)
+	values(
+		p_in_reg_no,
+		VAR_MAX_REC_NO,
+		p_booth,
+		p_pat_name,
+		p_sex,
+		p_age,
+		p_religion,
+		p_addr1,
+		NULL,
+		P_DOC_DEPT ,
+		p_u_id ,
+		Sysdate,
+	        P_Y_M_D,
+	        P_DOCTOR_ID,
+	        P_YRCODE
+		);
+       
+
+	     insert into pat_info_sub1_out_door
+                select p_in_reg_no,VAR_MAX_REC_NO,m_code,s_code,charge,service_charge,
+                            p_indoor_out_door_flag, p_u_id,p_booth,sysdate,P_YRCODE
+		      from temp_test 
+		WHERE TO_NUMBER(BOOTH)=TO_NUMBER(p_booth);
+
+
+      insert into pat_info_sub1_out_door_oltp
+                select p_in_reg_no,VAR_MAX_REC_NO,m_code,s_code,charge,service_charge,
+                            p_indoor_out_door_flag, p_u_id,p_booth,sysdate,P_YRCODE
+		      from temp_test 
+		WHERE TO_NUMBER(BOOTH)=TO_NUMBER(p_booth);
+
+
+ insert into pat_info_sub3_out_door(
+	        in_reg_no,
+	        reg_no,
+	        total_amt,
+		disc ,
+	        net_paid  ,
+		u_id,
+		dt,
+                ext_column1, ----------booth
+		staff_poor_pat_disc_flag,
+		emp_id ,YRCODE,
+                DOC_DEPT,
+                DOCTOR_ID
+	)values(
+		 p_in_reg_no,
+		 VAR_MAX_REC_NO,
+	         p_total_charge,
+		 p_disc,
+		 p_net_paid  ,
+		 p_u_id,
+		 sysdate,
+		 p_booth      ,
+		 p_staff_poor_pat_disc_flag,
+		 p_staff_id,P_YRCODE,
+                 P_DOC_DEPT,
+	         P_DOCTOR_ID 
+  	 );
+
+
+
+ insert into pat_info_sub3_out_door_oltp(
+	        in_reg_no,
+	        reg_no,
+	        total_amt,
+		disc ,
+	        net_paid  ,
+		u_id,
+		dt,
+                ext_column1, ----------booth
+		staff_poor_pat_disc_flag,
+		emp_id ,YRCODE,
+                DOC_DEPT,
+                DOCTOR_ID
+	)values(
+		 p_in_reg_no,
+		 VAR_MAX_REC_NO,
+	         p_total_charge,
+		 p_disc,
+		 p_net_paid  ,
+		 p_u_id,
+		 sysdate,
+		 p_booth      ,
+		 p_staff_poor_pat_disc_flag,
+		 p_staff_id,P_YRCODE,
+                 P_DOC_DEPT,
+	         P_DOCTOR_ID 
+  	 );
+
+
+	 
+        commit;
+         delete  from temp_test 
+            WHERE TO_NUMBER(BOOTH)=TO_NUMBER(P_BOOTH);
+        commit;
+        p_receipt_no:=VAR_MAX_REC_NO;
+        
+end SavePatient_info_out_door ;
+
+
+---------------savechild info
+
+create or replace procedure Save_Child_info(
+p_child_code number,
+p_main_charge_name varchar2,
+p_bed_type varchar2,
+p_bed_admission_charge number,
+p_incubator_charge number,
+p_baby_charge number,
+p_neu_charge number,
+E_T_charge number, 
+P_p_T_charge number,
+p_B_S_charge number)
+as
+temp_var number;
+begin
+select count(code) into  temp_var
+from child_dept
+where code=p_child_code;
+
+if temp_var>0 then
+update  child_dept
+set main_charge_name=p_main_charge_name,
+     bed_type=p_bed_type,
+     bed_admission_charge=p_bed_admission_charge,
+     incubator_charge =p_incubator_charge,
+     baby_care_charge=p_baby_charge,
+     neunetal_bed_charge= p_neu_charge ,
+     Exchange_transfusion_charge=E_T_charge,
+      photo_therapy_charge=P_p_T_charge,
+      blood_sugar_charge=p_B_S_charge
+      where code=p_child_code;
+
+
+else 
+ insert into  child_dept values(p_child_code,
+p_main_charge_name,
+p_bed_type,
+p_bed_admission_charge,
+p_incubator_charge,
+p_baby_charge ,
+p_neu_charge,
+E_T_charge,
+P_p_T_charge,
+p_B_S_charge,sysdate);
+end if;
+commit;
+end  Save_Child_info;
+
+

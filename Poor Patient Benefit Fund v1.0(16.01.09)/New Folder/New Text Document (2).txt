@@ -1,0 +1,5 @@
+select   VOUCHER_NO,CHEQUE_NO,CREDIT_AMOUNT AS DEBIT_AMOUNT
+      from DEBIT_VOUCHER
+where voucher_date >= :pdate1 and VOUCHER_DATE<= :pdate2 
+AND CASH_UNCASH_CHECK=0 
+and account_code=:p_user_acc

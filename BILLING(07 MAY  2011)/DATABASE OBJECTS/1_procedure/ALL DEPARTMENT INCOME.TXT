@@ -1,0 +1,306 @@
+CREATE OR REPLACE PROCEDURE ALL_DEPT_INCOME
+(P_TEST_CURSOR IN OUT TEST_PACKAGE.TEST_TYPE,
+           P_MODE INTEGER,  
+           P_DATE1 DATE,
+           P_DATE2 DATE
+)
+ AS
+  BEGIN
+IF P_MODE=0 THEN /* ALL*/
+    OPEN P_TEST_CURSOR FOR
+SELECT DEPT,SUM(ADM_CHARGE) ADM_CHARGE,SUM(BED_CHARGE) BED_CHARGE,SUM(OPR_CHARGE) OPR_CHARGE,
+SUM(SERVC_CHARGE) SERVICE_CHARGE,SUM(MISC_CHARGE) MISC_CHARGE,SUM(EXT_BED_CHARGE) EXT_BED_CHARGE,
+SUM(ANES_CHARGE) ANES_CHARGE,SUM(DELV_CHARGE) DELV_CHARGE,SUM(BB_CARE_CHARGE) BB_CARE_CHARGE,
+SUM(NEU_CHARGE) NEU_CHARGE,SUM(EXT_TRANS_CHARGE) EXT_TRANS_CHARGE,SUM(PHOTO_CHARGE) PHOTO_CHARGE,SUM(BLOOD_SUG_CHARGE) BLOOD_SUG_CHARGE,
+SUM(MED_CHARGE) MED_CHARGE,SUM(CARD_CHARGE) CARD_CARE_CHARGE,SUM(NEB_CHARGE) NEBULISER_CHARGE,SUM(INC_CHARGE) INCUBATOR_CHARGE,
+SUM(INDOOR_DISC) INDOOR_DISCOUNT,SUM(PATH) PATHOLOGY,SUM(RAD_X_RAY) RAD_x_RAY,SUM(RAD_ULTRASONO) RAD_ULTRASONO,SUM(CARD) CARDIOLOGY,
+SUM(GYE) GYNAE,SUM(DENTAL) DENTAL,SUM(EME) EMERGENCY,SUM(ENT) ENT,SUM(EYE) EYE,SUM(MED) MEDICINE,SUM(IMM) IMMUNIZATION,
+SUM(ORT) ORTHOPAEDICS,SUM(PHY) PHYSIOTHERAPY,SUM(SUR) SURGERY,SUM(ADMIN) ADMINISTRATION,SUM(DIAG_DISCOUNT) DIAGNOSTIC_DISCOUNT
+,SUM(TICKET) AS TICKET_OTHERS_COLL,SUM(REFUND) AS REFUND_MONEY 
+ FROM 
+ (sELECT SUBSTR(DOC_DEPT,1,3) DEPT,SUM(admission_charge) AS ADM_CHARGE,SUM(bed_sum) BED_CHARGE,SUM(operation_sum) OPR_CHARGE,
+SUM(service_charge) SERVC_CHARGE,SUM(miscelleneous_charge) MISC_CHARGE,
+SUM(extra_bed_charge) EXT_BED_CHARGE,SUM(anesthesia_charge) ANES_CHARGE,SUM(delivery_charge) DELV_CHARGE,
+       SUM(baby_care_charge) BB_CARE_CHARGE,SUM(neunetal_bed_charge) NEU_CHARGE,SUM(Exchange_transfusion_charge) EXT_TRANS_CHARGE ,
+       SUM(photo_therapy_charge) PHOTO_CHARGE,SUM(Blood_sugar_charge) BLOOD_SUG_CHARGE,SUM(medicine_charge) MED_CHARGE,SUM(cardiology_charge) CARD_CHARGE,
+      	SUM(Nebuliser_charge) NEB_CHARGE,SUM(incubator_charge) INC_CHARGE,SUM(discount) INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,0 AS DIAG_DISCOUNT,0 AS TICKET,0 AS REFUND
+  FROM INDOOR_PAT_DEPT_INFO
+WHERE RELEASE_FLAG=1 AND
+     (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                 GROUP BY SUBSTR(DOC_DEPT,1,3)
+
+UNION
+SELECT SUBSTR(DOC_DEPT,1,3) DEPT,
+0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+SUM(DECODE(DEPT_CODE,'PAT',CHARGE)) PATH,SUM(DECODE(DEPT_CODE,'RAD',DECODE(M_CODE,'09',CHARGE))) RAD_x_RAY,SUM(DECODE(DEPT_CODE,'RAD',DECODE(M_CODE,'15',CHARGE))) RAD_ULTRASONO,
+SUM(DECODE(DEPT_CODE,'CAR',CHARGE)) CARD,SUM(DECODE(DEPT_CODE,'GYE',CHARGE)) GYE,SUM(DECODE(DEPT_CODE,'DEN',CHARGE)) DENTAL,
+SUM(DECODE(DEPT_CODE,'EME',CHARGE)) EME,SUM(DECODE(DEPT_CODE,'ENT',CHARGE)) ENT,
+SUM(DECODE(DEPT_CODE,'EYE',CHARGE)) EYE,SUM(DECODE(DEPT_CODE,'MED',CHARGE)) MED,SUM(DECODE(DEPT_CODE,'IMM',CHARGE)) IMM,
+SUM(DECODE(DEPT_CODE,'ORT',CHARGE)) ORT,SUM(DECODE(DEPT_CODE,'PHY',CHARGE)) PHY,
+SUM(DECODE(DEPT_CODE,'SUR',CHARGE)) SUR,SUM(DECODE(DEPT_CODE,'ADM',CHARGE)) ADMIN,0 AS DIAG_DISCOUNT,0 AS TICKET,0 AS REFUND
+ FROM (SELECT DOC_DEPT,DEPT_CODE,M_CODE,SUM(TEST_CHARGE) CHARGE
+   FROM PAT_INFO_SUB1_OUT_DOOR
+ WHERE    (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                 GROUP BY(DOC_DEPT,DEPT_CODE,M_CODE)
+)/*INTERNAL QUERY */
+GROUP BY SUBSTR(DOC_DEPT,1,3)
+
+UNION  /* OTHER'S MONEY */
+ SELECT '' AS DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,0 DIAG_DISCOUNT,SUM(AMOUNT) TICKET,0 AS REFUND
+ FROM OTHERS_MONEY 
+WHERE (((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))   between 8 and 23)) or (to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))  between 0 and 7)))
+
+UNION /* REFUND MONEY */
+ SELECT '' AS DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,0 DIAG_DISCOUNT,0 AS TICKET,SUM(AMOUNT) REFUND
+ FROM DIAG_REFUND 
+WHERE (((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))   between 8 and 23)) or (to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))  between 0 and 7)))
+
+
+                
+UNION
+ SELECT SUBSTR(DOC_DEPT,1,3) DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,SUM(DISC) DIAG_DISCOUNT, 0 AS TICKET,0 AS REFUND
+ FROM PAT_INFO_SUB3_OUT_DOOR 
+WHERE (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                 GROUP BY SUBSTR(DOC_DEPT,1,3)
+)
+GROUP BY(DEPT)
+;
+ELSIF P_MODE=1 THEN /* INDOOR */
+
+OPEN P_TEST_CURSOR FOR
+SELECT DEPT,SUM(ADM_CHARGE) ADM_CHARGE,SUM(BED_CHARGE) BED_CHARGE,SUM(OPR_CHARGE) OPR_CHARGE,
+SUM(SERVC_CHARGE) SERVICE_CHARGE,SUM(MISC_CHARGE) MISC_CHARGE,SUM(EXT_BED_CHARGE) EXT_BED_CHARGE,
+SUM(ANES_CHARGE) ANES_CHARGE,SUM(DELV_CHARGE) DELV_CHARGE,SUM(BB_CARE_CHARGE) BB_CARE_CHARGE,
+SUM(NEU_CHARGE) NEU_CHARGE,SUM(EXT_TRANS_CHARGE) EXT_TRANS_CHARGE,SUM(PHOTO_CHARGE) PHOTO_CHARGE,SUM(BLOOD_SUG_CHARGE) BLOOD_SUG_CHARGE,
+SUM(MED_CHARGE) MED_CHARGE,SUM(CARD_CHARGE) CARD_CARE_CHARGE,SUM(NEB_CHARGE) NEBULISER_CHARGE,SUM(INC_CHARGE) INCUBATOR_CHARGE,
+SUM(INDOOR_DISC) INDOOR_DISCOUNT,SUM(PATH) PATHOLOGY,SUM(RAD_X_RAY) RAD_x_RAY,SUM(RAD_ULTRASONO) RAD_ULTRASONO,SUM(CARD) CARDIOLOGY,
+SUM(GYE) GYNAE,SUM(DENTAL) DENTAL,SUM(EME) EMERGENCY,SUM(ENT) ENT,SUM(EYE) EYE,SUM(MED) MEDICINE,SUM(IMM) IMMUNIZATION,
+SUM(ORT) ORTHOPAEDICS,SUM(PHY) PHYSIOTHERAPY,SUM(SUR) SURGERY,SUM(ADMIN) ADMINISTRATION,SUM(DIAG_DISCOUNT) DIAGNOSTIC_DISCOUNT
+,SUM(TICKET) AS TICKET_OTHERS_COLL,SUM(REFUND) AS REFUND_MONEY
+ FROM 
+ (sELECT DOC_DEPT DEPT,SUM(admission_charge) AS ADM_CHARGE,SUM(bed_sum) BED_CHARGE,SUM(operation_sum) OPR_CHARGE,
+SUM(service_charge) SERVC_CHARGE,SUM(miscelleneous_charge) MISC_CHARGE,
+SUM(extra_bed_charge) EXT_BED_CHARGE,SUM(anesthesia_charge) ANES_CHARGE,SUM(delivery_charge) DELV_CHARGE,
+       SUM(baby_care_charge) BB_CARE_CHARGE,SUM(neunetal_bed_charge) NEU_CHARGE,SUM(Exchange_transfusion_charge) EXT_TRANS_CHARGE ,
+       SUM(photo_therapy_charge) PHOTO_CHARGE,SUM(Blood_sugar_charge) BLOOD_SUG_CHARGE,SUM(medicine_charge) MED_CHARGE,SUM(cardiology_charge) CARD_CHARGE,
+      	SUM(Nebuliser_charge) NEB_CHARGE,SUM(incubator_charge) INC_CHARGE,SUM(discount) INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,0 AS DIAG_DISCOUNT,0 AS TICKET,0 AS REFUND
+  FROM INDOOR_PAT_DEPT_INFO
+WHERE RELEASE_FLAG=1 AND
+     (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+                 GROUP BY DOC_DEPT
+
+UNION
+SELECT DOC_DEPT DEPT,
+0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+SUM(DECODE(DEPT_CODE,'PAT',CHARGE)) PATH,SUM(DECODE(DEPT_CODE,'RAD',DECODE(M_CODE,'09',CHARGE))) RAD_x_RAY,SUM(DECODE(DEPT_CODE,'RAD',DECODE(M_CODE,'15',CHARGE))) RAD_ULTRASONO,
+SUM(DECODE(DEPT_CODE,'CAR',CHARGE)) CARD,SUM(DECODE(DEPT_CODE,'GYE',CHARGE)) GYE,SUM(DECODE(DEPT_CODE,'DEN',CHARGE)) DENTAL,
+SUM(DECODE(DEPT_CODE,'EME',CHARGE)) EME,SUM(DECODE(DEPT_CODE,'ENT',CHARGE)) ENT,
+SUM(DECODE(DEPT_CODE,'EYE',CHARGE)) EYE,SUM(DECODE(DEPT_CODE,'MED',CHARGE)) MED,SUM(DECODE(DEPT_CODE,'IMM',CHARGE)) IMM,
+SUM(DECODE(DEPT_CODE,'ORT',CHARGE)) ORT,SUM(DECODE(DEPT_CODE,'PHY',CHARGE)) PHY,
+SUM(DECODE(DEPT_CODE,'SUR',CHARGE)) SUR,SUM(DECODE(DEPT_CODE,'ADM',CHARGE)) ADMIN,0 AS DIAG_DISCOUNT,0 AS TICKET,0 AS REFUND
+ FROM (SELECT DOC_DEPT,DEPT_CODE,M_CODE,SUM(TEST_CHARGE) CHARGE
+   FROM PAT_INFO_SUB1_OUT_DOOR
+ WHERE    (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+              AND IN_REG_NO!=0
+                 GROUP BY(DOC_DEPT,DEPT_CODE,M_CODE)
+)/*INTERNAL QUERY */
+GROUP BY DOC_DEPT
+              
+UNION
+ SELECT DOC_DEPT DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,SUM(DISC) DIAG_DISCOUNT, 0 AS TICKET,0 AS REFUND
+ FROM PAT_INFO_SUB3_OUT_DOOR 
+WHERE (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+     AND IN_REG_NO!=0
+                 GROUP BY DOC_DEPT
+)
+GROUP BY(DEPT)
+;
+ 
+ELSIF P_MODE=2 THEN /*OUT DOOR */
+ OPEN P_TEST_CURSOR FOR
+SELECT DEPT,SUM(ADM_CHARGE) ADM_CHARGE,SUM(BED_CHARGE) BED_CHARGE,SUM(OPR_CHARGE) OPR_CHARGE,
+SUM(SERVC_CHARGE) SERVICE_CHARGE,SUM(MISC_CHARGE) MISC_CHARGE,SUM(EXT_BED_CHARGE) EXT_BED_CHARGE,
+SUM(ANES_CHARGE) ANES_CHARGE,SUM(DELV_CHARGE) DELV_CHARGE,SUM(BB_CARE_CHARGE) BB_CARE_CHARGE,
+SUM(NEU_CHARGE) NEU_CHARGE,SUM(EXT_TRANS_CHARGE) EXT_TRANS_CHARGE,SUM(PHOTO_CHARGE) PHOTO_CHARGE,SUM(BLOOD_SUG_CHARGE) BLOOD_SUG_CHARGE,
+SUM(MED_CHARGE) MED_CHARGE,SUM(CARD_CHARGE) CARD_CARE_CHARGE,SUM(NEB_CHARGE) NEBULISER_CHARGE,SUM(INC_CHARGE) INCUBATOR_CHARGE,
+SUM(INDOOR_DISC) INDOOR_DISCOUNT,SUM(PATH) PATHOLOGY,SUM(RAD_X_RAY) RAD_x_RAY,SUM(RAD_ULTRASONO) RAD_ULTRASONO,SUM(CARD) CARDIOLOGY,
+SUM(GYE) GYNAE,SUM(DENTAL) DENTAL,SUM(EME) EMERGENCY,SUM(ENT) ENT,SUM(EYE) EYE,SUM(MED) MEDICINE,SUM(IMM) IMMUNIZATION,
+SUM(ORT) ORTHOPAEDICS,SUM(PHY) PHYSIOTHERAPY,SUM(SUR) SURGERY,SUM(ADMIN) ADMINISTRATION,SUM(DIAG_DISCOUNT) DIAGNOSTIC_DISCOUNT
+,SUM(TICKET) AS TICKET_OTHERS_COLL,SUM(REFUND) AS REFUND_MONEY
+ FROM 
+(SELECT SUBSTR(DOC_DEPT,1,3) DEPT,
+0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+SUM(DECODE(DEPT_CODE,'PAT',CHARGE)) PATH,SUM(DECODE(DEPT_CODE,'RAD',DECODE(M_CODE,'09',CHARGE))) RAD_x_RAY,SUM(DECODE(DEPT_CODE,'RAD',DECODE(M_CODE,'15',CHARGE))) RAD_ULTRASONO,
+SUM(DECODE(DEPT_CODE,'CAR',CHARGE)) CARD,SUM(DECODE(DEPT_CODE,'GYE',CHARGE)) GYE,SUM(DECODE(DEPT_CODE,'DEN',CHARGE)) DENTAL,
+SUM(DECODE(DEPT_CODE,'EME',CHARGE)) EME,SUM(DECODE(DEPT_CODE,'ENT',CHARGE)) ENT,
+SUM(DECODE(DEPT_CODE,'EYE',CHARGE)) EYE,SUM(DECODE(DEPT_CODE,'MED',CHARGE)) MED,SUM(DECODE(DEPT_CODE,'IMM',CHARGE)) IMM,
+SUM(DECODE(DEPT_CODE,'ORT',CHARGE)) ORT,SUM(DECODE(DEPT_CODE,'PHY',CHARGE)) PHY,
+SUM(DECODE(DEPT_CODE,'SUR',CHARGE)) SUR,SUM(DECODE(DEPT_CODE,'ADM',CHARGE)) ADMIN,0 AS DIAG_DISCOUNT,0 AS TICKET,0 AS REFUND
+ FROM (SELECT DOC_DEPT,DEPT_CODE,M_CODE,SUM(TEST_CHARGE) CHARGE
+   FROM PAT_INFO_SUB1_OUT_DOOR
+ WHERE    (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+              AND IN_REG_NO=0
+                 GROUP BY(DOC_DEPT,DEPT_CODE,M_CODE)
+)/*INTERNAL QUERY */
+GROUP BY SUBSTR(DOC_DEPT,1,3)
+UNION  /* OTHER'S MONEY */
+ SELECT '' AS DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,0 DIAG_DISCOUNT,SUM(AMOUNT) TICKET,0 AS REFUND
+ FROM OTHERS_MONEY 
+WHERE (((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))   between 8 and 23)) or (to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))  between 0 and 7)))
+
+UNION /* REFUND MONEY */
+ SELECT '' AS DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,0 DIAG_DISCOUNT,0 AS TICKET,SUM(AMOUNT) REFUND
+ FROM DIAG_REFUND 
+WHERE (((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))   between 8 and 23)) or (to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(REC_DATE,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(REC_DATE,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(REC_DATE,'hh24'))  between 0 and 7)))
+
+
+
+UNION
+ SELECT SUBSTR(DOC_DEPT,1,3) DEPT,
+  0 AS ADM_CHARGE,0 AS BED_CHARGE,0 AS OPR_CHARGE,0 AS SERVC_CHARGE,0 AS MISC_CHARGE,0 AS EXT_BED_CHARGE,0 AS ANES_CHARGE,
+0 AS DELV_CHARGE,0 AS BB_CARE_CHARGE,0 AS NEU_CHARGE,0 AS EXT_TRANS_CHARGE,0 AS PHOTO_CHARGE,0 AS BLOOD_SUG_CHARGE,
+0 AS  MED_CHARGE,0 AS CARD_CHARGE,0 AS NEB_CHARGE,0 AS INC_CHARGE,0 AS INDOOR_DISC,
+ 0 AS PATH,0 AS RAD_x_RAY,0 AS RAD_ULTRASONO,0 AS CARD,0 AS GYE,0 AS DENTAL,0 AS EME,0 AS ENT,0 AS EYE,0 AS MED,0 AS IMM,0 AS ORT,0 AS PHY,
+0 AS SUR,0 AS ADMIN,SUM(DISC) DIAG_DISCOUNT, 0 AS TICKET,0 AS REFUND
+ FROM PAT_INFO_SUB3_OUT_DOOR 
+WHERE (((to_char(dt,'dd-mon-yyyy') =to_char(p_date1,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))   between 8 and 23)) or (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date(to_char(p_date1,'dd-mon-yyyy'),'dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date(to_char(p_date2,'dd-mon-yyyy'),'dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') =to_char(p_date2+1
+	                  ,'dd-mon-yyyy') and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+     AND IN_REG_NO=0
+                 GROUP BY SUBSTR(DOC_DEPT,1,3)
+)
+GROUP BY(DEPT)
+;
+
+
+END IF;
+
+END;
+
+
+
+
+
+SQL> DESC PAT_INFO_SUB1_OUT_DOOR;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- -----------------
+
+ IN_REG_NO                                          NUMBER
+ REG_NO                                    NOT NULL NUMBER(38)
+ DEPT_CODE                                 NOT NULL VARCHAR2(3)
+ M_CODE                                             VARCHAR2(5)
+ S_CODE                                             VARCHAR2(10)
+ TEST_TYPE                                          VARCHAR2(10)
+ TEST_CHARGE                               NOT NULL NUMBER(10,4)
+ INDOOR_OUT_DOOR_TEST_FLAG                          NUMBER(38)
+ U_ID                                               VARCHAR2(10)
+ BOOTH                                              VARCHAR2(10)
+ DT                                        NOT NULL DATE
+ YRCODE                                             VARCHAR2(10)
+ DOC_DEPT                                           VARCHAR2(25)
+ DOC_ID                                             VARCHAR2(10)
+
+SQL> DESC PAT_INFO_SUB3_OUT_DOOR;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- --------------------
+
+ IN_REG_NO                                 NOT NULL NUMBER
+ REG_NO                                    NOT NULL NUMBER(38)
+ TOTAL_AMT                                 NOT NULL NUMBER(10,4)
+ DISC                                      NOT NULL NUMBER(10,4)
+ NET_PAID                                  NOT NULL NUMBER(10,4)
+ U_ID                                      NOT NULL VARCHAR2(10)
+ DT                                                 DATE
+ TRACK_ID                                           NUMBER(38)
+ EXT_COLUMN1                                        VARCHAR2(20)
+ STAFF_POOR_PAT_DISC_FLAG                           NUMBER(38)
+ EMP_ID                                             VARCHAR2(30)
+ YRCODE                                             VARCHAR2(10)
+ DOC_DEPT                                           VARCHAR2(25)
+ DOCTOR_ID                                          VARCHAR2(10)

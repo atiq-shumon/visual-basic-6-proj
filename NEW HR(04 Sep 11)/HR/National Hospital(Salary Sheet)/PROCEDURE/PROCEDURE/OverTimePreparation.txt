@@ -1,0 +1,58 @@
+create or replace procedure Over_TimePreparation_save(
+p_EMP_ID varchar2,
+p_PAYDATE date,
+p_YEARFORPAYMENT varchar2,
+p_MONTHFORPAYMENT varchar2,
+p_SCALE varchar2,
+p_OVERTIMEHOURPERDAY varchar2,
+p_AMOUNT number,
+p_OTHERSAMOUNT number,
+p_REVSTAMP number,
+p_DEDUCTION number,
+p_NETPAYABLE number,
+p_NOOFDAYS varchar2,
+p_PAYMENTTYPR varchar2,
+p_OTTYPE varchar2,
+P_MONEY_TAKEN varchar2)
+as
+var_temp number;
+begin
+select count(*) into var_temp
+from overtime_preparation
+where EMP_ID=p_EMP_ID and PAYDATE =p_PAYDATE  and MONTHFORPAYMENT=p_MONTHFORPAYMENT and SCALE =p_SCALE and PAYMENTTYPR=p_PAYMENTTYPR;
+if var_temp>0 then
+update overtime_preparation
+set 
+	YEARFORPAYMENT =p_YEARFORPAYMENT ,
+	OVERTIMEHOURPERDAY =p_OVERTIMEHOURPERDAY ,
+	AMOUNT=p_AMOUNT ,
+	OTHERSAMOUNT =p_OTHERSAMOUNT ,
+	REVSTAMP =p_REVSTAMP ,
+	DEDUCTION =p_DEDUCTION ,
+	NETPAYABLE =p_NETPAYABLE ,
+	NOOFDAYS =p_NOOFDAYS ,
+	PAYMENTTYPR =p_PAYMENTTYPR ,
+	OTTYPE=p_OTTYPE
+where EMP_ID=p_EMP_ID and PAYDATE =p_PAYDATE and MONTHFORPAYMENT=p_MONTHFORPAYMENT and SCALE =p_SCALE and PAYMENTTYPR=p_PAYMENTTYPR ;
+else
+insert into overtime_preparation values(
+	p_EMP_ID ,
+	p_PAYDATE ,
+	p_YEARFORPAYMENT ,
+	p_MONTHFORPAYMENT ,
+	p_SCALE ,
+	p_OVERTIMEHOURPERDAY ,
+	p_AMOUNT ,
+	p_OTHERSAMOUNT ,
+	p_REVSTAMP ,
+	p_DEDUCTION ,
+	p_NETPAYABLE ,
+	p_NOOFDAYS ,
+	p_PAYMENTTYPR ,
+	p_OTTYPE,
+	0);
+	
+end if;
+commit;
+end  Over_TimePreparation_save;
+/

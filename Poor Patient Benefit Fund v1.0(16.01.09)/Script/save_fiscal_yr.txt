@@ -1,0 +1,33 @@
+create or replace procedure save_fiscal_year(
+					p_mode varchar2,
+					p_code varchar2,
+					p_comp_setup varchar2,
+					p_st_year date,
+					p_ed_year  date,
+					p_u_id  varchar2)
+			as
+	              			begin
+                     if p_mode=1 then
+	
+				insert into fiscal_year
+					    values(
+						p_code,
+						p_comp_setup,
+						p_st_year,
+						p_ed_year ,
+						p_u_id     ,
+						sysdate,(select nvl(max(serial_no),0)+1 from 							fiscal_year));
+					commit; 
+
+                    elsif p_mode=2 then
+    			     update fiscal_year
+ 					set comp_setup=p_comp_setup,
+					   st_year=p_st_year,
+					   ed_year=p_ed_year
+                                        where upper(code)=upper(p_code);
+				commit;
+                   elsif p_mode=3 then
+                              delete from fiscal_year	where                                                  upper(code)=upper(p_code);
+                    end if;
+
+				end;

@@ -1,0 +1,19 @@
+SELECT in_reg_no,Bed_sum AS Bed_Charge
+FROM INDOOR_PAT_Money INDOOR_PAT_DEPT_INFO
+WHERE 
+(((to_char(dt,'dd-mon-yyyy') ='30-mar-2010' and to_number(to_char(dt,'hh24'))   between 8 and 23)) or
+      (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date('30-mar-2010','dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date('30-mar-2010','dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') ='31-mar-2010' and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+minus
+SELECT in_reg_no,sum(Bed_sum) AS Bed
+FROM INDOOR_PAT_DEPT_INFO
+WHERE 
+(((to_char(dt,'dd-mon-yyyy') ='30-mar-2010' and to_number(to_char(dt,'hh24'))   between 8 and 23)) or
+      (to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')>
+                  to_date('30-mar-2010','dd-mon-yyyy') and to_date(to_char(dt,'dd-mon-yyyy'),'dd-mon-yyyy')
+                        <=to_date('30-mar-2010','dd-mon-yyyy'))
+	                    or ((to_char(dt,'dd-mon-yyyy') ='31-mar-2010' and to_number(to_char(dt,'hh24'))  between 0 and 7)))
+group by in_reg_no
+/
