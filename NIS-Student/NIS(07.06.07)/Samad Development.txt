@@ -1,0 +1,232 @@
+CREATE TABLE [EXB_P_Result_Main] (
+	[M_Slr_no] [int] NOT NULL ,
+	[ClassID] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[SectionID] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Shift] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[SubID] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[AcaYr] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[ExamType] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[ExamID] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[categoryid] [varchar] (7) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	CONSTRAINT [PK_EXB_P_Result_Main] PRIMARY KEY  CLUSTERED 
+	(
+		[M_Slr_no]
+	)  ON [PRIMARY] 
+) ON [PRIMARY]
+GO
+
+
+CREATE TABLE [EXB_P_Result_Sub] (
+	[M_Slr_no] [int] NOT NULL ,
+	[S_Slr_no] [int] NOT NULL ,
+	[StdID] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Roll] [int] NOT NULL ,
+	[CWObtainedMarks] [decimal](5, 2) NULL ,
+	[HWObtainedMarks] [decimal](5, 2) NULL ,
+	[AttentivenessObtainedMarks] [decimal](5, 2) NULL ,
+	[CleannessObtainedMarks] [decimal](5, 2) NULL ,
+	[MannersObtainedMarks] [decimal](5, 2) NULL ,
+	[EntryBy] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[EntryDate] [datetime] NOT NULL 
+) ON [PRIMARY]
+GO
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+---select studentname,studentid from studentinfo 
+/****** Object:  Stored Procedure dbo.BookIssueReturn_Save    Script Date: 29/04/2006 12:41:03 ******/
+
+ALTER        Procedure EX_B_P_Result_Save
+(
+		@mode 					varchar(1),
+	    	@M_Slr_no 				int,
+		@S_Slr_no				int,
+	    	@ClassID 				varchar(10),
+		@SectionID				varchar(10),
+		@Shift					varchar(1),
+		@SubID					varchar(10),
+		@AcaYr					varchar(5),
+		@ExamType				varchar(5),
+		@ExamID					varchar(5),
+        	@categoryid             varchar(7),
+		@StdID					varchar(10),
+		@Roll						int,
+		@CWObtainedMarks			decimal(5,2),
+		@HWObtainedMarks			decimal(5,2),
+		@AttentivenessObtainedMarks		decimal(5,2),
+		@CleannessObtainedMarks			decimal(5,2),
+		@MannersObtainedMarks			decimal(5,2),
+--		@Obtain_Marks				decimal(5,2),
+--        	@pass_Marks					int,
+--       	@full_Marks					int,
+		@EntryBy				varchar(5),
+		@EntryDate				datetime
+) 
+
+as 
+
+SET XACT_ABORT On
+
+Declare @Max_M_Slr_no as int,
+	@Max_S_Slr_no as int
+
+Begin Tran
+
+if @mode='S'-- Here - Means New Data is to be save or updated
+	Begin
+	
+		If (@M_Slr_no=0)
+	
+			begin
+						
+				select @Max_M_Slr_no = isnull(max(M_Slr_no),0) from EXB_P_Result_Main
+				set @Max_M_Slr_no = @Max_M_Slr_no + 1
+				
+				Insert Into EXB_P_Result_Main
+					(
+					  	M_Slr_no,
+						ClassID,
+						SectionID,
+						Shift,
+						SubID,
+						AcaYr,
+					   	ExamType,
+						ExamID,
+                        			categoryid
+					 ) 
+				Values 
+					(
+						@Max_M_Slr_no,
+						@ClassID,
+						@SectionID,
+						@Shift,
+						@SubID,
+						@AcaYr,
+						@ExamType,
+						@ExamID,
+			                        @categoryid
+					 )
+
+				select @Max_S_Slr_no = isnull(max(S_Slr_no),0) from EXB_P_Result_Sub
+				set @Max_S_Slr_no = @Max_S_Slr_no + 1
+						
+				Insert Into EXB_P_Result_Sub
+					(
+				      	        M_Slr_no,	
+			                        S_Slr_no,
+						StdID,
+						Roll,
+						CWObtainedMarks,
+			                        HWObtainedMarks,
+                        			AttentivenessObtainedMarks, 
+						CleannessObtainedMarks,
+						MannersObtainedMarks,
+						EntryBy,
+						EntryDate
+					) 
+				Values 
+				  (
+						@Max_M_Slr_no,
+			                        @Max_S_Slr_no,
+						@StdID,
+						@Roll,
+						@CWObtainedMarks,
+				                @HWObtainedMarks,
+			                        @AttentivenessObtainedMarks,
+						@CleannessObtainedMarks,
+						@MannersObtainedMarks,
+						@EntryBy,
+						@EntryDate
+					)
+		end
+
+		if (@M_Slr_no<>0)
+			begin
+				select @Max_S_Slr_no = isnull(max(S_Slr_no),0) from Result_Sub
+				set @Max_S_Slr_no = @Max_S_Slr_no + 1
+						
+				Insert Into EXB_P_Result_Sub
+					(
+			                        M_Slr_no,
+						S_Slr_no,
+						StdID,
+						Roll,
+						CWObtainedMarks,
+			                        HWObtainedMarks,
+                        			AttentivenessObtainedMarks, 
+						CleannessObtainedMarks,
+						MannersObtainedMarks,
+						EntryBy,
+						EntryDate
+					) 
+				Values 
+				  (
+						@M_Slr_no,
+						@Max_S_Slr_no,
+						@StdID,
+						@Roll,
+						@CWObtainedMarks,
+				                @HWObtainedMarks,
+			                        @AttentivenessObtainedMarks,
+						@CleannessObtainedMarks,
+						@MannersObtainedMarks,
+						@EntryBy,
+						@EntryDate
+					)		
+			end
+
+end
+
+if @mode='U'-- Here - Means previous data is to be deleated
+
+	begin
+		If Exists (Select S_Slr_no From EXB_P_Result_Sub Where S_Slr_no=@S_Slr_no and M_Slr_no=@M_Slr_no)
+
+			Update EXB_P_Result_Sub 
+  
+			Set  CWObtainedMarks      = @CWObtainedMarks,
+		                HWObtainedMarks=@HWObtainedMarks,
+	                        AttentivenessObtainedMarks=@AttentivenessObtainedMarks,
+				CleannessObtainedMarks=@CleannessObtainedMarks,
+				MannersObtainedMarks=@MannersObtainedMarks,
+   			        EntryBy	= @EntryBy,
+			 	EntryDate	= @EntryDate
+ 	     Where M_Slr_no=@M_Slr_no and S_Slr_no=@S_Slr_no
+	end
+
+
+if @mode='D'-- Here - Means previous data is to be deleated
+
+	begin
+		If Exists (Select S_Slr_no From EXB_P_Result_Sub Where S_Slr_no=@S_Slr_no and M_Slr_no=@M_Slr_no)
+
+		Delete From EXB_P_Result_Sub where S_Slr_no=@S_Slr_no and M_Slr_no=@M_Slr_no
+	end
+
+
+if @@Error=0
+	Commit
+else
+	Rollback
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+

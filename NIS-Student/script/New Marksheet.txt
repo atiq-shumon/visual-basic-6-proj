@@ -1,0 +1,149 @@
+/*
+ select a.StdID,a.M_Slr_no,a.S_Slr_no
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID='00001'
+        and b.SectionID='00002'
+        and b.SubID= '00001'  and 
+          b.AcaYr= '2006' and           
+          b.ExamType ='01' and         
+          b.ExamID= '01'   
+*/
+
+---select * from Rpt_marks_Sheet_all ('a','00001','00002','00001','2006','01','01')
+alter function Rpt_marks_Sheet_all
+(
+   @mode               varchar(1),
+   @ClassID            varchar(12),
+   @SectionID          varchar(12),
+   @SubID              varchar(12),
+   @AcaYr              varchar(6),
+   @ExamType           varchar(6),
+   @ExamID             varchar(6)
+     
+)
+returns  @marksheet table
+(
+ std_id  varchar(15),
+ class_Roll int,
+ std_name varchar(100),
+ mark_wri decimal,
+ mark_oral decimal,
+ mark_prac decimal,
+ f_mark_wri decimal,
+ f_mark_oral decimal,
+ f_mark_prac decimal,
+ p_mark_wri decimal,
+ p_mark_oral decimal,
+ p_mark_prac decimal,
+ sub_teacher varchar(90)
+)
+as
+ begin
+declare @max_serial as int
+declare @class_roll as int
+declare @obtained_marks as int
+declare @PassMarks as int
+declare @fullMarks as int
+declare @StdID as varchar(15)
+declare @Std_Name as varchar(100)
+declare @tea_Name as varchar(100)
+declare @M_Slr_no as int
+declare @S_Slr_no  int
+declare mycursor cursor for
+   select a.StdID,a.M_Slr_no,a.S_Slr_no
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID=@ClassID 
+        and b.SectionID=@SectionID
+        and b.SubID= @SubID  and 
+          b.AcaYr= @AcaYr and           
+          b.ExamType =@ExamType and         
+          b.ExamID= @ExamID and b.categoryid='00002'   
+        
+if @mode='a' 
+begin
+ open mycursor
+ fetch next from mycursor into @StdID,@M_Slr_no,@S_Slr_no
+ while @@fetch_status=0 
+     begin
+      select @Std_Name=(select studentname from studentinfo where
+           studentid=a.StdID),
+           @class_roll=a.Roll,
+           @obtained_marks=a.obtainedMarks,@PassMarks=a.PassMarks,
+           @fullMarks=a.Fullmarks
+         from   result_main b, result_sub a 
+      where 
+           b.categoryid='00002' and
+           a.M_Slr_no=b.M_Slr_no
+          and 
+          ( a.M_Slr_no=@M_Slr_no and
+            a.S_Slr_no=@S_Slr_no )
+
+    set @tea_Name=( SELECT Emp_Per_Info.Emp_fna 
+            + ' ' + Emp_Per_Info.Emp_mna
+           + ' ' + Emp_Per_Info.Emp_lna 
+          From Emp_Per_Info 
+     where Emp_Per_Info.Emp_id=
+         (select teacher_id 
+             from subject_info_sub
+     where class_code= @ClassID and sub_code=@SubID))
+
+   insert into @marksheet values(@StdID,@class_roll,
+                   @Std_Name,@obtained_marks,0,0,
+               @fullMarks,0,0,@PassMarks,0,0, @tea_Name)
+
+      set @obtained_marks=0 
+        set @PassMarks=0
+        set @fullMarks=0  
+
+    select @obtained_marks=a.obtainedMarks,@PassMarks=a.PassMarks,
+           @fullMarks=a.Fullmarks
+         from   result_main b, result_sub a 
+      where 
+           b.categoryid='00001' and --oral
+           a.M_Slr_no=b.M_Slr_no and 
+           a.StdID=@StdID
+
+  update @marksheet
+       set mark_oral=@obtained_marks,
+          f_mark_oral=@fullMarks,
+          p_mark_oral=@PassMarks 
+   where  std_id=@StdID
+                 
+        set @obtained_marks=0 
+        set @PassMarks=0
+        set @fullMarks=0   
+
+ select @obtained_marks=a.obtainedMarks,@PassMarks=a.PassMarks,
+           @fullMarks=a.Fullmarks
+         from   result_main b, result_sub a 
+      where 
+           b.categoryid='00003' and --practical
+           a.M_Slr_no=b.M_Slr_no and 
+          and 
+           a.StdID=@StdID
+
+  update @marksheet
+       set mark_prac=@obtained_marks,
+          f_mark_prac=@fullMarks,
+          p_mark_prac=@PassMarks 
+   where  std_id=@StdID
+
+   fetch next from mycursor into @StdID,@M_Slr_no,@S_Slr_no
+end 
+end
+Close MyCursor
+deallocate MyCursor
+
+ return
+end
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+

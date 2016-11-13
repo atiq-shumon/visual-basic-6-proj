@@ -1,0 +1,1 @@
+  Set ObjRs = Get_RS("Exec Get_RS '" & "SELECT UserID, Password From UserProfile WHERE UserID =''" & Trim(txtfields(0)) & "'' And Password =''" & Trim(txtfields(1)) & "'''")

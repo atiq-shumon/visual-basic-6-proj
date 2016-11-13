@@ -1,0 +1,68 @@
+Attribute VB_Name = "connectionstring"
+Option Explicit
+Public buy_src_mode As String
+Public con    As New ADODB.Connection
+Public cmd    As New ADODB.Command
+Public RS     As New ADODB.Recordset
+Public strcn        As New Class1 '(Connection)
+Public strUid As String
+Public strPass As String
+Public userType As String
+Public rptMode As Integer
+Public strBSISB As String
+Public VeiwMode As String
+Public Mode As String
+
+'Public Const strcnn = "Provider=SQLOLEDB.1;Persist Security Info=False;User ID=sa;Initial Catalog=test;Data Source=monir"
+
+Public Sub main()
+    Attach_DataBase
+    Form3.Show vbModal
+End Sub
+
+Public Sub Attach_DataBase()
+
+On Error GoTo err_sub
+
+'If OSChecker = "1" Then
+'       con.ConnectionString = "Provider=SQLOLEDB.1;Persist Security Info=False;User ID=sa;Initial Catalog=master"
+'  Else
+    con.connectionstring = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;User ID=sa;Initial Catalog=master"
+' End If
+
+''------------------------------Check whether database exists or not--------------
+    Dim RS As ADODB.Recordset
+    con.Open
+    Set cmd.ActiveConnection = con
+    cmd.CommandText = "select Flag=count(name) from master.dbo.sysdatabases where name='INVENTORY'"
+    Set RS = cmd.Execute
+    
+        If RS!Flag = 1 Then
+            
+            con.Close
+            Exit Sub
+        
+        Else        ''------Attach Database----
+        
+            ''con.Open
+            ''Set cmd.ActiveConnection = con
+            cmd.CommandText = _
+           "CREATE DATABASE INVENTORY ON PRIMARY (FILENAME = '" & App.Path & "\Ayman_Inventory_Data.mdf" & "')" _
+            & "LOG ON (FILENAME = '" & App.Path & "\Ayman_Inventory_log.ldf" & "') for attach"
+        ''---------------------------------------------------------------------------------
+    
+            cmd.Execute
+            con.Close
+            
+        ''    MsgBox "Database attached successfully!", vbExclamation + vbOKOnly
+        
+        End If
+        
+        
+
+        Exit Sub
+
+err_sub:
+            MsgBox Err.Description, vbCritical
+            End
+End Sub

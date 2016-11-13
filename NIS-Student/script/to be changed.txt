@@ -1,0 +1,1324 @@
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS OFF 
+GO
+
+/*
+ select a.M_Slr_no,a.S_Slr_no
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID='00001'
+        and b.SectionID='00002'
+        and b.SubID= @subject  and 
+          b.AcaYr= @AcaYr and           
+          b.ExamType =@ExamType 
+          and a.StdID=@StdID and        
+          b.ExamID= @ExamID 
+          and b.categoryid='00002'   
+
+*/
+
+
+
+
+----select * from Rpt_statement_of_prog('a','00001','00002','02','02','STI-000002','2006')
+
+
+ALTER function Rpt_statement_of_prog
+(
+   @mode               varchar(1),
+   @ClassID            varchar(12),
+   @sectionID          varchar(12),
+   @ExamType           varchar(6),
+   @ExamID             varchar(6),
+   @stdid              varchar(20),
+   @AcaYr              varchar(20)
+)
+returns  @statement_of_prog table
+(
+ subjectid    varchar(15) ,
+ subjectTitle varchar(150),
+ class_teacher varchar(150),
+ f_mark_wri decimal,
+ f_mark_oral decimal,
+ f_mark_prac decimal,
+ p_mark_wri decimal,
+ p_mark_oral decimal,
+ p_mark_prac decimal,
+ h_mark_wri decimal,
+ h_mark_oral decimal,
+ h_mark_prac decimal,
+ o_mark_wri decimal,
+ o_mark_oral decimal,
+ o_mark_prac decimal,
+ f_term_wd    integer,
+ f_term_p    integer,
+ s_term_wd   integer,
+ s_term_p     integer,
+ final_wd     integer,
+ final_p      integer,
+ class_test_marks decimal,
+ term_marks       decimal
+)
+as
+begin
+	declare @PassMarks_wr as decimal
+	declare @fullMarks_wr as decimal
+        declare @hightestMarks_wr as decimal
+        declare @obtainMarks_wr as decimal  
+	declare @PassMarks_or as decimal
+	declare @fullMarks_or as decimal
+        declare @hightestMarks_or as decimal
+        declare @obtainMarks_or as decimal  
+	
+	declare @PassMarks_pr as decimal
+	declare @fullMarks_pr as decimal
+        declare @hightestMarks_pr as decimal
+        declare @obtainMarks_pr as decimal  
+        declare @m_serial_no as integer
+        declare @s_serial_no as integer 
+        declare @f_term_wd as integer  
+        declare @f_term_p as integer  
+        declare @s_term_wd as integer  
+        declare @s_term_p as integer  
+        declare @final_term_wd as integer  
+        declare @final_term_p as integer  
+	
+	
+	
+	declare @subject  as varchar(50)
+	declare @subjectName  as varchar(200)
+        declare @class_teacher as varchar(150)
+        declare @class_test_marks decimal
+        declare @term_marks       decimal
+        declare @M_srl_no as int
+        declare @s_srt_no as int
+        declare @studentid as varchar(15)
+
+declare mycursor cursor for
+   select  Sub_code
+       from   subject_info_sub
+      where Class_code=@ClassID 
+
+if @mode='a' 
+begin
+ open mycursor
+ fetch next from mycursor into @subject
+ while @@fetch_status=0 
+     begin
+        set @PassMarks_wr=0
+	set @fullMarks_wr =0
+        set @hightestMarks_wr=0
+        set @obtainMarks_wr =0
+	set @PassMarks_or=0
+	set @fullMarks_or =0
+        set @hightestMarks_or =0
+        set @obtainMarks_or =0
+	
+	set @PassMarks_pr =0
+	set @fullMarks_pr =0
+        set @hightestMarks_pr=0
+        set @obtainMarks_pr =0
+
+        set @f_term_wd =0 
+        set @f_term_p =0
+        set @s_term_wd =0 
+        set @s_term_p =0 
+        set @final_term_wd=0 
+        set @final_term_p =0  
+	set @class_test_marks=0
+        set @term_marks =0
+ 
+
+      select @subjectName=Sub_title from subject_info_sub
+       where Class_code=@ClassID and Sub_code=@subject
+
+
+  ----------getting Main and sub serial no of written
+
+     select @m_serial_no=a.M_Slr_no,@s_serial_no=a.S_Slr_no
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID=@ClassID 
+        and b.SectionID=@SectionID
+        and b.SubID= @subject  and 
+          b.AcaYr= @AcaYr and           
+          b.ExamType =@ExamType 
+          and a.StdID=@StdID and        
+          b.ExamID= @ExamID 
+          and b.categoryid='00002'   
+
+
+
+
+    
+  ---written marks------
+
+    
+      select @PassMarks_wr=isnull(passmarks,0)
+           from subjectmarksdistribution
+    where  categoryid='00002' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+   select @fullMarks_wr=isnull(fullmarks,0)
+           from subjectmarksdistribution
+    where   categoryid='00002' and  
+            ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and Exam_code=@ExamID
+   
+       
+   select @hightestMarks_wr=isnull(max(a.ObtainedMarks),0)
+         from  result_main b, result_sub a 
+      where  b.categoryid='00002' and
+           a.M_Slr_no=b.M_Slr_no and
+          ( a.M_Slr_no=@m_serial_no)
+
+    select    @obtainMarks_wr=isnull(a.obtainedMarks,0)
+         from   result_main b, result_sub a 
+      where  b.categoryid='00002' and
+           a.M_Slr_no=b.M_Slr_no
+          and 
+          ( a.M_Slr_no=@m_serial_no and
+            a.S_Slr_no=@s_serial_no )
+
+   ---oral marks------
+
+ ----------getting Main and sub serial no of written
+      set @m_serial_no =0
+       set @s_serial_no =0  
+	
+     select @m_serial_no=isnull(a.M_Slr_no,0),@s_serial_no=isnull(a.S_Slr_no,0)
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID=@ClassID 
+        and b.SectionID=@SectionID
+        and b.SubID= @subject  and 
+          b.AcaYr= @AcaYr and           
+          b.ExamType =@ExamType 
+          and a.StdID=@StdID and        
+          b.ExamID= @ExamID 
+          and b.categoryid='00001'   
+    select @PassMarks_or=isnull(passmarks,0)
+           from subjectmarksdistribution
+    where  categoryid='00001' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+    select @fullMarks_or=isnull(fullmarks,0)
+           from subjectmarksdistribution
+    where    categoryid='00001' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+   select @hightestMarks_or=isnull(max(a.ObtainedMarks),0)
+         from  result_main b, result_sub a 
+      where  b.categoryid='00001' and
+           a.M_Slr_no=b.M_Slr_no and
+          ( a.M_Slr_no=@m_serial_no)
+
+    select    @obtainMarks_or=isnull(a.obtainedMarks,0)
+         from   result_main b, result_sub a 
+      where  b.categoryid='00001' and
+           a.M_Slr_no=b.M_Slr_no
+          and 
+          ( a.M_Slr_no=@m_serial_no and
+            a.S_Slr_no=@s_serial_no )
+
+
+  
+ ---practical marks------
+----------getting Main and sub serial no of written
+      set @m_serial_no =0
+       set @s_serial_no =0  
+	 
+     select @m_serial_no=isnull(a.M_Slr_no,0),@s_serial_no=isnull(a.S_Slr_no,0)
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID=@ClassID 
+        and b.SectionID=@SectionID
+        and b.SubID= @subject  and 
+          b.AcaYr= @AcaYr and           
+          b.ExamType =@ExamType 
+          and a.StdID=@StdID and        
+          b.ExamID= @ExamID 
+          and b.categoryid='00003'   
+
+   select @PassMarks_pr=isnull(passmarks,0)
+           from subjectmarksdistribution
+    where  categoryid='00003' and  
+            ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+ select @fullMarks_pr=isnull(fullmarks,0)
+           from subjectmarksdistribution
+    where    categoryid='00003' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+select @hightestMarks_pr=isnull(max(a.ObtainedMarks),0)
+         from  result_main b, result_sub a 
+      where  b.categoryid='00003' and
+           a.M_Slr_no=b.M_Slr_no and
+          ( a.M_Slr_no=@m_serial_no)
+
+    select    @obtainMarks_pr=isnull(a.obtainedMarks,0)
+         from   result_main b, result_sub a 
+      where  b.categoryid='00003' and
+           a.M_Slr_no=b.M_Slr_no
+          and 
+          ( a.M_Slr_no=@m_serial_no and
+            a.S_Slr_no=@s_serial_no )
+
+  select @f_term_wd=isnull(count(distinct(attn_date)),0)
+         from StudentAttendanceLeaveInfo 
+  where aca_yr=@AcaYr and exam_term='01' 
+
+select @f_term_p=isnull(count(distinct(attn_date)),0)
+         from StudentAttendanceLeaveInfo 
+  where aca_yr=@AcaYr and exam_term='01' 
+        and StudentID=@stdid and Present='P'
+
+if @ExamType='01' 
+   begin
+        if @ExamID='02' 
+           begin  ---first term and final exam
+		 select    @class_test_marks=isnull(sum(a.obtainedMarks),0)
+		         from   result_main b, result_sub a 
+		      where    a.M_Slr_no=b.M_Slr_no
+		           and
+		          b.ClassID=@ClassID 
+		        and b.SectionID=@SectionID
+		          and 
+		          b.AcaYr= @AcaYr and           
+		          b.ExamType ='01'   ----@ExamType 
+		          and a.StdID=@StdID and        
+		          b.ExamID NOT IN('01','02') 
+         end 
+
+    if @ExamID='02' 
+           begin  ---first term and final exam
+	
+	 select    @term_marks=isnull(sum(a.obtainedMarks),0)
+	         from   result_main b, result_sub a 
+	      where  a.M_Slr_no=b.M_Slr_no 
+	          and
+	          b.ClassID=@ClassID 
+	        and b.SectionID=@SectionID
+	          and 
+	          b.AcaYr= @AcaYr and           
+	          b.ExamType ='01'  ----@ExamType 
+	          and a.StdID=@StdID and        
+	          b.ExamID= '02' 
+    end
+
+end
+ 
+
+
+ if @ExamType='02' 
+     begin
+	   select @s_term_wd=isnull(count(distinct(attn_date)),0)
+	         from StudentAttendanceLeaveInfo 
+	  where aca_yr=@AcaYr and exam_term='02' 
+	
+	select @s_term_p=isnull(count(distinct(attn_date)),0)
+	         from StudentAttendanceLeaveInfo 
+	  where aca_yr=@AcaYr and exam_term='02' 
+	        and StudentID=@stdid and Present='P'
+        if @ExamID='02' 
+           begin
+	        select    @class_test_marks=isnull(sum(a.obtainedMarks),0)
+	         from   result_main b, result_sub a 
+	      where    a.M_Slr_no=b.M_Slr_no
+	           and
+	          b.ClassID=@ClassID 
+	        and b.SectionID=@SectionID
+	          and 
+	          b.AcaYr= @AcaYr and           
+	          b.ExamType ='02'   ----@ExamType 
+	          and a.StdID=@StdID and        
+	          b.ExamID NOT IN('01','02') 
+	
+	 select    @term_marks=isnull(sum(a.obtainedMarks),0)
+	         from   result_main b, result_sub a 
+	      where  a.M_Slr_no=b.M_Slr_no
+	           and
+	          b.ClassID=@ClassID 
+	        and b.SectionID=@SectionID
+	          and 
+	          b.AcaYr= @AcaYr and           
+	          b.ExamType in ('01','02')  ----@ExamType 
+	          and a.StdID=@StdID and        
+	          b.ExamID= '02' 
+	 end
+
+   end
+
+if @ExamType='03'
+   begin
+     select @s_term_wd=isnull(count(distinct(attn_date)),0)
+	          from StudentAttendanceLeaveInfo 
+	  where aca_yr=@AcaYr and exam_term='02' 
+	
+	select @s_term_p=isnull(count(distinct(attn_date)),0)
+	         from StudentAttendanceLeaveInfo 
+	  where aca_yr=@AcaYr and exam_term='02' 
+	        and StudentID=@stdid and Present='P'
+
+    select @final_term_wd=isnull(count(distinct(attn_date)),0)
+	         from StudentAttendanceLeaveInfo 
+	  where aca_yr=@AcaYr and exam_term='03' 
+	
+	select @final_term_p=isnull(count(distinct(attn_date)),0)
+	         from StudentAttendanceLeaveInfo 
+	  where aca_yr=@AcaYr and exam_term='03' 
+	        and StudentID=@stdid and Present='P'
+     if @ExamID='01' 
+        begin
+	        select    @class_test_marks=isnull(sum(a.obtainedMarks),0)
+	         from   result_main b, result_sub a 
+	      where    a.M_Slr_no=b.M_Slr_no
+	           and
+	          b.ClassID=@ClassID 
+	        and b.SectionID=@SectionID
+	          and 
+	          b.AcaYr= @AcaYr and           
+	          b.ExamType ='03'   ----@ExamType 
+	          and a.StdID=@StdID and        
+	          b.ExamID NOT IN('01') 
+	
+	select    @term_marks=isnull(sum(a.obtainedMarks),0)
+	         from   result_main b, result_sub a 
+	      where  a.M_Slr_no=b.M_Slr_no
+	            and
+	          b.ClassID=@ClassID 
+	        and b.SectionID=@SectionID
+	          and 
+	          b.AcaYr= @AcaYr and           
+	          b.ExamType in ('01','02')  ----@ExamType 
+	          and a.StdID=@StdID and        
+	          b.ExamID= '02' 
+	 
+	select    @term_marks=isnull(@term_marks,0)+sum(isnull(a.obtainedMarks,0))
+	         from   result_main b, result_sub a 
+	      where  a.M_Slr_no=b.M_Slr_no
+	            and
+	          b.ClassID=@ClassID 
+	        and b.SectionID=@SectionID
+	          and 
+	          b.AcaYr= @AcaYr and           
+	          b.ExamType = '03'  ----@ExamType 
+	          and a.StdID=@StdID and        
+	          b.ExamID= '01'
+             
+    end
+	
+   end
+
+set @class_teacher=( SELECT Emp_Per_Info.Emp_fna 
+            + ' ' + Emp_Per_Info.Emp_mna
+           + ' ' + Emp_Per_Info.Emp_lna 
+          From Emp_Per_Info 
+     where Emp_Per_Info.Emp_id=
+         (select teacher_id 
+             from subject_info_sub
+     where class_code= @ClassID and sub_code=@subject )
+
+)
+
+
+insert into @statement_of_prog 
+values(
+ @subject ,
+ @subjectName,
+ @class_teacher,
+ @fullMarks_wr,
+ @fullMarks_or,
+ @fullMarks_pr,
+ @PassMarks_wr,
+ @PassMarks_or,
+ @PassMarks_pr,
+ @hightestMarks_wr,
+ @hightestMarks_or,
+ @hightestMarks_pr,
+ @obtainMarks_wr,
+ @obtainMarks_or,
+@obtainMarks_pr,
+@f_term_wd,@f_term_p,@s_term_wd,@s_term_p,@final_term_wd,@final_term_p,
+@class_test_marks,@term_marks
+)
+
+   fetch next from mycursor into @subject
+end 
+end
+Close MyCursor
+deallocate MyCursor
+
+
+
+   return
+end
+
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+alter table  Result_Sub
+alter column ObtainedMarks decimal(5,2)
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+---select studentname,studentid from studentinfo 
+
+
+
+/****** Object:  Stored Procedure dbo.BookIssueReturn_Save    Script Date: 29/04/2006 12:41:03 ******/
+
+
+ALTER     Procedure Result_Save
+(
+		@mode 					varchar(1),
+	    @M_Slr_no 				int,
+		@S_Slr_no				int,
+	    @ClassID 				varchar(10),
+		@SectionID				varchar(10),
+		@Shift					varchar(1),
+		@SubID					varchar(10),
+		@AcaYr					varchar(5),
+		@ExamType				varchar(5),
+		@ExamID					varchar(5),
+        @categoryid             varchar(7),
+		@StdID					varchar(10),
+		@Roll						int,
+		@Obtain_Marks				decimal(5,2),
+        @pass_Marks					int,
+        @full_Marks					int,
+		@EntryBy					varchar(5),
+		@EntryDate				datetime
+) 
+with encryption
+as 
+
+SET XACT_ABORT On
+
+Declare @Max_M_Slr_no as int,
+		  @Max_S_Slr_no as int
+
+Begin Tran
+
+if @mode='S'-- Here - Means New Data is to be save or updated
+	Begin
+	
+		If (@M_Slr_no=0)
+	
+			begin
+						
+				select @Max_M_Slr_no = isnull(max(M_Slr_no),0) from Result_Main
+				set @Max_M_Slr_no = @Max_M_Slr_no + 1
+				
+				Insert Into Result_Main
+					(
+					  	M_Slr_no,
+						ClassID,
+						SectionID,
+						Shift,
+						SubID,
+						AcaYr,
+					   ExamType,
+						ExamID,
+                        categoryid
+					 ) 
+				Values 
+					(
+					   @Max_M_Slr_no,
+					   @ClassID,
+					   @SectionID,
+						@Shift,
+						@SubID,
+						@AcaYr,
+						@ExamType,
+						@ExamID,
+                        @categoryid
+					 )
+
+				select @Max_S_Slr_no = isnull(max(S_Slr_no),0) from Result_Sub
+				set @Max_S_Slr_no = @Max_S_Slr_no + 1
+						
+				Insert Into Result_Sub
+					(
+					   M_Slr_no,	
+                       S_Slr_no,
+						StdID,
+						Roll,
+						ObtainedMarks,
+                        PassMarks,
+                        Fullmarks, 
+						EntryBy,
+						EntryDate
+					) 
+				Values 
+				  (
+						@Max_M_Slr_no,
+                        @Max_S_Slr_no,
+						@StdID,
+						@Roll,
+						@Obtain_Marks,
+                       @pass_Marks	,
+                       @full_Marks	,
+						@EntryBy,
+						@EntryDate
+					)
+		end
+
+		if (@M_Slr_no<>0)
+			begin
+				select @Max_S_Slr_no = isnull(max(S_Slr_no),0) from Result_Sub
+				set @Max_S_Slr_no = @Max_S_Slr_no + 1
+						
+				Insert Into Result_Sub
+					(
+                        M_Slr_no,
+						S_Slr_no,
+						StdID,
+						Roll,
+						ObtainedMarks,
+                        PassMarks,
+                        Fullmarks, 
+						EntryBy,
+						EntryDate
+					) 
+				Values 
+				  (
+						@M_Slr_no,
+						@Max_S_Slr_no,
+						@StdID,
+						@Roll,
+						@Obtain_Marks,
+                       @pass_Marks	,
+                       @full_Marks	,
+						@EntryBy,
+						@EntryDate
+					)		
+			end
+
+end
+
+if @mode='U'-- Here - Means previous data is to be deleated
+
+	begin
+		If Exists (Select S_Slr_no From Result_Sub Where S_Slr_no=@S_Slr_no and M_Slr_no=@M_Slr_no)
+
+			Update Result_Sub 
+  
+			Set  obtainedMarks      = @Obtain_Marks,
+				 EntryBy	= @EntryBy,
+			 	EntryDate	= @EntryDate
+ 	     Where M_Slr_no=@M_Slr_no and S_Slr_no=@S_Slr_no
+	end
+
+
+if @mode='D'-- Here - Means previous data is to be deleated
+
+	begin
+		If Exists (Select S_Slr_no From Result_Sub Where S_Slr_no=@S_Slr_no and M_Slr_no=@M_Slr_no)
+
+		Delete From Result_Sub where S_Slr_no=@S_Slr_no and M_Slr_no=@M_Slr_no
+	end
+
+
+if @@Error=0
+	Commit
+else
+	Rollback
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+ALTER     procedure SubjectInformation_SUB
+(
+			    @Mode varchar(2),
+				@M_code	varchar(10),
+                @Sub_code	varchar(10),
+                @class_code	varchar(10),  
+			    @Sub_title	Varchar(200),
+                @techar_id  varchar(10),             
+				@EntryBy	varchar(10),
+				@entryDate	datetime
+				
+)
+with encryption
+AS
+		
+			if @mode='S' 
+                  begin
+ 
+					 if not exists (select M_code from Subject_Info_sub where  Sub_code = @Sub_code and Class_code= @class_code )
+
+                         insert into  subject_info_sub
+                                  (M_code,Sub_code,class_code,Sub_title,Teacher_id,Entry_by,Entry_date)
+
+                             values(
+                                    @M_code,@Sub_code,@class_code,@Sub_title,
+                                @techar_id ,@EntryBy,@entryDate)
+
+			end 
+
+
+
+
+            if @mode='U' 
+                  begin
+ 
+					 if  exists (select M_code from Subject_Info_sub where M_code = @M_code and Sub_code = @Sub_code and class_code=@class_code )
+
+                         update  subject_info_sub
+                                  set Sub_title=@Sub_title,
+                                     Teacher_id=@techar_id
+                         where M_code = @M_code and Sub_code = @Sub_code and  class_code=@class_code 
+			end 
+
+
+
+          
+
+            if @mode='D' 
+                  begin
+ 
+					 if  exists (select M_code from Subject_Info_sub where M_code = @M_code and Sub_code = @Sub_code and class_code=@class_code)
+
+                         delete from  subject_info_sub
+                                where M_code = @M_code and Sub_code = @Sub_code and class_code=@class_code
+                 end
+                           
+	 
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+/*
+ select a.StdID,a.M_Slr_no,a.S_Slr_no
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID='00001'
+        and b.SectionID='00002'
+        and b.SubID= '00001'  and 
+          b.AcaYr= '2006' and           
+          b.ExamType ='01' and         
+          b.ExamID= '01'   
+*/
+
+---select * from Rpt_marks_Sheet_all ('a','00001','00002','00001','2006','01','01')
+create function Rpt_marks_Sheet_all
+(
+   @mode               varchar(1),
+   @ClassID            varchar(12),
+   @SectionID          varchar(12),
+   @SubID              varchar(12),
+   @AcaYr              varchar(6),
+   @ExamType           varchar(6),
+   @ExamID             varchar(6)
+     
+)
+returns  @marksheet table
+(
+ std_id  varchar(15),
+ class_Roll int,
+ std_name varchar(100),
+ mark_wri decimal,
+ mark_oral decimal,
+ mark_prac decimal,
+ f_mark_wri decimal,
+ f_mark_oral decimal,
+ f_mark_prac decimal,
+ p_mark_wri decimal,
+ p_mark_oral decimal,
+ p_mark_prac decimal,
+ sub_teacher varchar(90)
+)
+with encryption
+as
+ begin
+declare @max_serial as int
+declare @class_roll as int
+declare @obtained_marks as int
+declare @PassMarks as int
+declare @fullMarks as int
+declare @StdID as varchar(15)
+declare @Std_Name as varchar(100)
+declare @tea_Name as varchar(100)
+declare @M_Slr_no as int
+declare @S_Slr_no  int
+declare mycursor cursor for
+   select a.StdID,a.M_Slr_no,a.S_Slr_no
+       from   result_main b, result_sub a 
+      where a.M_Slr_no=b.M_Slr_no  and
+          b.ClassID=@ClassID 
+        and b.SectionID=@SectionID
+        and b.SubID= @SubID  and 
+          b.AcaYr= @AcaYr and           
+          b.ExamType =@ExamType and         
+          b.ExamID= @ExamID and b.categoryid='00002'   
+        
+if @mode='a' 
+begin
+ open mycursor
+ fetch next from mycursor into @StdID,@M_Slr_no,@S_Slr_no
+ while @@fetch_status=0 
+     begin
+      select @Std_Name=(select studentname from studentinfo where
+           studentid=a.StdID),
+           @class_roll=a.Roll,
+           @obtained_marks=a.obtainedMarks,@PassMarks=a.PassMarks,
+           @fullMarks=a.Fullmarks
+         from   result_main b, result_sub a 
+      where 
+           b.categoryid='00002' and
+           a.M_Slr_no=b.M_Slr_no
+          and 
+          ( a.M_Slr_no=@M_Slr_no and
+            a.S_Slr_no=@S_Slr_no )
+  select @PassMarks=passmarks
+           from subjectmarksdistribution
+    where  categoryid='00002' and  
+             ClassID=@ClassID and
+            SubjectID =@SubID  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+ select @fullMarks=fullmarks
+           from subjectmarksdistribution
+    where    categoryid='00002' and  
+             ClassID=@ClassID and
+            SubjectID =@SubID  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+
+    set @tea_Name=( SELECT Emp_Per_Info.Emp_fna 
+            + ' ' + Emp_Per_Info.Emp_mna
+           + ' ' + Emp_Per_Info.Emp_lna 
+          From Emp_Per_Info 
+     where Emp_Per_Info.Emp_id=
+         (select teacher_id 
+             from subject_info_sub
+     where class_code= @ClassID and sub_code=@SubID))
+
+   insert into @marksheet values(@StdID,@class_roll,
+                   @Std_Name,@obtained_marks,0,0,
+               @fullMarks,0,0,@PassMarks,0,0, @tea_Name)
+
+      set @obtained_marks=0 
+        set @PassMarks=0
+        set @fullMarks=0  
+
+    select @obtained_marks=a.obtainedMarks
+         from   result_main b, result_sub a 
+      where 
+           b.categoryid='00001' and --oral
+           a.M_Slr_no=b.M_Slr_no and 
+           a.StdID=@StdID
+
+    select @PassMarks=passmarks
+           from subjectmarksdistribution
+    where  categoryid='00001' and  
+             ClassID=@ClassID and
+            SubjectID =@SubID  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+ select @fullMarks=fullmarks
+           from subjectmarksdistribution
+    where    categoryid='00001' and  
+             ClassID=@ClassID and
+            SubjectID =@SubID  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+  update @marksheet
+       set mark_oral=@obtained_marks,
+          f_mark_oral=@fullMarks,
+          p_mark_oral=@PassMarks 
+   where  std_id=@StdID
+                 
+        set @obtained_marks=0 
+        set @PassMarks=0
+        set @fullMarks=0   
+
+ select @obtained_marks=a.obtainedMarks
+         from   result_main b, result_sub a 
+      where 
+           b.categoryid='00003' and --practical
+           a.M_Slr_no=b.M_Slr_no and 
+           a.StdID=@StdID
+select @PassMarks=passmarks
+           from subjectmarksdistribution
+    where  categoryid='00003' and  
+             ClassID=@ClassID and
+            SubjectID =@SubID  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+ select @fullMarks=fullmarks
+           from subjectmarksdistribution
+    where    categoryid='00003' and  
+             ClassID=@ClassID and
+            SubjectID =@SubID  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+
+  update @marksheet
+       set mark_prac=@obtained_marks,
+          f_mark_prac=@fullMarks,
+          p_mark_prac=@PassMarks 
+   where  std_id=@StdID
+
+   fetch next from mycursor into @StdID,@M_Slr_no,@S_Slr_no
+end 
+end
+Close MyCursor
+deallocate MyCursor
+
+ return
+end
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS OFF 
+GO
+
+---select * from Rpt_marks_distribution('a','00001','01','01')
+alter  function Rpt_marks_distribution
+(
+   @mode               varchar(1),
+   @ClassID            varchar(12),
+   @ExamType           varchar(6),
+   @ExamID             varchar(6)
+     
+)
+returns  @marksdistribution table
+(
+ subjectid    varchar(15) ,
+ subjectTitle varchar(150),
+ f_mark_wri decimal,
+ f_mark_oral decimal,
+ f_mark_prac decimal,
+ p_mark_wri decimal,
+ p_mark_oral decimal,
+ p_mark_prac decimal
+ 
+)
+with encryption
+as
+
+begin
+	declare @PassMarks_wr as decimal
+	declare @fullMarks_wr as decimal
+	declare @PassMarks_or as decimal
+	declare @fullMarks_or as decimal
+	declare @PassMarks_pr as decimal
+	declare @fullMarks_pr as decimal
+	
+	declare @subject  as varchar(50)
+	declare @subjectName  as varchar(200)
+
+
+declare mycursor cursor for
+   select  SubjectID
+       from   subjectmarksdistribution
+      where ClassID=@ClassID and 
+            term_code=@ExamType and
+            Exam_code = @ExamID
+            and categoryid='00002'   
+        
+if @mode='a' 
+begin
+ open mycursor
+ fetch next from mycursor into @subject
+ while @@fetch_status=0 
+     begin
+        set @PassMarks_wr=0
+	set @fullMarks_wr=0
+	set @PassMarks_or=0
+	set @fullMarks_or=0
+	set @PassMarks_pr=0
+	set @fullMarks_pr=0
+ 
+
+      select @subjectName=Sub_title from subject_info_sub
+       where Class_code=@ClassID and Sub_code=@subject
+
+
+    
+  ---written marks------
+
+    
+      select @PassMarks_wr=passmarks
+           from subjectmarksdistribution
+    where  categoryid='00002' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+   select @fullMarks_wr=fullmarks
+           from subjectmarksdistribution
+    where   categoryid='00002' and  
+            ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and Exam_code=@ExamID
+ 
+   ---oral marks------
+    select @PassMarks_or=passmarks
+           from subjectmarksdistribution
+    where  categoryid='00001' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+    select @fullMarks_or=fullmarks
+           from subjectmarksdistribution
+    where    categoryid='00001' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+  
+ ---practical marks------
+   select @PassMarks_pr=passmarks
+           from subjectmarksdistribution
+    where  categoryid='00003' and  
+            ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+ select @fullMarks_pr=fullmarks
+           from subjectmarksdistribution
+    where    categoryid='00003' and  
+             ClassID=@ClassID and
+            SubjectID =@subject  and    
+            term_code=@ExamType  
+           and  Exam_code=@ExamID
+
+
+insert into @marksdistribution
+     values(@subject,@subjectName
+         ,@fullMarks_wr,@fullMarks_or,@fullMarks_pr,
+         @PassMarks_wr, @PassMarks_or, @PassMarks_pr)
+
+----
+                   
+
+
+   fetch next from mycursor into @subject
+end 
+end
+Close MyCursor
+deallocate MyCursor
+
+ return
+end
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+alter table  StudentAttendanceLeaveInfo
+alter column aca_yr  varchar(50)
+
+alter table  StudentAttendanceLeaveInfo
+alter column exam_term  varchar(50)
+
+
+alter table  StudentAttendanceLeaveInfo
+alter column exam_type  varchar(50)
+
+
+
+
+
+
+
+/*
+exec StudentAttendance 's','STI-000001','M','00001','00001',111 ,'P','N'
+*/
+ALTER         procedure StudentAttendance 
+(
+        @mode               varchar(1),	
+	@StudentId			varchar(15),
+	@Shift	 			Varchar(30),
+	@ClassID			varchar(5),
+	@SectionID			varchar(5),
+	@classRoll			int,
+	@Present			varchar(1),
+	@PresentCancel		varchar(1),
+        @attn_date			datetime,
+        @aca_yr                        varchar(10),
+        @exam_term                     varchar(10),
+        @exam_type                     varchar(10)
+)
+with encryption
+as
+
+  declare @var_std_id varchar(15) 
+  declare @class_roll_no int
+  if @mode='a'
+       begin
+           declare my_cursor cursor for
+           select distinct(StudentId)  from StudentAdmission 
+           where ClassId=@ClassID 
+                 and SectionId=@SectionID
+                 and Shift=@Shift 
+           open my_cursor
+         
+          fetch next from my_cursor into @var_std_id
+          select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@var_std_id 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+                  where StudentId=@var_std_id )
+
+          while @@fetch_status=0
+           begin
+            insert into StudentAttendanceLeaveInfo
+			(
+
+				StudentId	,
+				Shift	 	,
+				ClassID		,
+				SectionID	,
+				classRoll	,
+				Present		,
+				EntryTime	,
+                                  attn_date,
+				PresentCancel,
+                                aca_yr,
+                                exam_term,
+                                Exam_type
+				
+			)
+			values
+			(
+				@var_std_id	,
+				@Shift	 	,
+				@ClassID		,
+				@SectionID	,
+				@class_roll_no	,
+				@Present		,
+				getdate()	,
+                                @attn_date,
+				@PresentCancel	,
+                                @aca_yr,
+                                @exam_term,
+                                @exam_type
+			)
+           
+                    
+          fetch next from my_cursor into @var_std_id
+          select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@var_std_id 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+                  where StudentId=@var_std_id ) 
+
+           end
+      end
+               
+if @mode='s'
+       begin
+         select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@StudentId 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+             where StudentId=@StudentId )
+
+           insert into StudentAttendanceLeaveInfo
+			(
+				StudentId	,
+				Shift	 	,
+				ClassID		,
+				SectionID	,
+				classRoll	,
+				Present		,
+				EntryTime	,
+                                attn_date,
+				PresentCancel,
+                                aca_yr,
+                                exam_term,
+                                Exam_type
+				
+			)
+			values
+			(
+				@StudentId	,
+				@Shift	 	,
+				@ClassID		,
+				@SectionID	,
+				@class_roll_no	,
+				@Present		,
+				getdate(),
+                                @attn_date,
+				@PresentCancel	,
+                                @aca_yr,
+                                @exam_term,
+                                @exam_type 
+			)
+          
+                 
+      end
+
+     if @mode='u'
+          begin
+             update StudentAttendanceLeaveInfo
+		  set Present=@Present,
+                    EntryTime=getdate(),
+                    PresentCancel=@PresentCancel	         	
+                where  ClassID=@ClassID	
+                      and SectionID=@SectionID
+                      and Shift=@Shift  
+                      and attn_date= @attn_date
+          end
+
+  if @mode='p'
+          begin
+             update StudentAttendanceLeaveInfo
+		  set Present=@Present,
+                    EntryTime=getdate(),
+                    PresentCancel=@PresentCancel	         	
+                where  ClassID=@ClassID	
+                      and SectionID=@SectionID
+                      and Shift=@Shift  
+                      and attn_date= @attn_date
+                      and StudentId=@StudentId
+          end
+
+
+close my_cursor
+deallocate my_cursor
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+

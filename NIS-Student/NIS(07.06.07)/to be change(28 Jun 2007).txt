@@ -1,0 +1,743 @@
+CREATE TABLE [StudentInfo] (
+	[StudentID] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[StudentName] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[StuFatherName] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[StuMotherName] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[LegalGerdian] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuMarraigeDate] [datetime] NULL ,
+	[StuMoOrFaLet] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[StuBroNo] [tinyint] NULL ,
+	[StuSisNo] [tinyint] NULL ,
+	[StuCountryOfBirth] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuReligion] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuDateOfBirth] [datetime] NULL ,
+	[Computer] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Internet] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuHight] [float] NULL ,
+	[StuWeight] [float] NULL ,
+	[StuBloodGroup] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuStreetPAddress] [varchar] (150) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuPDistrict] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuPCountry] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuCStreetAddress] [varchar] (150) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuCDistrict] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuCCountry] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuPhone] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[StuEmail] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[ImmAddress] [varchar] (150) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[ImmPhone] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[ImmMob] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[NextvaccineDate] [datetime] NULL ,
+	[StuEntryDate] [datetime] NOT NULL ,
+	[StuEntryBy] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Father_Profession] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Mother_profession] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Father_Avg_Income] [numeric](18, 0) NULL ,
+	[Mother_Avg_Income] [numeric](18, 0) NULL ,
+
+
+
+	[Previous_Class] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+
+
+
+        add this field:
+
+    
+	[TobeAdmittedClass] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,]
+
+
+
+
+	[Previous_School_name] [varchar] (200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Previous_School_phone] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Previous_School_Address] [varchar] (250) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Certificate_no] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Certificate_date] [datetime] NULL ,
+	[Std_Photo] [image] NULL 
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+
+
+
+
+
+alter        procedure StudentInformation
+(
+	
+	@StudentID		varchar(15),
+	@StudentName	 	varchar(80),
+	@StuFatherName		varchar(80),
+	@StuMotherName		varchar(80),
+	@LegalGerdian		varchar(80),	
+	@StuMarraigeDate	Datetime,
+	@StuMoorFalet		varchar(1),
+	@Stubrono		tinyint,
+	@Stusisno		tinyint,
+	@StuCountryofBirth	varchar(5),
+	@StuReligion		varchar(20),
+	@StuDateofBirth		Datetime,
+	@Computer		varchar(1),
+	@Internet		varchar(1),
+	@EntryDate		DateTime,
+	@EntryBY		varchar(50),
+        @Father_Profession     varchar(50),
+	@Mother_profession      varchar(50),
+	@Father_Avg_Income  numeric(18, 0),
+	@Mother_Avg_Income  numeric(18, 0)  ,
+	@Previous_Class   varchar(15) ,
+	@Previous_School_name varchar(150) ,
+	@Previous_School_phone varchar(50) ,
+	@Previous_School_Address varchar(150),
+	@Certificate_no varchar(50) ,
+	@Certificate_date  datetime ,
+	@Std_Photo image,
+        @tobeAdmitted  varchar(50)   
+	
+)
+
+as
+
+Declare 
+
+	@MaxSLNo int,
+	@StID char(15)
+
+
+
+if @StudentID is null
+
+	begin
+	
+		/*SELECT @MaxSLNo = select  isnull(max(cast(StudentID as int)),0)
+			FROM StudentInfo */
+		
+		SELECT  @MaxSLNo = isnull(max(cast(substring(StudentID,5,11) as int)),0)
+				FROM StudentInfo 
+
+
+
+		if @MaxSLNo=0
+			set @MaxSLNo=1
+		else
+			set @MaxSLNo=@MaxSLNo+1
+
+		select @StID= dbo.PadString(@MaxSLNo,6,'0','L')
+
+				
+		set @StudentID='STI-'+@StID
+	end
+
+if exists (select StudentID from StudentInfo where  StudentID= @StudentID) 		
+
+Update StudentInfo set
+
+	
+	StudentID			=	@StudentID		,
+	StudentName	 		=	@StudentName	 	,
+	StuFatherName			=	@StuFatherName		,
+	StuMotherName			=	@StuMotherName		,
+	LegalGerdian			=	@LegalGerdian		,
+	StuMarraigeDate			=	@StuMarraigeDate	,
+	StuMoorFalet			=	@StuMoorFalet		,
+	Stubrono			=	@Stubrono		,
+	Stusisno			=	@Stusisno		,
+	StuCountryofBirth		=	@StuCountryofBirth	,
+	StuReligion			=	@StuReligion		,
+	StuDateofBirth			=	@StuDateofBirth		,
+	Computer			=	@Computer		,
+	Internet			=	@Internet		,
+	stuEntryDate			=	@EntryDate		,
+	stuEntryBY			=	@EntryBY		,
+	Father_Profession               =       @Father_Profession      ,
+	Mother_profession               =       @Mother_profession      ,
+	Father_Avg_Income               =       @Father_Avg_Income      ,
+	Mother_Avg_Income               =       @Mother_Avg_Income      ,
+	Previous_Class                  =       @Previous_Class         ,
+	Previous_School_name            =       @Previous_School_name   ,
+	Previous_School_phone           =       @Previous_School_phone,
+	Previous_School_Address         =       @Previous_School_Address,
+	Certificate_no                  =       @Certificate_no  ,
+	Certificate_date                =       @Certificate_date ,
+	Std_Photo                       =       @Std_Photo        ,
+	TobeAdmittedClass               =       @tobeAdmitted
+	where StudentID= @StudentID 	
+else
+ insert into StudentInfo 
+
+(
+	StudentID			,
+	StudentName	 		,
+	StuFatherName			,
+	StuMotherName			,
+	LegalGerdian			,
+	StuMarraigeDate			,
+	StuMoorFalet			,
+	Stubrono			,
+	Stusisno			,
+	StuCountryofBirth		,
+	StuReligion			,
+	StuDateofBirth			,
+	Computer			,
+	Internet			,
+	stuEntryDate			,
+        stuEntryBY			,
+        Father_Profession  ,
+	Mother_profession   ,
+	Father_Avg_Income  ,
+	Mother_Avg_Income   ,
+	Previous_Class   ,
+        TobeAdmittedClass ,
+	Previous_School_name  ,
+	Previous_School_phone  ,
+	Previous_School_Address ,
+	Certificate_no  ,
+	Certificate_date  ,
+	Std_Photo 
+		
+	
+)
+values
+(
+	@StudentID			,
+	@StudentName	 		,
+	@StuFatherName			,
+	@StuMotherName			,
+	@LegalGerdian			,
+	@StuMarraigeDate			,
+	@StuMoorFalet			,
+	@Stubrono			,
+	@Stusisno			,
+	@StuCountryofBirth		,
+	@StuReligion			,
+	@StuDateofBirth			,	
+	@Computer			,
+	@Internet			,
+	@EntryDate			,
+        @EntryBY			,
+        @Father_Profession ,
+	@Mother_profession     ,
+	@Father_Avg_Income  ,
+	@Mother_Avg_Income    ,
+	@Previous_Class    ,
+        @tobeAdmitted, 
+	@Previous_School_name  ,
+	@Previous_School_phone  ,
+	@Previous_School_Address ,
+	@Certificate_no  ,
+	@Certificate_date  ,
+	@Std_Photo 
+)
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+CREATE TABLE [StudentAdmission] (
+	[StudentId] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[AdmissionDate] [datetime] NOT NULL ,
+	[Shift] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[ClassId] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[SectionId] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[ClassRoll] [int] NOT NULL ,
+	[EntryBy] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[EntryDate] [datetime] NOT NULL ,
+	[AdmitApproveBy] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[AdmitApproveDate] [datetime] NULL ,
+	[Approval] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[AdmissionCancel] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[serial_no] [int] NULL ,
+	[active_std] [tinyint] NULL ,
+	[aca_yr] [varchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+
+
+ add this field:
+	[Student_status] [varchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL 
+
+
+) ON [PRIMARY]
+GO
+
+
+
+
+
+
+
+alter  procedure StuAdmissionEvaluationInformation
+(
+	@mode                                   integer,
+	@StudentID				varchar(15),
+	@AdmissionEvaluationDate		datetime,
+	@Shift					varchar(30),
+	@ClassID				varchar(5),
+	@SectionID				varchar(5),
+	@ClassRoll				int,
+	@EntryBy				varchar(10),
+	@Entrydate				Datetime,
+	@Approval				varchar(1),
+	@AdmissionCancel			varchar(1),
+	@Active					varchar(1),
+	@ActiveClass				varchar(1),
+        @Aca_yr				        varchar(6),
+        @student_status				varchar(2) 
+)
+As
+begin
+
+if @mode=1 
+   begin
+ if  exists(select StudentID from StudentAdmission where StudentID=@StudentID and ClassID=@ClassID and Aca_yr=@Aca_yr )
+   begin
+update StudentAdmission set
+	AdmissionDate		= 	@AdmissionEvaluationDate,
+	Shift			= 	@Shift,
+	ClassID			= 	@ClassID,
+	SectionID		= 	@SectionID,
+	ClassRoll		= 	@ClassRoll,
+	EntryBy			= 	@EntryBy,
+	Entrydate		= 	@Entrydate,
+	Approval		= 	@Approval,
+	AdmissionCancel		= 	@AdmissionCancel,
+        Aca_yr                  =       @Aca_yr
+
+where StudentID=@StudentID and ClassID=@ClassID and  Aca_yr=@Aca_yr
+end
+if not exists(select StudentID from StudentAdmission where StudentID=@StudentID and ClassID=@ClassID and Aca_yr=@Aca_yr)
+  begin
+   declare @max_serial as int
+
+  select   @max_serial=isnull(max(serial_no),0)+1 from StudentAdmission
+
+ insert into StudentAdmission
+(
+	StudentID		,
+	AdmissionDate		,
+	Shift			,
+	ClassID			,
+	SectionID		,
+	ClassRoll		,
+	EntryBy			,
+	Entrydate		,
+	--AdmitApproveBy		,
+	--AdmitApproveDate	,
+	Approval		,
+	AdmissionCancel,
+    serial_no,
+     aca_yr,
+     active_std,
+     student_status
+	
+)
+values
+(
+	@StudentID		,
+	@AdmissionEvaluationDate		,
+	@Shift			,
+	@ClassID			,
+	@SectionID		,
+	@ClassRoll		,
+	@EntryBy			,
+	@Entrydate		,
+	--@AdmitApproveBy		,
+	--@AdmitApproveDate	,
+	@Approval,	
+	@AdmissionCancel,
+    @max_serial,
+    @aca_yr,1,@student_status)
+end 
+if exists(select StudentID from StudentEvaluation where StudentID=@StudentID)
+  begin
+update StudentEvaluation set
+
+
+	
+	EvaluationDate		= @AdmissionEvaluationDate,
+	Shift			= @Shift,
+	ClassID			= @ClassID,
+	SectionID		= @SectionID,
+	ClassRoll		= @ClassRoll,
+	EntryBy			= @EntryBy,
+	Entrydate		= @Entrydate,
+	Active			= @Active,
+	ActiveClass		=@ActiveClass
+
+
+
+
+where StudentID=@StudentID
+end 
+else
+  begin
+
+ insert into StudentEvaluation
+
+(
+	StudentID		,
+	EvaluationDate		,
+	Shift			,
+	ClassID			,
+	SectionID		,
+	ClassRoll		,
+	EntryBy			,
+	Entrydate		,
+	Active			,
+	ActiveClass
+		
+	
+)
+values
+(
+	@StudentID		,
+	@AdmissionEvaluationDate		,
+	@Shift			,
+	@ClassID			,
+	@SectionID		,
+	@ClassRoll		,
+	@EntryBy			,
+	@Entrydate		,
+	@Active			,
+	@ActiveClass
+    
+)
+ end
+end -------end of mode =1
+
+if @mode=2
+      begin
+        delete from StudentAdmission where StudentID=@StudentID and ClassID=@ClassID and Aca_yr=@Aca_yr
+  end 
+
+
+
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+CREATE TABLE [Fee_setup] (
+	[Srl_No] [int] NOT NULL ,
+	[Class_id] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Fee_Code] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Acc_code] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Fee_amt] [decimal](18, 2) NOT NULL ,
+
+Add this field:
+	[NoOfTimes] [int] NULL ,
+
+
+
+	[Entry_date] [datetime] NOT NULL ,
+	[Entry_by] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL 
+) ON [PRIMARY]
+GO
+
+
+
+alter   procedure Fee_setup_Save
+(
+	    @mode	   varchar(1),
+            @srl_no    integer,
+	    @class_id  varchar(5),
+	    @Fee_Code  varchar(10),
+            @acc_Code  varchar(20),
+            @fee_amt  varchar(20),
+            @EntryBy	varchar(10),
+	    @Entrydate	datetime,
+            @NoOfTimes   integer
+)
+	AS
+        
+
+         if @mode='s'
+               begin
+		    			if not exists (select srl_no from fee_setup where srl_no=@srl_no)
+                         
+                        set @Srl_No=(select isnull(max(Srl_No),0)+1 from fee_setup)
+		
+		                insert into fee_setup(Srl_No,Class_id,Fee_Code,Acc_code,Fee_amt,NoOfTimes,Entry_by,Entry_date) 
+		                            values(@Srl_No,@Class_id,@Fee_code,@Acc_code,@Fee_amt,@NoOfTimes,@EntryBy,@Entrydate)
+		            
+               end 
+
+
+       if @mode='u'
+               begin
+		    			if  exists (select srl_no from fee_setup where srl_no=@srl_no)
+		
+		                 update fee_setup set 
+                                             Fee_code=@Fee_code,
+											 Class_id=@class_id, 
+                                             Acc_code=@Acc_code,
+                                             Fee_amt=@Fee_amt,
+                                             NoOfTimes=@NoOfTimes,
+		                                     Entry_by=@EntryBy,
+		                                     Entry_date=@Entrydate
+
+
+                        where srl_no=@srl_no
+   
+                                               
+                end 
+ 
+
+       if @mode='d'
+               begin
+		    			if  exists (select srl_no from fee_setup where srl_no=@srl_no)
+		
+		                 delete from  fee_setup  where srl_no=@srl_no
+   
+                                               
+                end 
+ 
+ 
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+CREATE TABLE [Collec_master] (
+	[C_Srl] [int] NOT NULL ,
+	[Std_id] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Class_id] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Mon] [varchar] (4) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Yr] [varchar] (4) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Remark] [varchar] (150) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Entry_date] [datetime] NOT NULL ,
+	[Entry_by] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Collec_date] [datetime] NOT NULL ,
+
+
+
+	[Collec_Status] [int] NULL 
+
+
+
+
+) ON [PRIMARY]
+GO
+
+
+
+
+
+
+
+
+
+alter   procedure Collec_master_Save
+(           @mode	   varchar(1),
+            @C_srl     integer,
+            @seq_no    integer,
+            @mon       varchar(4),
+            @yr        varchar(5),
+            @collec_date datetime,   
+            @Remark    varchar(150),
+			@EntryBy	varchar(10),
+			@Entrydate	datetime,
+           @student_id varchar(50),  
+           @class_id varchar(20)
+           
+)
+	AS
+
+         declare  @u_id as varchar(20)
+         declare  @class_code as varchar(20)
+         
+         declare  @fee_code as varchar(20)
+         declare  @Act_amount as decimal
+         declare  @Fine as decimal 
+         declare  @Discount as decimal
+         declare  @std_id as varchar(15)
+        
+         declare @loc_C_srl as integer
+         declare @srl_no as integer 
+
+    
+ 
+ 
+       if @mode='s'
+               begin
+                    set @loc_c_srl=(select isnull(max(C_srl),0)+1 from Collec_master)
+                    insert into Collec_master values(@loc_c_srl,@student_id,@class_id,@mon,@yr,@Remark,getdate(),@entryby,@collec_date,0) 
+               end
+              
+/*
+                      declare collec_cursor cursor for
+                        select Srl_no,u_id,class_code,Fee_code,Act_amount,Fine,Discount,std_id
+                               from temp_collect
+                      where seq_no=@seq_no
+
+
+		    			set @loc_c_srl=(select isnull(max(C_srl),0)+1 from Collec_master)
+
+                   Open collec_cursor
+
+ 					   Fetch Next From collec_cursor into @Srl_no,@u_id,@class_code,@Fee_code,@Act_amount,@Fine,@Discount,@std_id
+
+                       insert into Collec_master(C_srl,Std_id,class_id,Mon,Yr,Remark,Entry_by,Entry_date,Collec_date) 
+				                            values(@loc_c_srl,@Std_id,@class_code,@Mon,@Yr,@Remark,@EntryBy,@Entrydate,@Collec_date)	
+
+                        set @loc_c_srl=(select isnull(max(C_srl),0) from Collec_master)
+
+                     ---  insert into Collec_details(C_Srl,serial_no,Fee_code,Act_Amount,Discount,Fine,Collec_date,Entry_by,Entry_date)
+                                ---       values( @loc_c_srl,@Srl_no,@Fee_code,@Act_Amount,@Discount,@Fine,@Collec_date,@Entryby,@Entrydate) 
+		            
+
+                      While @@Fetch_Status = 0
+                           begin
+			                
+         				    insert into Collec_details(C_Srl,serial_no,Fee_code,Act_Amount,Discount,Fine,Entry_by,Entry_date)
+                                       values( @loc_c_srl,@Srl_no,@Fee_code,@Act_Amount,@Discount,@Fine,@Entryby,@Entrydate) 
+		                                                         
+
+                          Fetch Next From collec_cursor into @Srl_no,@u_id,@class_code,@Fee_code,@Act_amount,@Fine,@Discount,@std_id
+                   end 
+               End
+
+              delete from temp_collect
+           where seq_no=@seq_no
+       
+	        Close collec_cursor
+	       Deallocate collec_cursor
+      
+
+
+
+       if @mode='u'
+               begin
+		    			if  exists (select C_srl from Collec_master where C_srl=@C_srl)
+		
+		                 update Collec_master set 
+                                             Std_id=@Std_id,
+											 Class_id=@class_id, 
+                                             Remark=@Remark,
+		                                     Entry_by=@EntryBy,
+		                                     Entry_date=@Entrydate
+
+                        where C_srl=@C_srl
+                        
+                       if  exists (select C_srl from Collec_details where C_srl=@C_srl and fee_code=@fee_code)
+                            begin
+		                         update Collec_details set 
+		                                             Fee_code=@Fee_code,
+													 amount=@amount, 
+		                                             Entry_by=@EntryBy,
+				                                     Entry_date=@Entrydate
+		
+		                        where C_srl=@C_srl and fee_code=@fee_code 
+		                   end  
+
+
+
+   
+                                               
+                  end 
+ 
+
+       if @mode='d'
+               begin
+		    			if  exists (select C_srl from Collec_master where C_srl=@C_srl)
+		
+		                 delete from Collec_master where C_srl=@C_srl  
+                         delete from Collec_details where C_srl=@C_srl    
+                end 
+
+
+       if @mode='p'
+               begin
+		    			if  exists (select C_srl from Collec_details where C_srl=@C_srl and fee_code=@fee_code)
+		
+		                 delete from Collec_details where C_srl=@C_srl and fee_code=@fee_code  
+                end 
+ 
+ 
+
+*/
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+

@@ -1,0 +1,68 @@
+
+ALTER    procedure SubjectInformation_SUB
+(
+			    @Mode varchar(2),
+				@M_code	varchar(10),
+                @Sub_code	varchar(10),
+                @class_code	varchar(10),  
+			    @Sub_title	Varchar(200),
+                @techar_id  varchar(10),             
+				@EntryBy	varchar(10),
+				@entryDate	datetime
+				
+)
+---with encryption
+AS
+		
+			if @mode='S' 
+                  begin
+ 
+					 if not exists (select M_code from Subject_Info_sub where M_code = @M_code and Sub_code = @Sub_code and Class_code= @class_code )
+
+                         insert into  subject_info_sub
+                                  (M_code,Sub_code,class_code,Sub_title,Teacher_id,Entry_by,Entry_date)
+
+                             values(
+                                    @M_code,@Sub_code,@class_code,@Sub_title,
+                                @techar_id ,@EntryBy,@entryDate)
+
+			end 
+
+
+
+
+            if @mode='U' 
+                  begin
+ 
+					 if  exists (select M_code from Subject_Info_sub where M_code = @M_code and Sub_code = @Sub_code and class_code=@class_code )
+
+                         update  subject_info_sub
+                                  set Sub_title=@Sub_title,
+                                     Teacher_id=@techar_id
+                         where M_code = @M_code and Sub_code = @Sub_code and  class_code=@class_code 
+			end 
+
+
+
+          
+
+            if @mode='D' 
+                  begin
+ 
+					 if  exists (select M_code from Subject_Info_sub where M_code = @M_code and Sub_code = @Sub_code and class_code=@class_code)
+
+                         delete from  subject_info_sub
+                                where M_code = @M_code and Sub_code = @Sub_code and class_code=@class_code
+                 end
+                           
+	 
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+

@@ -1,0 +1,8 @@
+connectionstring = 110, 110, 424, 424, C
+frmMarksCat = 22, 22, 336, 336, C, -28, 173, 353, 487, C
+frmclassinfo = 0, 0, 444, 314, C, -55, 72, 353, 386, C
+frmsubmarksdis = 88, 88, 482, 402, C, 132, 132, 586, 446, C
+frmlectureinfo = 44, 44, 448, 358, C, 22, 22, 457, 336, C
+frmsubjectinfo = 22, 22, 381, 336, C, 44, 44, 479, 358, C
+frmstudentInfo = 0, 0, 0, 0, C, 22, 10, 626, 425, C
+frmFind = 0, 0, 0, 0, C, 0, 0, 349, 314, C

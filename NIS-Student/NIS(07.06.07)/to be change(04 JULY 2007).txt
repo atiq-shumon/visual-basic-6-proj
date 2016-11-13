@@ -1,0 +1,320 @@
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+ALTER    procedure Collec_master_Save
+(           @mode	   varchar(1),
+            @C_srl     integer,
+            @seq_no    integer,
+            @mon       varchar(4),
+            @yr        varchar(5),
+            @collec_date datetime,   
+            @Remark    varchar(150),
+			@EntryBy	varchar(10),
+			@Entrydate	datetime,
+           @student_id varchar(50),  
+           @class_id varchar(20)
+           
+)
+	AS
+
+         declare  @u_id as varchar(20)
+         declare  @class_code as varchar(20)
+         
+         declare  @fee_code as varchar(20)
+         declare  @Act_amount as decimal
+         declare  @Fine as decimal 
+         declare  @Discount as decimal
+         declare  @std_id as varchar(15)
+        
+         declare @loc_C_srl as integer
+         declare @srl_no as integer 
+
+    
+ 
+ 
+       if @mode='s'
+               begin
+                    set @loc_c_srl=(select isnull(max(C_srl),0)+1 from Collec_master)
+                    insert into Collec_master values(@loc_c_srl,@student_id,@class_id,@mon,@yr,@Remark,getdate(),@entryby,@collec_date,0) 
+               end
+
+     if @mode='u'
+               begin
+                    update Collec_master   
+                       set Std_id=@student_id,
+                           class_id=@class_id,
+                           mon= @mon,
+                           yr=@yr,
+                           Remark=@Remark,
+                           Entry_by=@entryby,
+                           collec_date=@collec_date
+                   where   c_srl=@c_srl 
+               end
+              
+/*
+                      declare collec_cursor cursor for
+                        select Srl_no,u_id,class_code,Fee_code,Act_amount,Fine,Discount,std_id
+                               from temp_collect
+                      where seq_no=@seq_no
+
+
+		    			set @loc_c_srl=(select isnull(max(C_srl),0)+1 from Collec_master)
+
+                   Open collec_cursor
+
+ 					   Fetch Next From collec_cursor into @Srl_no,@u_id,@class_code,@Fee_code,@Act_amount,@Fine,@Discount,@std_id
+
+                       insert into Collec_master(C_srl,Std_id,class_id,Mon,Yr,Remark,Entry_by,Entry_date,Collec_date) 
+				                            values(@loc_c_srl,@Std_id,@class_code,@Mon,@Yr,@Remark,@EntryBy,@Entrydate,@Collec_date)	
+
+                        set @loc_c_srl=(select isnull(max(C_srl),0) from Collec_master)
+
+                     ---  insert into Collec_details(C_Srl,serial_no,Fee_code,Act_Amount,Discount,Fine,Collec_date,Entry_by,Entry_date)
+                                ---       values( @loc_c_srl,@Srl_no,@Fee_code,@Act_Amount,@Discount,@Fine,@Collec_date,@Entryby,@Entrydate) 
+		            
+
+                      While @@Fetch_Status = 0
+                           begin
+			                
+         				    insert into Collec_details(C_Srl,serial_no,Fee_code,Act_Amount,Discount,Fine,Entry_by,Entry_date)
+                                       values( @loc_c_srl,@Srl_no,@Fee_code,@Act_Amount,@Discount,@Fine,@Entryby,@Entrydate) 
+		                                                         
+
+                          Fetch Next From collec_cursor into @Srl_no,@u_id,@class_code,@Fee_code,@Act_amount,@Fine,@Discount,@std_id
+                   end 
+               End
+
+              delete from temp_collect
+           where seq_no=@seq_no
+       
+	        Close collec_cursor
+	       Deallocate collec_cursor
+      
+
+
+
+       if @mode='u'
+               begin
+		    			if  exists (select C_srl from Collec_master where C_srl=@C_srl)
+		
+		                 update Collec_master set 
+                                             Std_id=@Std_id,
+											 Class_id=@class_id, 
+                                             Remark=@Remark,
+		                                     Entry_by=@EntryBy,
+		                                     Entry_date=@Entrydate
+
+                        where C_srl=@C_srl
+                        
+                       if  exists (select C_srl from Collec_details where C_srl=@C_srl and fee_code=@fee_code)
+                            begin
+		                         update Collec_details set 
+		                                             Fee_code=@Fee_code,
+													 amount=@amount, 
+		                                             Entry_by=@EntryBy,
+				                                     Entry_date=@Entrydate
+		
+		                        where C_srl=@C_srl and fee_code=@fee_code 
+		                   end  
+
+
+
+   
+                                               
+                  end 
+ 
+
+       if @mode='d'
+               begin
+		    			if  exists (select C_srl from Collec_master where C_srl=@C_srl)
+		
+		                 delete from Collec_master where C_srl=@C_srl  
+                         delete from Collec_details where C_srl=@C_srl    
+                end 
+
+
+       if @mode='p'
+               begin
+		    			if  exists (select C_srl from Collec_details where C_srl=@C_srl and fee_code=@fee_code)
+		
+		                 delete from Collec_details where C_srl=@C_srl and fee_code=@fee_code  
+                end 
+ 
+ 
+
+*/
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+CREATE TABLE [Fee_setup] (
+	[Srl_No] [int] NOT NULL ,
+	[Class_id] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Fee_Code] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
+	[Acc_code] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Fee_amt] [decimal](18, 2) NOT NULL ,
+	[NoOfTimes] [int] NULL ,
+
+
+
+   add code:
+
+	[FeesStatus] [tinyint] NULL ,
+	[AlternativeFlag] [tinyint] NULL ,
+	[AlternativeCode] [varchar] (8) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+
+
+
+	[Entry_date] [datetime] NOT NULL ,
+	[Entry_by] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL 
+) ON [PRIMARY]
+GO
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+ALTER    procedure Fee_setup_Save
+(
+	    @mode	   varchar(1),
+            @srl_no    integer,
+	    @class_id  varchar(5),
+	    @Fee_Code  varchar(10),
+            @acc_Code  varchar(20),
+            @fee_amt  varchar(20),
+            @EntryBy	varchar(10),
+	    @Entrydate	datetime,
+            @NoOfTimes   integer,
+            @FeesStatus  tinyint,
+            @AlternativeFlag tinyint,
+            @AlternativeCode varchar(8)
+)
+	AS
+        
+
+         if @mode='s'
+               begin
+		    			if not exists (select srl_no from fee_setup where srl_no=@srl_no)
+                         
+                        set @Srl_No=(select isnull(max(Srl_No),0)+1 from fee_setup)
+		
+		                insert into fee_setup(Srl_No,Class_id,Fee_Code,Acc_code,Fee_amt,NoOfTimes,Entry_by,Entry_date,FeesStatus,AlternativeFlag,AlternativeCode) 
+		                            values(@Srl_No,@Class_id,@Fee_code,@Acc_code,@Fee_amt,@NoOfTimes,@EntryBy,@Entrydate,@FeesStatus,@AlternativeFlag,@AlternativeCode)
+		            
+               end 
+
+
+       if @mode='u'
+               begin
+		    			if  exists (select srl_no from fee_setup where srl_no=@srl_no)
+		
+		                 update fee_setup set 
+                                             Fee_code=@Fee_code,
+											 Class_id=@class_id, 
+                                             Acc_code=@Acc_code,
+                                             Fee_amt=@Fee_amt,
+                                             NoOfTimes=@NoOfTimes,
+		                             Entry_by=@EntryBy,
+		                             Entry_date=@Entrydate,
+                                             FeesStatus=@FeesStatus,
+                                             AlternativeFlag=@AlternativeFlag,
+                                             AlternativeCode=@AlternativeCode
+                        where srl_no=@srl_no
+   
+                                               
+                end 
+ 
+
+       if @mode='d'
+               begin
+		    			if  exists (select srl_no from fee_setup where srl_no=@srl_no)
+		
+		                 delete from  fee_setup  where srl_no=@srl_no
+   
+                                               
+                end 
+ 
+ 
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+alter    Procedure rptStudentCollectionInfo
+
+(
+        @mode integer,
+	@StudentID varchar(50),
+        @Mon varchar(10),
+        @yr  varchar(10)
+
+)
+
+as
+   if @mode=1 -----student wise all collection
+        begin
+             SELECT    m.std_id,S.StudentName,m.C_Srl,m.Std_id,m.Class_id,m.mon,m.Yr,m.Collec_date,d.Fee_code,f.fee_title,c.classname,
+                 d.Act_Amount,d.Discount,d.Fine
+             from collec_master m,collec_details d,fee_info f,STUDENTINFO S,classinfo c
+           WHERE  m.Std_id =@StudentID and m.C_Srl=d.C_Srl and f.fee_code=d.fee_code AND S.StudentID=M.Std_id and m.Class_id=c.classid
+        end 
+
+  if @mode=1 -----Monthly all collection
+        begin
+             SELECT    m.std_id,S.StudentName,m.C_Srl,m.Std_id,m.Class_id,m.Yr,m.Collec_date,d.Fee_code,f.fee_title,c.classname,
+                 d.Act_Amount,d.Discount,d.Fine
+             from collec_master m,collec_details d,fee_info f,STUDENTINFO S,classinfo c
+           WHERE  m.Mon =@Mon and m.yr=@yr and m.C_Srl=d.C_Srl and f.fee_code=d.fee_code AND S.StudentID=M.Std_id and m.Class_id=c.classid
+        end 
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+

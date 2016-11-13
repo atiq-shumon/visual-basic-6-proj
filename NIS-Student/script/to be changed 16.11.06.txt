@@ -1,0 +1,795 @@
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+ALTER   procedure StuAdmissionEvaluationInformation
+(
+	
+	@StudentID				varchar(15),
+	@AdmissionEvaluationDate		datetime,
+	@Shift					varchar(30),
+	@ClassID				varchar(5),
+	@SectionID				varchar(5),
+	@ClassRoll				int,
+	@EntryBy				varchar(10),
+	@Entrydate				Datetime,
+	--@AdmitApproveBy				varchar(10),
+	--@AdmitApproveDate			Datetime,
+	@Approval				varchar(1),
+	@AdmissionCancel			varchar(1),
+	@Active					varchar(1),
+	--@ActiveBy				varchar(10),
+	--@ActiveDate				Datetime,
+	@ActiveClass				varchar(1)
+	
+	
+	
+	
+	
+)
+with encryption
+As
+begin
+ if  exists(select StudentID from StudentAdmission where StudentID=@StudentID)
+   begin
+update StudentAdmission set
+	AdmissionDate		= 	@AdmissionEvaluationDate,
+	Shift			= 	@Shift,
+	ClassID			= 	@ClassID,
+	SectionID		= 	@SectionID,
+	ClassRoll		= 	@ClassRoll,
+	EntryBy			= 	@EntryBy,
+	Entrydate		= 	@Entrydate,
+	Approval		= 	@Approval,
+	AdmissionCancel		= 	@AdmissionCancel
+
+where StudentID=@StudentID
+end
+if not exists(select StudentID from StudentAdmission where StudentID=@StudentID)
+  begin
+   declare @max_serial as int
+
+  select   @max_serial=isnull(max(serial_no),0)+1 from StudentAdmission
+
+ insert into StudentAdmission
+(
+	StudentID		,
+	AdmissionDate		,
+	Shift			,
+	ClassID			,
+	SectionID		,
+	ClassRoll		,
+	EntryBy			,
+	Entrydate		,
+	--AdmitApproveBy		,
+	--AdmitApproveDate	,
+	Approval		,
+	AdmissionCancel,
+    serial_no
+	
+)
+values
+(
+	@StudentID		,
+	@AdmissionEvaluationDate		,
+	@Shift			,
+	@ClassID			,
+	@SectionID		,
+	@ClassRoll		,
+	@EntryBy			,
+	@Entrydate		,
+	--@AdmitApproveBy		,
+	--@AdmitApproveDate	,
+	@Approval		,
+	@AdmissionCancel,
+    @max_serial
+)
+end 
+if exists(select StudentID from StudentEvaluation where StudentID=@StudentID)
+  begin
+update StudentEvaluation set
+
+
+	
+	EvaluationDate		= @AdmissionEvaluationDate,
+	Shift			= @Shift,
+	ClassID			= @ClassID,
+	SectionID		= @SectionID,
+	ClassRoll		= @ClassRoll,
+	EntryBy			= @EntryBy,
+	Entrydate		= @Entrydate,
+	Active			= @Active,
+	ActiveClass		=@ActiveClass
+
+
+
+
+where StudentID=@StudentID
+end 
+else
+  begin
+
+ insert into StudentEvaluation
+
+(
+	StudentID		,
+	EvaluationDate		,
+	Shift			,
+	ClassID			,
+	SectionID		,
+	ClassRoll		,
+	EntryBy			,
+	Entrydate		,
+	Active			,
+	--ApproveBy		,
+	--ApproveDate		,
+	ActiveClass
+		
+	
+)
+values
+(
+	@StudentID		,
+	@AdmissionEvaluationDate		,
+	@Shift			,
+	@ClassID			,
+	@SectionID		,
+	@ClassRoll		,
+	@EntryBy			,
+	@Entrydate		,
+	@Active			,
+	--@AdmitApproveBy		,
+	--@AdmitApproveDate		,
+	@ActiveClass
+    
+)
+end
+
+end
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+/*
+exec StudentAttendance 's','STI-000001','M','00001','00001',111 ,'P','N'
+*/
+ALTER          procedure StudentAttendance 
+(
+        @mode               varchar(1),	
+	@StudentId			varchar(15),
+	@Shift	 			Varchar(30),
+	@ClassID			varchar(5),
+	@SectionID			varchar(5),
+	@classRoll			int,
+	@Present			varchar(1),
+	@PresentCancel		       varchar(1),
+        @attn_date			datetime,
+        @aca_yr                        varchar(10),
+        @exam_term                     varchar(10),
+        @exam_type                     varchar(10),
+        @leave                         varchar(1)
+)
+with encryption
+as
+  declare @var_std_id varchar(15) 
+  declare @class_roll_no int
+  if @mode='a'
+       begin
+           declare my_cursor cursor for
+           select distinct(StudentId)  from StudentAdmission 
+           where ClassId=@ClassID 
+                 and SectionId=@SectionID
+                 and Shift=@Shift 
+           open my_cursor
+         
+          fetch next from my_cursor into @var_std_id
+          select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@var_std_id 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+                  where StudentId=@var_std_id )
+
+          while @@fetch_status=0
+           begin
+            insert into StudentAttendanceLeaveInfo
+			(
+
+				StudentId	,
+				Shift	 	,
+				ClassID		,
+				SectionID	,
+				classRoll	,
+				Present		,
+				EntryTime	,
+                                  attn_date,
+				PresentCancel,
+                                aca_yr,
+                                exam_term,
+                                Exam_type,
+                                leave
+				
+			)
+			values
+			(
+				@var_std_id	,
+				@Shift	 	,
+				@ClassID		,
+				@SectionID	,
+				@class_roll_no	,
+				@Present		,
+				getdate()	,
+                                @attn_date,
+				@PresentCancel	,
+                                @aca_yr,
+                                @exam_term,
+                                @exam_type,
+                                @leave 
+			)
+           
+                    
+          fetch next from my_cursor into @var_std_id
+          select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@var_std_id 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+                  where StudentId=@var_std_id ) 
+
+           end
+      end
+               
+if @mode='s'
+       begin
+         select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@StudentId 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+             where StudentId=@StudentId )
+
+           insert into StudentAttendanceLeaveInfo
+			(
+				StudentId	,
+				Shift	 	,
+				ClassID		,
+				SectionID	,
+				classRoll	,
+				Present		,
+				EntryTime	,
+                                attn_date,
+				PresentCancel,
+                                aca_yr,
+                                exam_term,
+                                Exam_type,
+                                leave
+				
+			)
+			values
+			(
+				@StudentId	,
+				@Shift	 	,
+				@ClassID		,
+				@SectionID	,
+				@class_roll_no	,
+				@Present		,
+				getdate(),
+                                @attn_date,
+				@PresentCancel	,
+                                @aca_yr,
+                                @exam_term,
+                                @exam_type,
+                                @leave 
+			)
+          
+                 
+      end
+
+     if @mode='u'
+          begin
+             update StudentAttendanceLeaveInfo
+		  set Present=@Present,
+                    EntryTime=getdate(),
+                    PresentCancel=@PresentCancel,
+                    leave=@leave	         	
+                where  ClassID=@ClassID	
+                      and SectionID=@SectionID
+                      and Shift=@Shift  
+                      and attn_date= @attn_date
+          end
+
+  if @mode='p'
+          begin
+             update StudentAttendanceLeaveInfo
+		  set Present=@Present,
+                    EntryTime=getdate(),
+                    PresentCancel=@PresentCancel,
+                    leave=@leave	         	
+                where  ClassID=@ClassID	
+                      and SectionID=@SectionID
+                      and Shift=@Shift  
+                      and attn_date= @attn_date
+                      and StudentId=@StudentId
+          end
+
+
+close my_cursor
+deallocate my_cursor
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+ALTER    procedure Rpt_attendance
+(
+    @mode               varchar(1),
+    @ClassId            varchar(10), 
+    @section    		varchar(10),
+    @shift              varchar(2),
+    @date               datetime
+)
+with encryption
+as
+
+
+declare @max_serial as int
+
+if @mode='a' 
+  begin
+    select a.StudentID,(select studentname from studentinfo where
+           studentid=a.studentid) as stdname,
+           a.ClassRoll,
+           a.Present,
+           a.PresentCancel,
+           a.leave
+       from studentattendanceleaveinfo a
+      where a.ClassId=  @ClassId  and
+            a.SectionID = @section and
+            a.shift=@shift  and
+            a.attn_date=@date
+              
+  end 
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+
+
+--- Exec BookDisretInformation 'Stu-00000000001','','00002','00001','N','25 Sep 2005','Lia'
+ALTER          procedure TCInfoApprove
+(
+	
+	@StudentId			varchar(15),
+	@TcNote				varchar(80),
+	@Approved			varchar(1),
+	@ApprovedBy			varchar(10),
+	@Approveddate			datetime,
+	@ActiveStu 			varchar(1)	
+)
+with encryption
+as
+
+
+
+if exists (select * from TcInformation where  StudentId= @StudentId ) 		
+
+
+Update TcInformation set  	
+
+		
+	Approved	=		@Approved,
+	TcNote		=		@TcNote,
+	ApprovedBy	=		@ApprovedBy,
+	Approveddate	=		@Approveddate
+	
+	
+where StudentId= @StudentId
+
+Update StudentEvaluation Set
+Active=@ActiveStu
+Where StudentId=@StudentID
+  if @Approved='Y' 
+     begin 	
+	update studentAdmission
+	 set active_std=0
+	where studentID=@studentID
+     end
+ else
+    begin
+      update studentAdmission
+	 set active_std=1
+	where studentID=@studentID
+    
+   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+/*
+exec StudentAttendance 's','STI-000001','M','00001','00001',111 ,'P','N'
+*/
+ALTER           procedure StudentAttendance 
+(
+        @mode               varchar(1),	
+	@StudentId			varchar(15),
+	@Shift	 			Varchar(30),
+	@ClassID			varchar(5),
+	@SectionID			varchar(5),
+	@classRoll			int,
+	@Present			varchar(1),
+	@PresentCancel		       varchar(1),
+        @attn_date			datetime,
+        @aca_yr                        varchar(10),
+        @exam_term                     varchar(10),
+        @exam_type                     varchar(10),
+        @leave                         varchar(1)
+)
+with encryption
+as
+  declare @var_std_id varchar(15) 
+  declare @class_roll_no int
+  if @mode='a'
+       begin
+           declare my_cursor cursor for
+           select distinct(StudentId)  from StudentAdmission 
+           where ClassId=@ClassID 
+                 and SectionId=@SectionID
+                 and Shift=@Shift and active_std=1
+           open my_cursor
+         
+          fetch next from my_cursor into @var_std_id
+          select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@var_std_id 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+                  where StudentId=@var_std_id )
+
+          while @@fetch_status=0
+           begin
+            insert into StudentAttendanceLeaveInfo
+			(
+
+				StudentId	,
+				Shift	 	,
+				ClassID		,
+				SectionID	,
+				classRoll	,
+				Present		,
+				EntryTime	,
+                                  attn_date,
+				PresentCancel,
+                                aca_yr,
+                                exam_term,
+                                Exam_type,
+                                leave
+				
+			)
+			values
+			(
+				@var_std_id	,
+				@Shift	 	,
+				@ClassID		,
+				@SectionID	,
+				@class_roll_no	,
+				@Present		,
+				getdate()	,
+                                @attn_date,
+				@PresentCancel	,
+                                @aca_yr,
+                                @exam_term,
+                                @exam_type,
+                                @leave 
+			)
+           
+                    
+          fetch next from my_cursor into @var_std_id
+          select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@var_std_id 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+                  where StudentId=@var_std_id ) 
+
+           end
+      end
+               
+if @mode='s'
+       begin
+         select @class_roll_no=classRoll 
+              from  StudentAdmission
+         where StudentId=@StudentId 
+             and serial_no=(select max(serial_no) 
+                from StudentAdmission 
+             where StudentId=@StudentId )
+
+           insert into StudentAttendanceLeaveInfo
+			(
+				StudentId	,
+				Shift	 	,
+				ClassID		,
+				SectionID	,
+				classRoll	,
+				Present		,
+				EntryTime	,
+                                attn_date,
+				PresentCancel,
+                                aca_yr,
+                                exam_term,
+                                Exam_type,
+                                leave
+				
+			)
+			values
+			(
+				@StudentId	,
+				@Shift	 	,
+				@ClassID		,
+				@SectionID	,
+				@class_roll_no	,
+				@Present		,
+				getdate(),
+                                @attn_date,
+				@PresentCancel	,
+                                @aca_yr,
+                                @exam_term,
+                                @exam_type,
+                                @leave 
+			)
+          
+                 
+      end
+
+     if @mode='u'
+          begin
+             update StudentAttendanceLeaveInfo
+		  set Present=@Present,
+                    EntryTime=getdate(),
+                    PresentCancel=@PresentCancel,
+                    leave=@leave	         	
+                where  ClassID=@ClassID	
+                      and SectionID=@SectionID
+                      and Shift=@Shift  
+                      and attn_date= @attn_date
+          end
+
+  if @mode='p'
+          begin
+             update StudentAttendanceLeaveInfo
+		  set Present=@Present,
+                    EntryTime=getdate(),
+                    PresentCancel=@PresentCancel,
+                    leave=@leave	         	
+                where  ClassID=@ClassID	
+                      and SectionID=@SectionID
+                      and Shift=@Shift  
+                      and attn_date= @attn_date
+                      and StudentId=@StudentId
+          end
+
+
+close my_cursor
+deallocate my_cursor
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+
+
+
+--- Exec BookDisretInformation 'Stu-00000000001','','00002','00001','N','25 Sep 2005','Lia'
+alter      procedure BookList1
+ (
+	
+        @mode                           integer,
+	@ClassID			varchar(5),
+	@Eyear	 			Int,
+	@SubjectId			varchar(5),
+	@Book				varchar(100),
+	@Writter			varchar(100),	
+	@EntryBY			varchar(50),
+	@EntryDate			DateTime
+	
+)
+with encryption
+as
+begin
+if @mode=1 
+    begin
+
+ insert into Booklist
+
+(
+
+	ClassID				,
+	Eyear	 			,
+	SubjectId			,
+	Book				,
+	Writter				,	
+	EntryBY				,
+	EntryDate			
+	
+			
+		
+	
+)
+values
+(
+	@ClassID			,
+	@Eyear	 			,
+	@SubjectId			,
+	@Book				,
+	@Writter			,	
+	@EntryBY			,
+	@EntryDate			
+	
+)
+end 
+
+  if @mode=2 
+     begin
+
+
+       Update Booklist set  	
+	--SubjectId		=	@SubjectId			,
+	Book			=	@Book				,
+	Writter			=	@Writter			,
+	EntryDate		=	@EntryDate			,
+	EntryBY			=	@EntryBY			
+
+
+     where ClassID= @ClassID and subjectid=@subjectid and Book=@Book and Eyear=@Eyear
+
+end 
+
+if @mode=3 
+    begin
+     delete from Booklist where  ClassID= @ClassID and subjectid=@subjectid and Book=@Book and Eyear=@Eyear
+
+ end 
+  
+end
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+

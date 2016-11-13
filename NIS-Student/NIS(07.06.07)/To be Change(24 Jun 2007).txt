@@ -1,0 +1,290 @@
+CREATE TABLE [StudentInfo] (
+        [Father_Profession] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Mother_profession] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Father_Avg_Income] [numeric](18, 0) NULL ,
+	[Mother_Avg_Income] [numeric](18, 0) NULL ,
+	[Previous_Class] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Previous_School_name] [varchar] (150) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Previous_School_phone] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Previous_School_Address] [varchar] (150) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Certificate_no] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+	[Certificate_date] [datetime] NULL ,
+	[Std_Photo] [image] NULL 
+
+
+
+
+
+
+
+
+
+alter        procedure StudentInformation
+(
+	
+	@StudentID		varchar(15),
+	@StudentName	 	varchar(80),
+	@StuFatherName		varchar(80),
+	@StuMotherName		varchar(80),
+	@LegalGerdian		varchar(80),	
+	@StuMarraigeDate	Datetime,
+	@StuMoorFalet		varchar(1),
+	@Stubrono		tinyint,
+	@Stusisno		tinyint,
+	@StuCountryofBirth	varchar(5),
+	@StuReligion		varchar(20),
+	@StuDateofBirth		Datetime,
+	@Computer		varchar(1),
+	@Internet		varchar(1),
+	@EntryDate		DateTime,
+	@EntryBY		varchar(50),
+        @Father_Profession     varchar(50),
+	@Mother_profession      varchar(50),
+	@Father_Avg_Income  numeric(18, 0),
+	@Mother_Avg_Income  numeric(18, 0)  ,
+	@Previous_Class   varchar(15) ,
+	@Previous_School_name varchar(150) ,
+	@Previous_School_phone varchar(50) ,
+	@Previous_School_Address varchar(150),
+	@Certificate_no varchar(50) ,
+	@Certificate_date  datetime ,
+	@Std_Photo image
+
+	
+)
+
+as
+
+Declare 
+
+	@MaxSLNo int,
+	@StID char(15)
+
+
+
+if @StudentID is null
+
+	begin
+	
+		/*SELECT @MaxSLNo = select  isnull(max(cast(StudentID as int)),0)
+			FROM StudentInfo */
+		
+		SELECT  @MaxSLNo = isnull(max(cast(substring(StudentID,5,11) as int)),0)
+				FROM StudentInfo 
+
+
+
+		if @MaxSLNo=0
+			set @MaxSLNo=1
+		else
+			set @MaxSLNo=@MaxSLNo+1
+
+		select @StID= dbo.PadString(@MaxSLNo,6,'0','L')
+
+				
+		set @StudentID='STI-'+@StID
+	end
+
+if exists (select StudentID from StudentInfo where  StudentID= @StudentID) 		
+
+Update StudentInfo set
+
+	
+	StudentID			=	@StudentID		,
+	StudentName	 		=	@StudentName	 	,
+	StuFatherName			=	@StuFatherName		,
+	StuMotherName			=	@StuMotherName		,
+	LegalGerdian			=	@LegalGerdian		,
+	StuMarraigeDate			=	@StuMarraigeDate	,
+	StuMoorFalet			=	@StuMoorFalet		,
+	Stubrono			=	@Stubrono		,
+	Stusisno			=	@Stusisno		,
+	StuCountryofBirth		=	@StuCountryofBirth	,
+	StuReligion			=	@StuReligion		,
+	StuDateofBirth			=	@StuDateofBirth		,
+	Computer			=	@Computer		,
+	Internet			=	@Internet		,
+	stuEntryDate			=	@EntryDate		,
+	stuEntryBY			=	@EntryBY		,
+	Father_Profession               =       @Father_Profession      ,
+	Mother_profession               =       @Mother_profession      ,
+	Father_Avg_Income               =       @Father_Avg_Income      ,
+	Mother_Avg_Income               =       @Mother_Avg_Income      ,
+	Previous_Class                  =       @Previous_Class         ,
+	Previous_School_name            =       @Previous_School_name   ,
+	Previous_School_phone           =       @Previous_School_phone,
+	Previous_School_Address         =       @Previous_School_Address,
+	Certificate_no                  =       @Certificate_no  ,
+	Certificate_date                =       @Certificate_date ,
+	Std_Photo                       =       @Std_Photo 
+	
+	where StudentID= @StudentID 	
+else
+ insert into StudentInfo 
+
+(
+	StudentID			,
+	StudentName	 		,
+	StuFatherName			,
+	StuMotherName			,
+	LegalGerdian			,
+	StuMarraigeDate			,
+	StuMoorFalet			,
+	Stubrono			,
+	Stusisno			,
+	StuCountryofBirth		,
+	StuReligion			,
+	StuDateofBirth			,
+	Computer			,
+	Internet			,
+	stuEntryDate			,
+        stuEntryBY			,
+        Father_Profession  ,
+	Mother_profession   ,
+	Father_Avg_Income  ,
+	Mother_Avg_Income   ,
+	Previous_Class   ,
+	Previous_School_name  ,
+	Previous_School_phone  ,
+	Previous_School_Address ,
+	Certificate_no  ,
+	Certificate_date  ,
+	Std_Photo 
+		
+	
+)
+values
+(
+	@StudentID			,
+	@StudentName	 		,
+	@StuFatherName			,
+	@StuMotherName			,
+	@LegalGerdian			,
+	@StuMarraigeDate			,
+	@StuMoorFalet			,
+	@Stubrono			,
+	@Stusisno			,
+	@StuCountryofBirth		,
+	@StuReligion			,
+	@StuDateofBirth			,	
+	@Computer			,
+	@Internet			,
+	@EntryDate			,
+        @EntryBY			,
+        @Father_Profession ,
+	@Mother_profession     ,
+	@Father_Avg_Income  ,
+	@Mother_Avg_Income    ,
+	@Previous_Class    ,
+	@Previous_School_name  ,
+	@Previous_School_phone  ,
+	@Previous_School_Address ,
+	@Certificate_no  ,
+	@Certificate_date  ,
+	@Std_Photo 
+)
+
+
+
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE     procedure LS_PLAN_TOPIC_Save
+(
+		    @mode	   varchar(1),
+            @Srl_no    INTEGER,
+            @TOPIC_SRL_NO integer,
+			@Topic_title	varchar(200),
+			----@LS_Week varchar(5),
+			@Entry_by varchar(10),
+			@Entry_date	datetime,
+                        @font_indicator integer,
+                        @aca_yr  varchar(10)
+)
+
+	AS
+
+     DECLARE @TOPIC_SRL_NO_LOC AS INTEGER  
+ 
+         if @mode='S'
+               begin
+                       
+		    			---if not exists (select Srl_no from LS_PLAN_TOPIC where Srl_no=@Srl_no and Topic_srl=@TOPIC_SRL_NO )
+		                SET @TOPIC_SRL_NO_LOC=(SELECT isnull(MAX(Topic_srl),0)+1 FROM LS_PLAN_TOPIC where  LS_Week=@LS_Week)
+		                insert into LS_PLAN_TOPIC(SRL_NO,Topic_srl,Topic_title,LS_Week,Entry_by,Entry_date,font_indicator,AcademicYr) 
+		                            values(@SRL_NO,@TOPIC_SRL_NO_LOC,@Topic_title,@LS_Week,@Entry_by,@Entry_date, @font_indicator,@aca_yr)
+		            
+               end 
+
+         
+          if @mode='U'
+               begin
+                       
+		    			if  exists (select Srl_no from LS_PLAN_TOPIC where Srl_no=@Srl_no  and Topic_srl=@TOPIC_SRL_NO  and LS_Week=@LS_Week )
+		                
+		                UPDATE LS_PLAN_TOPIC  SET Topic_title=@Topic_title,LS_Week=@LS_Week,font_indicator=@font_indicator
+                               where Srl_no=@Srl_no  and Topic_srl=@TOPIC_SRL_NO and LS_Week=@LS_Week
+		                           
+		            
+               end 
+
+
+        if @mode='D'
+               begin
+                       
+		    			if  exists (select Srl_no from LS_PLAN_TOPIC where Srl_no=@Srl_no  and Topic_srl=@TOPIC_SRL_NO  and LS_Week=@LS_Week )
+		                
+		                DELETE FROM  LS_PLAN_TOPIC   where Srl_no=@Srl_no  and Topic_srl=@TOPIC_SRL_NO  and LS_Week=@LS_Week
+		                           
+		            
+               end
+ 
+
+       
+
+
+
+
+
+
+
+GO
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
