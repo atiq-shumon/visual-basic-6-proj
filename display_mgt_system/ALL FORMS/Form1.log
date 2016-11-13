@@ -1,0 +1,49 @@
+Line 98: Class MSMask.MaskEdBox of control NI was not a loaded control class.
+Line 417: Class MSMask.MaskEdBox of control MB1 was not a loaded control class.
+Line 670: Class MSComDlg.CommonDialog of control cd5 was not a loaded control class.
+Line 693: Class MSComDlg.CommonDialog of control CD1 was not a loaded control class.
+Line 700: Class MSComDlg.CommonDialog of control CD2 was not a loaded control class.
+Line 707: Class MSComDlg.CommonDialog of control CD3 was not a loaded control class.
+Line 714: Class MSComDlg.CommonDialog of control CD4 was not a loaded control class.
+Line 721: Class MSComDlg.CommonDialog of control cd6 was not a loaded control class.
+Line 865: Class MSComctlLib.TabStrip of control TabStrip1 was not a loaded control class.
+Line 11: Property Icon in Form1 had an invalid file reference.
+Line 104: The property name _ExtentX in NI is invalid.
+Line 105: The property name _ExtentY in NI is invalid.
+Line 106: The property name _Version in NI is invalid.
+Line 107: The property name ClipMode in NI is invalid.
+Line 108: The property name MaxLength in NI is invalid.
+Line 109: The property name Mask in NI is invalid.
+Line 110: The property name PromptChar in NI is invalid.
+Line 423: The property name _ExtentX in MB1 is invalid.
+Line 424: The property name _ExtentY in MB1 is invalid.
+Line 425: The property name _Version in MB1 is invalid.
+Line 426: The property name MaxLength in MB1 is invalid.
+Line 427: The property name Mask in MB1 is invalid.
+Line 428: The property name PromptChar in MB1 is invalid.
+Line 673: The property name _ExtentX in cd5 is invalid.
+Line 674: The property name _ExtentY in cd5 is invalid.
+Line 675: The property name _Version in cd5 is invalid.
+Line 696: The property name _ExtentX in CD1 is invalid.
+Line 697: The property name _ExtentY in CD1 is invalid.
+Line 698: The property name _Version in CD1 is invalid.
+Line 703: The property name _ExtentX in CD2 is invalid.
+Line 704: The property name _ExtentY in CD2 is invalid.
+Line 705: The property name _Version in CD2 is invalid.
+Line 710: The property name _ExtentX in CD3 is invalid.
+Line 711: The property name _ExtentY in CD3 is invalid.
+Line 712: The property name _Version in CD3 is invalid.
+Line 717: The property name _ExtentX in CD4 is invalid.
+Line 718: The property name _ExtentY in CD4 is invalid.
+Line 719: The property name _Version in CD4 is invalid.
+Line 724: The property name _ExtentX in cd6 is invalid.
+Line 725: The property name _ExtentY in cd6 is invalid.
+Line 726: The property name _Version in cd6 is invalid.
+Line 731: Property MouseIcon in Image2 had an invalid file reference.
+Line 733: Property Picture in Image2 had an invalid file reference.
+Line 741: Property MouseIcon in Image1 had an invalid file reference.
+Line 743: Property Picture in Image1 had an invalid file reference.
+Line 871: The property name _ExtentX in TabStrip1 is invalid.
+Line 872: The property name _ExtentY in TabStrip1 is invalid.
+Line 873: The property name _Version in TabStrip1 is invalid.
+Line 892: The property name Tabs in TabStrip1 is invalid.

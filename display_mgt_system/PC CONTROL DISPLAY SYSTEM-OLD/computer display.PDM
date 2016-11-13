@@ -1,0 +1,187 @@
+[Root]
+Most Recent Package=PC CONTROL DISPLAY SYSTEM_1
+
+
+[Package|PC CONTROL DISPLAY SYSTEM|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=E:\Display System_1\PC CONTROL DISPLAY SYSTEM\Package
+
+[Package|PC CONTROL DISPLAY SYSTEM|Configure DAO ISAMs]
+Applicable=No
+
+[Package|PC CONTROL DISPLAY SYSTEM|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|PC CONTROL DISPLAY SYSTEM|Files Found]
+
+[Package|PC CONTROL DISPLAY SYSTEM|Files Released]
+
+[Package|PC CONTROL DISPLAY SYSTEM|Missing Dependency Information]
+
+[Package|PC CONTROL DISPLAY SYSTEM|Out-of-Date Dependency Information]
+
+[Package|PC CONTROL DISPLAY SYSTEM|Files Added]
+
+[Package|PC CONTROL DISPLAY SYSTEM|Files Removed]
+
+[Package|PC CONTROL DISPLAY SYSTEM|Files In Project]
+E:\Display System_1\Without Duration\CBIDS.exe=Yes
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=Yes
+C:\WINDOWS\SYSTEM\OLEAUT32.DLL=Yes
+C:\WINDOWS\SYSTEM\OLEPRO32.DLL=Yes
+C:\WINDOWS\SYSTEM\ASYCFILT.DLL=Yes
+C:\WINDOWS\SYSTEM\STDOLE2.TLB=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|PC CONTROL DISPLAY SYSTEM|Configure Registry Files]
+Applicable=No
+
+[Package|PC CONTROL DISPLAY SYSTEM|Configure Remote Servers]
+Applicable=No
+
+[Package|PC CONTROL DISPLAY SYSTEM|Install Locations]
+E:\Display System_1\Without Duration\CBIDS.exe=$(AppPath)
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|PC CONTROL DISPLAY SYSTEM|Configure Shared Files]
+Applicable=Yes
+E:\Display System_1\Without Duration\CBIDS.exe=No
+
+[Package|PC CONTROL DISPLAY SYSTEM|Distribution]
+Type=multi
+Size=1.44 MB
+Title=COMPUTER BASED INFORMATION DISPLAY SYSTEM
+
+[Package|PC CONTROL DISPLAY SYSTEM|IconGroups]
+Group0=COMPUTER BASED INFORMATION DISPLAY SYSTEM
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|PC CONTROL DISPLAY SYSTEM|COMPUTER BASED INFORMATION DISPLAY SYSTEM]
+Icon1=CBIDS.exe
+Title1=COMPUTER BASED INFORMATION DISPLAY SYSTEM
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|PC CONTROL DISPLAY SYSTEM|Package]
+PackageFolder=E:\Display System_1\PC CONTROL DISPLAY SYSTEM\Package
+ProjectFolder=E:\Display System_1\PC CONTROL DISPLAY SYSTEM
+ServerSideCab=
+File1=E:\Display System_1\PC CONTROL DISPLAY SYSTEM\Package\setup.exe
+File2=E:\Display System_1\PC CONTROL DISPLAY SYSTEM\Package\Setup.Lst
+File3=E:\Display System_1\PC CONTROL DISPLAY SYSTEM\Package\CBIDS1.CAB
+File4=E:\Display System_1\PC CONTROL DISPLAY SYSTEM\Package\CBIDS2.CAB
+Handler1=PDWizard.FloppyDplySubWiz
+Handler2=PDWizard.FolderDplySubWiz
+Handler3=PDWizard.WebPostDplySubWiz
+
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=e:\pcdis
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Configure DAO ISAMs]
+Applicable=No
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Files Found]
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Files Released]
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Missing Dependency Information]
+D:\Display System_1\PC CONTROL DISPLAY SYSTEM\PCDS.exe=
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Out-of-Date Dependency Information]
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Files Added]
+d:\display system_1\pc control display system\pcds.exe=
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Files Removed]
+c:\windows\system\mscomm32.ocx=
+d:\display system_1\without duration\cbids.exe=
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Files In Project]
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=Yes
+C:\WINDOWS\SYSTEM\OLEAUT32.DLL=Yes
+C:\WINDOWS\SYSTEM\OLEPRO32.DLL=Yes
+C:\WINDOWS\SYSTEM\ASYCFILT.DLL=Yes
+C:\WINDOWS\SYSTEM\STDOLE2.TLB=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=No
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+D:\Display System_1\Without Duration\CBIDS.exe=No
+D:\Display System_1\PC CONTROL DISPLAY SYSTEM\PCDS.exe=Yes
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Configure Registry Files]
+Applicable=No
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Configure Remote Servers]
+Applicable=No
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Install Locations]
+E:\Display System_1\Without Duration\CBIDS.exe=$(AppPath)
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+D:\Display System_1\PC CONTROL DISPLAY SYSTEM\PCDS.exe=$(AppPath)
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Configure Shared Files]
+Applicable=Yes
+E:\Display System_1\Without Duration\CBIDS.exe=No
+D:\Display System_1\PC CONTROL DISPLAY SYSTEM\PCDS.exe=No
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Distribution]
+Type=single
+Size=1.44 MB
+Title=COMPUTER DISPLAY SYSTEM
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|Package]
+PackageFolder=e:\pcdis
+ProjectFolder=D:\Display System_1\PC CONTROL DISPLAY SYSTEM
+ServerSideCab=
+File1=e:\pcdis\setup.exe
+File2=e:\pcdis\Setup.Lst
+File3=e:\pcdis\CBIDS.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|IconGroups]
+Group0=COMPUTER BASED INFORMATION DISPLAY SYSTEM
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|PC CONTROL DISPLAY SYSTEM_1|COMPUTER BASED INFORMATION DISPLAY SYSTEM]
+Icon1=PCDS.exe
+Title1=COMPUTER BASED INFORMATION DISPLAY SYSTEM
+StartIn1=$(AppPath)
+Key1=Icon1
